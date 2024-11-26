@@ -3,6 +3,10 @@ const router = express.Router();
 const UserController = require("../controllers/UserController");
 const PostController = require("../controllers/PostController");
 const CommentController = require('../controllers/CommentController');
+const businessController = require("../controllers/BusinessController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const businessPostsController = require("../controllers/BusinessPostsController");
+const getImage = require("../controllers/getImage");
 
 // User routes
 router.post('/register', UserController.CreateUser);
@@ -21,9 +25,9 @@ router.put('/:userId/interests/:index', UserController.updateInterest);
 router.delete('/:userId/interests/:index', UserController.deleteInterest);
 
 // Post routes
-router.post('/post', PostController.createPost);
-router.get('/post/:postId', PostController.getPostById);
-router.get('/posts', PostController.getPosts);
+router.post('/user/post', PostController.createPost);
+router.get('/user/post/:postId', PostController.getPostById);
+router.get('/user/posts', PostController.getPosts);
 router.put('/update/post/:postId', PostController.updatePost);
 router.delete('/delete/post/:postId', PostController.deletePost);
 router.post('/:userId/likes/:postId', PostController.toggleLike);
@@ -35,5 +39,32 @@ router.get('/users/:userId/bookmarks', PostController.getBookmarkedPosts);
 router.post('/posts/:postId/comments', CommentController.createComment);
 router.get('/posts/:postId/comments', CommentController.getComments);
 router.delete('/posts/:postId/comments/:commentId/:userId', CommentController.deleteComment);
+
+// Business Profile
+router.post("/businesses", businessController.createBusiness);
+router.get("/businesses/:id", businessController.getBusinessById);
+router.get("/businesses", businessController.getAllBusinesses);
+router.put("/businesses/:id", businessController.updateBusiness);
+router.delete("/businesses/:id", businessController.deleteBusiness);
+router.get(
+  "/businesses/:businessId/posts",
+  businessController.getBusinessPosts
+);
+
+// Business Posts
+router.post("/posts", businessPostsController.createPost);
+router.get("/posts", businessPostsController.getAllPosts);
+router.get("/posts/:id", businessPostsController.getPostById);
+router.put("/posts/:id", businessPostsController.updatePost);
+router.put("/like/:id", businessPostsController.toggleLike);
+router.delete("/posts/:id", businessPostsController.deletePost);
+
+router.get(
+  "/posts/:businessId/posts",
+  businessPostsController.getBusinessPosts
+);
+
+// Get Images
+router.get("/images/:id", getImage);
 
 module.exports = router;

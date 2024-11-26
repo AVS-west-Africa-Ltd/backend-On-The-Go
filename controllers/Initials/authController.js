@@ -1,6 +1,6 @@
-const User = require('../models/User');
-const bcryptUtil = require('../utils/bcryptUtil');
-const jwtUtil = require('../utils/jwtUtil');
+const User = require('../../models/Initials/User');
+const bcryptUtil = require('../../utils/bcryptUtil');
+const jwtUtil = require('../../utils/jwtUtil');
 
 const authController = {
   register: async (req, res) => {

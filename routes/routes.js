@@ -1,4 +1,6 @@
 const express = require("express");
+const chatRoutes = require("./chatRoutes");
+const authRoutes = require("./Initials/authRoutes");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
 const PostController = require("../controllers/PostController");
@@ -7,6 +9,9 @@ const businessController = require("../controllers/BusinessController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
 const getImage = require("../controllers/getImage");
+
+router.use("/chat", chatRoutes);
+router.use("/auth", authRoutes);
 
 // User routes
 router.post('/register', UserController.CreateUser);
@@ -66,5 +71,6 @@ router.get(
 
 // Get Images
 router.get("/images/:id", getImage);
+
 
 module.exports = router;

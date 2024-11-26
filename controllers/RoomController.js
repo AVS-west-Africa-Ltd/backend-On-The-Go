@@ -25,6 +25,33 @@ exports.getAllRooms = async (req, res) => {
       });
     }
 };
+// Get rooms for a specific user
+exports.getUserRooms = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const rooms = await Room.findAll({
+      include: [{
+        model: RoomMember,
+        as: 'members',
+        where: { user_id: userId }, // Filter rooms where the user is a member
+        attributes: [] // We don't need to return member details
+      }],
+      attributes: ['id', 'name', 'type', 'description', 'image_url', 'status', 'total_members', 'created_by']
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User rooms retrieved successfully",
+      data: rooms
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+};
 exports.getRoomById = async (req, res) => {
     const { roomId } = req.params;
   

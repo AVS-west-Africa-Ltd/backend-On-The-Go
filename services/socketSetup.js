@@ -1,5 +1,7 @@
 const { Server } = require('socket.io');
 const Chat = require('../models/Chat');
+const Room = require('../models/Room');
+const RoomMember = require('../models/RoomMember');
 
 function setupSocketIO(server) {
   const io = new Server(server, {
@@ -9,76 +11,114 @@ function setupSocketIO(server) {
     }
   });
 
-  // Active users map
+  // Active users and room connections tracking
   const activeUsers = new Map();
+  const userRooms = new Map();
 
   io.on('connection', (socket) => {
     console.log('New client connected');
 
-    socket.on('authenticate', (userId) => {
+    // User authentication and room joining
+    socket.on('authenticate', async (userData) => {
+      const { userId, rooms } = userData;
+      
+      // Store active user's socket
       activeUsers.set(userId, socket.id);
+      
+      // Join user's personal room and all their room rooms
       socket.join(userId);
-      console.log(`User ${userId} authenticated and joined room`);
+      
+      if (rooms && rooms.length) {
+        rooms.forEach(roomId => {
+          socket.join(`room-${roomId}`);
+          
+          // Track user's rooms
+          if (!userRooms.has(userId)) {
+            userRooms.set(userId, new Set());
+          }
+          userRooms.get(userId).add(roomId);
+        });
+      }
+      
+      console.log(`User ${userId} authenticated and joined rooms`);
     });
 
-    // Modified message handling with optimistic updates
+    // Enhanced message sending with robust error handling
     socket.on('send_message', async (messageData) => {
       try {
-        // Create a temporary message object with a temporary ID
-        const tempMessage = {
+        const { room_id, sender_id, content, media_url } = messageData;
+
+        // Verify sender is a member of the room
+        const isMember = await RoomMember.findOne({
+          where: { room_id, user_id: sender_id }
+        });
+
+        if (!isMember) {
+          socket.emit('message_error', {
+            message: "Not a member of this room",
+            status: 403
+          });
+          return;
+        }
+
+        // Create message with optimistic update
+        const tempId = `temp-${Date.now()}`;
+        const optimisticMessage = {
           ...messageData,
-          id: `temp-${Date.now()}`,
+          id: tempId,
           status: 'sending',
           timestamp: new Date().toISOString()
         };
 
-        // Immediately emit to sender for optimistic update
-        socket.emit('message_optimistic', tempMessage);
+        // Emit optimistic message immediately to sender
+        socket.emit('message_optimistic', optimisticMessage);
 
         // Save message to database
         const message = await Chat.create({
-          sender_id: messageData.sender_id,
-          sender_type: messageData.sender_type,
-          receiver_id: messageData.receiver_id,
-          receiver_type: messageData.receiver_type,
-          content: messageData.content,
-          media_url: messageData.media_url || null,
+          room_id,
+          sender_id,
+          content,
+          media_url,
           status: 'sent'
         });
 
-        // Check if receiver is online
-        const receiverSocketId = activeUsers.get(messageData.receiver_id);
-        
-        if (receiverSocketId) {
-          // Send to receiver's room
-          io.to(messageData.receiver_id).emit('receive_message', message);
-          await message.update({ status: 'delivered' });
-        }
+        // Broadcast to all members in the room
+        io.to(`room-${room_id}`).emit('receive_message', message);
 
-        // Update sender with the permanent message details
+        // Confirm message to sender with permanent ID
         socket.emit('message_confirmed', {
-          tempId: tempMessage.id,
+          tempId: tempId,
           confirmedMessage: message
         });
 
+        // Update room's last activity
+        await Room.update(
+          { updatedAt: new Date() },
+          { where: { id: room_id } }
+        );
+
       } catch (error) {
         console.error('Message sending error:', error);
-        // Notify sender of failure
-        socket.emit('message_failed', {
-          tempId: `temp-${Date.now()}`,
-          error: error.message
+        socket.emit('message_error', {
+          message: error.message,
+          status: 500
         });
       }
     });
 
-    socket.on('message_read', async (messageId) => {
+    // Message read receipt
+    socket.on('message_read', async (readData) => {
+      const { messageId, userId } = readData;
       try {
         const message = await Chat.findByPk(messageId);
         if (message) {
           await message.update({ status: 'read' });
+          
+          // Notify sender about read receipt
           io.to(message.sender_id).emit('message_read_receipt', {
             messageId,
-            receiver_id: message.receiver_id
+            reader_id: userId,
+            room_id: message.room_id
           });
         }
       } catch (error) {
@@ -86,10 +126,34 @@ function setupSocketIO(server) {
       }
     });
 
+    // Room join/leave events
+    socket.on('join_room', async (roomData) => {
+      const { roomId, userId } = roomData;
+      socket.join(`room-${roomId}`);
+      
+      // Optional: Broadcast to room members
+      io.to(`room-${roomId}`).emit('user_joined', { userId, roomId });
+    });
+
+    socket.on('leave_room', async (roomData) => {
+      const { roomId, userId } = roomData;
+      socket.leave(`room-${roomId}`);
+      
+      // Optional: Broadcast to room members
+      io.to(`room-${roomId}`).emit('user_left', { userId, roomId });
+    });
+
+    // Disconnect handling
     socket.on('disconnect', () => {
       for (const [userId, socketId] of activeUsers.entries()) {
         if (socketId === socket.id) {
+          // Remove from active users
           activeUsers.delete(userId);
+          
+          // Optional: Remove tracked rooms
+          if (userRooms.has(userId)) {
+            userRooms.delete(userId);
+          }
           break;
         }
       }

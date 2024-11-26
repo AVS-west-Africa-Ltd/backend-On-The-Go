@@ -17,5 +17,6 @@ router.post("/room/member/add", roomController.addMember);
 router.delete("/room/member/remove", roomController.removeMember);
 router.get("/rooms", roomController.getAllRooms); // New route to get all rooms
 router.get("/room/:roomId", roomController.getRoomById);
+router.get("/user/:userId/rooms", roomController.getUserRooms);
 
 module.exports = router;

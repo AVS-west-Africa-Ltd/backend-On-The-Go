@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const UserFollowers = require('./UserFollowers');
 
 const userSchema = sequelize.define('Users', {
     firstName: {
@@ -15,6 +16,9 @@ const userSchema = sequelize.define('Users', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    password: {
+        type: DataTypes.STRING,
+    },
     phone_number: {
         type: DataTypes.STRING,
     },
@@ -27,9 +31,20 @@ const userSchema = sequelize.define('Users', {
     interests: {
         type: DataTypes.JSON,
     },
-    notifications: {
-        type: DataTypes.JSON,
-    }
+});
+
+userSchema.belongsToMany(userSchema, {
+    as: 'Followers',
+    through: UserFollowers,
+    foreignKey: 'followedId',
+    otherKey: 'followerId',
+});
+
+userSchema.belongsToMany(userSchema, {
+    as: 'Following',
+    through: UserFollowers,
+    foreignKey: 'followerId',
+    otherKey: 'followedId',
 });
 
 sequelize.sync().then(() => {

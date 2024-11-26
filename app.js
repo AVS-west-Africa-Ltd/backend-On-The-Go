@@ -5,6 +5,7 @@ const http = require('http');
 const bodyParser = require("body-parser");
 const sequelize = require("./config/database");
 const router = require("./routes/routes");
+
 const setupSocketIO = require('./services/socketSetup');
 const setupAssociations = require('./models/associations');
 
@@ -12,6 +13,9 @@ const setupAssociations = require('./models/associations');
 const Room = require('./models/Room');
 const RoomMember = require('./models/RoomMember');
 const Chat = require('./models/Chat');
+
+
+const validateApiKey = require("./middlewares/apiMiddleWare");
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -32,11 +36,19 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // Setup model associations
 setupAssociations();
 
 // Routes
 app.use("/api/v1/", router);
+
+app.use(cors());
+//app.use(validateApiKey);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/api/v1", router);
+
 
 // Create HTTP server
 const server = http.createServer(app);

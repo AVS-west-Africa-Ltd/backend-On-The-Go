@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const app = express();
 require("./config/database");
 const router = require("./routes/routes");
+const validateApiKey = require("./middlewares/apiMiddleWare");
 const PORT = process.env.PORT || 5000;
 
 
@@ -19,9 +20,10 @@ app.use((req, res, next) => {
 });
 
 app.use(cors());
+//app.use(validateApiKey);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use("/api/v1/", router);
+app.use("/api/v1", router);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

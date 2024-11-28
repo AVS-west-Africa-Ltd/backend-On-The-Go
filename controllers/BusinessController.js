@@ -50,6 +50,7 @@ const businessController = {
       }
 
       const {
+        userId,
         name,
         type,
         address,
@@ -88,6 +89,7 @@ const businessController = {
 
         // Create a new business
         const newBusiness = await Business.create({
+          userId,
           name,
           type,
           address,

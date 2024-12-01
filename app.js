@@ -47,28 +47,28 @@ const server = http.createServer(app);
 const io = setupSocketIO(server);
 
 // Database sync
-// const syncDatabase = async () => {
-//   try {
-//     // Force sync in development only!
-//     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-//     await Room.sync({ force: true });
-//     await RoomMember.sync({ force: true });
-//     await Chat.sync({ force: true });
-//     await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
-//
-//     console.log("Database synced successfully!");
-//
-//     // Start server after sync
-//     server.listen(PORT, () => {
-//       console.log(`Server running on http://localhost:${PORT}`);
-//     });
-//   } catch (err) {
-//     console.error("Database sync error:", err);
-//     process.exit(1);
-//   }
-// };
+const syncDatabase = async () => {
+  try {
+    // Force sync in development only!
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+    await Room.sync({ force: true });
+    await RoomMember.sync({ force: true });
+    await Chat.sync({ force: true });
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
-// Start the application
-// syncDatabase();
+    console.log("Database synced successfully!");
+
+    // Start server after sync
+    server.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Database sync error:", err);
+    process.exit(1);
+  }
+};
+
+// // Start the application
+syncDatabase();
 
 module.exports = { app, io };

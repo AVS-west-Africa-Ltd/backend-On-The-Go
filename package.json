@@ -4,10 +4,10 @@
   "description": "Api backend for the on the go app",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
     "lint": "eslint. --ext.js,.jsx",
-    "dev": "node --watch app.js --env-file=.env"
+    "dev": "node --watch app.js --env-file=.env",
+    "test": "jest --runInBand --detectOpenHandles"
   },
   "author": "Aventure studio team",
   "license": "ISC",
@@ -29,5 +29,9 @@
     "sequelize": "^6.37.5",
     "socket.io": "^4.8.1",
     "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }

@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const ImageSchema = require('../models/Image');
 
 const PostSchema = sequelize.define('Posts', {
     userId: {
@@ -13,10 +14,6 @@ const PostSchema = sequelize.define('Posts', {
     description: {
         type: DataTypes.TEXT,
         allowNull: false,
-    },
-    pictures: {
-        type: DataTypes.JSON,
-        allowNull: true,
     },
     likes: {
         type: DataTypes.JSON,
@@ -39,6 +36,9 @@ const PostSchema = sequelize.define('Posts', {
         defaultValue: []
     },
 });
+
+PostSchema.hasMany(ImageSchema, { foreignKey: 'postId', as: 'images', onDelete: 'CASCADE' });
+ImageSchema.belongsTo(PostSchema, {foreignKey: 'postId', as: 'images'});
 
 sequelize.sync().then(() => {
     console.log('Posts table created successfully!');

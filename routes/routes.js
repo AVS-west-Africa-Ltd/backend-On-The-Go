@@ -9,6 +9,7 @@ const businessController = require("../controllers/BusinessController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
 const getImage = require("../controllers/getImage");
+const upload = require('../utils/multerSetup');
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
@@ -32,7 +33,7 @@ router.delete('/:userId/interests/:index', UserController.deleteInterest);
 // Post routes
 router.post('/user/post', PostController.createPost);
 router.get('/user/post/:postId', PostController.getPostById);
-router.get('/user/posts', PostController.getPosts);
+router.get('/posts/user', PostController.getPosts);
 router.put('/update/post/:postId', PostController.updatePost);
 router.delete('/delete/post/:postId', PostController.deletePost);
 router.post('/:userId/likes/:postId', PostController.toggleLike);

@@ -1,14 +1,22 @@
 const PostService = require('../services/PostService');
+const ImageService = require('../services/ImageService');
 
 class PostController {
     static async createPost(req, res) {
         try {
             const { userId, businessId, description, rating } = req.body;
+            // const files = req.files;
 
             if(!description || !rating || !businessId || !userId) return res.status(400).json({ message: 'All fields are required' });
 
+            // if (!files || files.length === 0) return res.status(400).json({ message: 'At least one image is required' });
+
             let payload = { userId, description, rating, businessId };
             const post = await PostService.createPost(payload);
+
+            // const imagePayloads = files.map(file => ({ postId: post.id, fileName: file.filename, filePath: file.path, }));
+            // await ImageService.createImage(imagePayloads);
+
             return res.status(201).json({ message: 'Post successfully created' });
         } catch (error) {
             return res.status(500).json({ error: error.message });
@@ -33,7 +41,7 @@ class PostController {
     static async getPosts(req, res) {
         try {
             const posts = await PostService.getPosts();
-            if (!posts && posts.length === 0) return res.status(404).json({ message: 'Posts not found', info: [] });
+            if (!posts || posts.length === 0) return res.status(404).json({ message: 'Posts not found', info: [] });
             return res.status(200).json({ info: posts });
         }
         catch (error) {
@@ -58,6 +66,7 @@ class PostController {
             const { postId } = req.params;
 
             const post = await PostService.deletePost(postId);
+
             if (!post) return res.status(404).json({ message: 'Post not found' });
             return res.status(200).json({ message: 'Post deleted successfully' });
         } catch (error) {

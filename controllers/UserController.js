@@ -50,7 +50,7 @@ class UserController {
     static async getUsers(req, res) {
         try {
             const users = await userService.getUsers();
-            if (!users && users.length === 0) return res.status(404).json({ message: 'Users not found', info: [] });
+            if (!users || users.length === 0) return res.status(404).json({ message: 'Users not found', info: [] });
             return res.status(200).json({ info: users });
         }
         catch (error) {
@@ -90,7 +90,7 @@ class UserController {
 
             const user = await userService.updateUser(userId, req.body);
             if (!user) return res.status(404).json({ message: 'User not found' });
-            return res.status(200).json({ message: 'User updated successfully' });
+            return res.status(200).json({ message: 'User updated successfully', info: user });
         }
         catch (error) {
             return res.status(500).json({ error: error.message });
@@ -103,7 +103,7 @@ class UserController {
             const user = await userService.addFollower(userId, followerId);
 
             if (!user) return res.status(404).json({ message: 'User not found' });
-            return res.status(201).json({ message: 'User followed successfully' });
+            return res.status(200).json({ message: 'Follower added successfully' });
         }
         catch (error) {
             return res.status(500).json({ error: error.message });
@@ -117,7 +117,7 @@ class UserController {
 
             if (!user) return res.status(404).json({ message: 'User not found' });
 
-            return res.status(200).json({ message: 'User unfollowed successfully' });
+            return res.status(200).json({ message: 'Follower removed successfully' });
         }
         catch (error) {
             return res.status(500).json({ error: error.message });
@@ -143,7 +143,7 @@ class UserController {
 
             const notification = await userService.markNotificationAsRead(notificationId);
             if (!notification) return res.status(404).json({ message: 'Notification not found' });
-            return res.status(200).json({ notification: notification });
+            return res.status(200).json({ message: 'Notification marked as read', notification });
         }
         catch (error) {
             return res.status(500).json({ error: error.message });
@@ -156,7 +156,7 @@ class UserController {
 
             const user = await userService.getUserWithFollowers(userId);
             if (!user) return res.status(404).json({ message: 'User not found' });
-            return res.status(200).json({ user: user });
+            return res.status(200).json({ info: user });
         }
         catch (e) {
             return res.status(500).json({ error: e });
@@ -186,7 +186,7 @@ class UserController {
             const updatedInterest = req.body;
 
             const user = await userService.updateInterest(userId, parseInt(index), updatedInterest);
-            return res.status(200).json({ message: 'Interest updated', interest: user });
+            return res.status(200).json({ message: 'Interest updated successfully', interest: user });
         }
         catch (error) {
             return res.status(500).json({ error: error.message });

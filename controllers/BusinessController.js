@@ -8,7 +8,7 @@ const { BusinessPosts } = require("../models/index");
 // Multer storage and configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/images/"); // Upload directory
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + "-" + file.originalname;

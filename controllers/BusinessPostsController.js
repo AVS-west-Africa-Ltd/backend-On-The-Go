@@ -6,7 +6,7 @@ const path = require("path");
 // Multer storage and configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/images/"); // Upload directory
+    cb(null, "uploads/"); // Upload directory
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + "-" + file.originalname;
@@ -29,7 +29,7 @@ const businessPostsController = {
           .json({ message: "Error uploading files", error: err.message });
       }
 
-      const { businessId, postText } = req.body; // Extract business ID and post text
+      const { businessId, postText } = req.body;
 
       try {
         // Find the associated business
@@ -45,15 +45,6 @@ const businessPostsController = {
               `${req.protocol}://${req.get("host")}/images/${file.filename}`
           )
           .toString();
-        // const mediaPaths = req.files.map((file) =>
-        //   path.join("images", path.basename(file.path))
-        // );
-        // imageLinks = await files
-        //   .map(
-        //     (file) =>
-        //       `${req.protocol}://${req.get("host")}/images/${file.filename}`
-        //   )
-        //   .toString();
 
         // Create a new post associated with the business
         const newPost = await BusinessPost.create({

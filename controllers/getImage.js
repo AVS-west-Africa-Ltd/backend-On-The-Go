@@ -2,11 +2,14 @@ const fs = require("fs");
 const path = require("path");
 
 const getImage = async (req, res) => {
+  console.log("---");
   let filePath = path.join(
     __dirname,
     "../",
     req.url === "/" ? "index.html" : req.url
   );
+
+  console.log(filePath);
 
   let contentType = "text/html";
 

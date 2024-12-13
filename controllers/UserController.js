@@ -40,7 +40,7 @@ class UserController {
             if(!isPasswordMatch) return res.status(401).json({ message: 'Invalid email or password' });
 
             const token = jwtUtil.generateToken(user);
-            return res.status(200).json({ token: token });
+            return res.status(200).json({ token: token, user: user });
         }
         catch(error) {
             return res.status(500).json({ error: error.message });

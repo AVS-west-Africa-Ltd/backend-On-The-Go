@@ -78,6 +78,7 @@ class UserService {
             await user.addFollower(follower);
             await Notification.create({
                 userId: userId,
+                followerId: follower.id,
                 message: `${follower.username} started following you.`,
             });
             return user;
@@ -98,6 +99,7 @@ class UserService {
             await user.removeFollower(follower);
             await Notification.create({
                 userId: userId,
+                followerId: follower.id,
                 message: `${follower.username} unfollowed you.`,
             });
             return user;

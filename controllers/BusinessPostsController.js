@@ -3,10 +3,9 @@ const { Business } = require("../models/index");
 const multer = require("multer");
 const path = require("path");
 
-// Multer storage and configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Upload directory
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + "-" + file.originalname;
@@ -19,7 +18,7 @@ const upload = multer({ storage: storage });
 const businessPostsController = {
   // Create a new BusinessPost
   createPost: async (req, res) => {
-    const uploadHandler = upload.array("media", 10); // Allow up to 10 media files
+    const uploadHandler = upload.array("media", 10);
 
     uploadHandler(req, res, async (err) => {
       if (err) {
@@ -38,11 +37,12 @@ const businessPostsController = {
           return res.status(404).json({ message: "Business not found" });
         }
 
-        // Extract uploaded media file paths and save relative paths
         const mediaPaths = req.files
           .map(
             (file) =>
-              `${req.protocol}://${req.get("host")}/images/${file.filename}`
+              `${req.protocol}://${req.get("host")}/api/v1/uploads/${
+                file.filename
+              }`
           )
           .toString();
 

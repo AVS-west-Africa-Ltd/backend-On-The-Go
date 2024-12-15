@@ -2,6 +2,9 @@ const Post = require("../models/Post");
 const { Op, Sequelize } = require("sequelize");
 const multer = require("multer");
 const path = require("path");
+const Comment = require('../models/Comment');
+const Business = require("../models/Business");
+const User = require("../models/User");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -53,9 +56,31 @@ class PostService {
 
   static async getPosts() {
     try {
-      return await Post.findAll({});
+      return await Post.findAll({
+        include: [
+          {
+            model: Comment,
+            as: 'comments', // Matches the alias defined in the association
+            include: [
+              {
+                model: Comment,
+                as: 'replies', // Nested comments (replies)
+              },
+            ],
+          },
+          {
+            model: Business,
+            as: 'business',
+          },
+          {
+            model: User,
+            as: 'user',
+          }
+        ],
+        order: [["createdAt", "DESC"]],
+      });
     } catch (error) {
-      throw new Error("Error fetching posts");
+      throw error;
     }
   }
 
@@ -81,7 +106,10 @@ class PostService {
 
   static async toggleLike(postId, userId) {
     try {
-      const post = await Post.findByPk(postId);
+      const post = await Post.findByPk(postId, {
+        attributes: ['id', 'likes'],
+      });
+
       if (!post) return false;
 
       let likes = post.likes || [];

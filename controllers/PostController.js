@@ -36,7 +36,7 @@ class PostController {
         const media = req.files
           .map(
             (file) =>
-              `${req.protocol}://${req.get("host")}/api/v1/uploads/${
+              `${req.protocol}://${req.get("host")}/uploads/${
                 file.filename
               }`
           )

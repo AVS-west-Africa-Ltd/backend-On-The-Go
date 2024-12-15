@@ -1,6 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const ImageSchema = require("../models/Image");
+const Business = require("../models/Business");
+const User = require("../models/User");
 
 const PostSchema = sequelize.define("Posts", {
   userId: {
@@ -41,6 +43,9 @@ const PostSchema = sequelize.define("Posts", {
     defaultValue: [],
   },
 });
+
+PostSchema.belongsTo(Business, { foreignKey: 'businessId', as: 'business' });
+PostSchema.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 PostSchema.hasMany(ImageSchema, {
   foreignKey: "postId",

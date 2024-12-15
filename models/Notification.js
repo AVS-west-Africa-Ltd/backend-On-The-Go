@@ -14,6 +14,9 @@ const Notification = sequelize.define('Notification', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    notificationType: {
+        type: DataTypes.STRING,
+    },
     read: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

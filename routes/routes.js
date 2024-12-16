@@ -9,6 +9,7 @@ const businessController = require("../controllers/BusinessController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
 const getImage = require("../controllers/getImage");
+const InvitationController = require("../controllers/InvitationController");
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
@@ -71,6 +72,14 @@ router.get(
 
 // Get Images
 router.get("/images/:id", getImage);
+
+// Invitation routes
+router.post('/invitations', InvitationController.createInvitation);
+router.get('/invitations', InvitationController.getAllInvitations);
+router.get('/invitations/:id', InvitationController.getInvitation);
+router.get('/users/:userId/invitations', InvitationController.getUserInvitations);
+router.put('/invitations/:id', InvitationController.updateInvitation);
+router.delete('/invitations/:id', InvitationController.deleteInvitation);
 
 
 module.exports = router;

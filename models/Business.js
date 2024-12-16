@@ -25,7 +25,8 @@ const Business = sequelize.define("Business", {
     type: DataTypes.STRING,
   },
   amenities: {
-    type: DataTypes.TEXT,
+    type: DataTypes.JSON,
+    defaultValue: [],
   },
   cacDoc: {
     type: DataTypes.STRING,
@@ -43,7 +44,7 @@ const Business = sequelize.define("Business", {
   social: {
     type: DataTypes.JSON,
     allowNull: true,
-    defaultValue: [],
+    defaultValue: {},
   },
   wifiName: {
     type: DataTypes.STRING,

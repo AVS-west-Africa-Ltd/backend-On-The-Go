@@ -7,9 +7,15 @@ const Notification = sequelize.define('Notification', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    followerId: {
+        type: DataTypes.INTEGER,
+    },
     message: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    notificationType: {
+        type: DataTypes.STRING,
     },
     read: {
         type: DataTypes.BOOLEAN,

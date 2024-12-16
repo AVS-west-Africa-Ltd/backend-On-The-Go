@@ -8,7 +8,7 @@ const { BusinessPosts } = require("../models/index");
 // Multer storage and configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "public/images/"); // Upload directory
+    cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + "-" + file.originalname;
@@ -34,10 +34,9 @@ const upload = multer({ storage, fileFilter });
 const businessController = {
   // Create a new Business
   createBusiness: async (req, res) => {
-    // Set up Multer to handle fields dynamically
     const uploadHandler = upload.fields([
-      { name: "logo", maxCount: 1 }, // Single logo image
-      { name: "cacDoc", maxCount: 1 }, // Single CAC document
+      { name: "logo", maxCount: 1 },
+      { name: "cacDoc", maxCount: 1 },
     ]);
 
     // Handle the file upload
@@ -50,6 +49,7 @@ const businessController = {
       }
 
       const {
+        userId,
         name,
         type,
         address,
@@ -65,12 +65,12 @@ const businessController = {
       try {
         // Extract file paths from Multer
         const logo = req.files.logo
-          ? `${req.protocol}://${req.get("host")}/images/${
+          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
               req.files.logo[0].filename
             }`
           : null;
         const cacDoc = req.files.cacDoc
-          ? `${req.protocol}://${req.get("host")}/images/${
+          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
               req.files.cacDoc[0].filename
             }`
           : null;
@@ -88,6 +88,7 @@ const businessController = {
 
         // Create a new business
         const newBusiness = await Business.create({
+          userId,
           name,
           type,
           address,
@@ -169,7 +170,7 @@ const businessController = {
           .json({ message: "Error uploading files", error: err.message });
       }
 
-      const { id } = req.params; // Extract the business ID from route params
+      const { id } = req.params;
       const {
         name,
         type,
@@ -193,12 +194,12 @@ const businessController = {
 
         // Extract new file paths (if any) and save relative paths
         const updatedLogo = req.files.logo
-          ? `${req.protocol}://${req.get("host")}/images/${
+          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
               req.files.logo[0].filename
             }`
           : business.logo; // Keep existing logo if not updated
         const updatedCacDoc = req.files.cacDoc
-          ? `${req.protocol}://${req.get("host")}/images/${
+          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
               req.files.cacDoc[0].filename
             }`
           : business.cacDoc; // Keep existing document if not updated

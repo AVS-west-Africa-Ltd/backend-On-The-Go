@@ -2,7 +2,6 @@ const Business = require("./Business");
 const BusinessPosts = require("./BusinessPost");
 const sequelize = require("../config/database");
 
-// One-to-Many relationship: A Business can have multiple posts
 Business.hasMany(BusinessPosts, {
   foreignKey: "businessId",
   onDelete: "CASCADE",

@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const UserFollowers = require('./UserFollowers');
+const BusinessSchema = require('./Business');
 
 const userSchema = sequelize.define('Users', {
     firstName: {
@@ -46,6 +47,8 @@ userSchema.belongsToMany(userSchema, {
     foreignKey: 'followerId',
     otherKey: 'followedId',
 });
+
+userSchema.hasMany(BusinessSchema, {foreignKey: 'userId', onDelete: 'CASCADE'});
 
 sequelize.sync().then(() => {
     console.log('User Schema table created successfully!');

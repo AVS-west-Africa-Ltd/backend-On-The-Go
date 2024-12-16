@@ -2,6 +2,10 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const Business = sequelize.define("Business", {
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -27,34 +31,19 @@ const Business = sequelize.define("Business", {
     type: DataTypes.STRING,
   },
   openingTime: {
-    type: DataTypes.TEXT,
-    get() {
-      const rawValue = this.getDataValue("openingTime");
-      return rawValue ? JSON.parse(rawValue) : [];
-    },
-    set(value) {
-      this.setDataValue("openingTime", JSON.stringify(value));
-    },
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   },
   closingTime: {
-    type: DataTypes.TEXT,
-    get() {
-      const rawValue = this.getDataValue("closingTime");
-      return rawValue ? JSON.parse(rawValue) : [];
-    },
-    set(value) {
-      this.setDataValue("closingTime", JSON.stringify(value));
-    },
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   },
   social: {
-    type: DataTypes.TEXT,
-    get() {
-      const rawValue = this.getDataValue("social");
-      return rawValue ? JSON.parse(rawValue) : [];
-    },
-    set(value) {
-      this.setDataValue("social", JSON.stringify(value));
-    },
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   },
   wifiName: {
     type: DataTypes.STRING,

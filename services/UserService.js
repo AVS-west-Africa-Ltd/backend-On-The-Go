@@ -75,16 +75,31 @@ class UserService {
 
             if (!user || !follower) return false;
 
+            // Add follower to the user's followers
             await user.addFollower(follower);
+
+            // Notification for the user being followed
             await Notification.create({
-                userId: userId,
+                userId: userId, // The user being followed
+                followerId: follower.id, // The follower
+                notificationType: 'followed', // Indicates the type of notification
                 message: `${follower.username} started following you.`,
             });
+
+            // Notification for the follower who started following someone
+            await Notification.create({
+                userId: follower.id, // The follower
+                followerId: user.id, // The user being followed
+                notificationType: 'following', // Indicates the type of notification
+                message: `You started following ${user.username}.`,
+            });
+
             return user;
         } catch (error) {
             throw new Error(`Error adding follower: ${error.message}`);
         }
     }
+
 
     // Remove follower from user
     static async removeFollower(userId, followerId) {
@@ -95,16 +110,36 @@ class UserService {
 
             if (!user || !follower) return false;
 
+            // Remove the follower relationship
             await user.removeFollower(follower);
+
+            // Remove the initial "followed" notification, if it exists
+            const followNotification = await Notification.findOne({
+                where: {
+                    userId: userId,
+                    followerId: follower.id,
+                    type: 'followed',
+                },
+            });
+            if (followNotification) {
+                await followNotification.destroy(); // Delete the "followed" notification
+            }
+
+            // Create a new "unfollow" notification
             await Notification.create({
-                userId: userId,
+                userId: userId, // The user being unfollowed
+                followerId: follower.id, // The user who unfollowed
+                type: 'unfollowed', // A new type for "unfollowed"
                 message: `${follower.username} unfollowed you.`,
             });
+
+            // Return the user who was unfollowed
             return user;
         } catch (error) {
             throw new Error(`Error removing follower: ${error.message}`);
         }
     }
+
 
     // Get notifications for user
     static async getNotifications(userId) {

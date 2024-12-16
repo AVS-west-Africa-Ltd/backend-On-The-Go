@@ -34,10 +34,12 @@ const Comment = sequelize.define('Comments', {
     },
 });
 
-Post.hasMany(Comment, { foreignKey: 'postId', onDelete: 'CASCADE' });
-Comment.belongsTo(Post, { foreignKey: 'postId' });
+Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments', onDelete: 'CASCADE' });
+Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
+
 
 Comment.hasMany(Comment, { foreignKey: 'parentId', as: 'replies', onDelete: 'CASCADE' });
 Comment.belongsTo(Comment, { foreignKey: 'parentId', as: 'parent' });
+
 
 module.exports = Comment;

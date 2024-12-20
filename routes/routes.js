@@ -54,7 +54,7 @@ router.delete(
 );
 
 // Business Profile
-router.post("/businesses", businessController.createBusiness);
+router.post("/register-business", businessController.createBusiness);
 router.get("/businesses/:id", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.put("/businesses/:id", businessController.updateBusiness);

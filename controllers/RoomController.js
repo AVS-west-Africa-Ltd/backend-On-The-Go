@@ -1,5 +1,20 @@
 const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
+const path = require("path");
+const multer = require("multer");
+
+// Multer storage and configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Upload directory
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 // Get all rooms
 exports.getAllRooms = async (req, res) => {
@@ -108,39 +123,54 @@ exports.getRoomById = async (req, res) => {
 };
 // Create a new room
 exports.createRoom = async (req, res) => {
-  const { name, type, description, image_url, status, created_by, member_ids } =
-    req.body;
+  const uploadHandler = upload.single("image_url");
 
-  try {
-    const room = await Room.create({
-      name,
-      type,
-      description,
-      image_url,
-      status,
-      created_by,
-      total_members: member_ids.length,
-    });
+  uploadHandler(req, res, async (err) => {
+    if (err) {
+      console.error("Error uploading files:", err);
+      return res
+        .status(501)
+        .json({ message: "Error uploading files", error: err.message });
+    }
 
-    // Add members to the room
-    const roomMembers = member_ids.map((user_id) => ({
-      room_id: room.id,
-      user_id,
-    }));
+    const { name, type, description, status, created_by, member_ids } =
+      req.body;
 
-    await RoomMember.bulkCreate(roomMembers);
+    try {
+      const media = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`.toString();
 
-    res.status(201).json({
-      success: true,
-      message: "Room created successfully",
-      data: {
-        ...room.toJSON(),
-        members: roomMembers,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+      const room = await Room.create({
+        name,
+        type,
+        description,
+        image_url: media,
+        status,
+        created_by,
+        total_members: member_ids.length,
+      });
+
+      // Add members to the room
+      const roomMembers = member_ids.map((user_id) => ({
+        room_id: room.id,
+        user_id,
+      }));
+
+      await RoomMember.bulkCreate(roomMembers);
+
+      res.status(201).json({
+        success: true,
+        message: "Room created successfully",
+        data: {
+          ...room.toJSON(),
+          members: roomMembers,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
 };
 // Rest of the code remains the same
 exports.addMember = async (req, res) => {

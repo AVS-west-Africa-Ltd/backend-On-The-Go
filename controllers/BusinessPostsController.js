@@ -40,9 +40,7 @@ const businessPostsController = {
         const mediaPaths = req.files
           .map(
             (file) =>
-              `${req.protocol}://${req.get("host")}/api/v1/uploads/${
-                file.filename
-              }`
+              `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
           )
           .toString();
 
@@ -50,7 +48,7 @@ const businessPostsController = {
         const newPost = await BusinessPost.create({
           media: mediaPaths,
           postText,
-          businessId: business.id, // Assuming the foreign key is named `BusinessId`
+          businessId: business.id,
         });
 
         res.status(201).json({

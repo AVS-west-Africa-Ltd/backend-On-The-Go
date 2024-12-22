@@ -1,5 +1,6 @@
 const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
+const userService = require("../services/UserService");
 
 // Get all rooms
 exports.getAllRooms = async (req, res) => {
@@ -213,6 +214,58 @@ exports.removeMember = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+// New endpoint to get all users in a room
+exports.getRoomUsers = async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    // First check if room exists
+    const room = await Room.findByPk(roomId);
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found"
+      });
+    }
+
+    // Get all room members with their user details
+    const roomMembers = await RoomMember.findAll({
+      where: { room_id: roomId },
+      attributes: ["user_id", "joined_at"]
+    });
+
+    // Get user details for all members
+    const userDetails = await Promise.all(
+      roomMembers.map(async (member) => {
+        const user = await userService.getUserById(member.user_id);
+        return {
+          user_id: member.user_id,
+          joined_at: member.joined_at,
+          username: user?.username,
+          email: user?.email,
+          picture: user?.picture
+        };
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Room users retrieved successfully",
+      data: {
+        room_id: roomId,
+        room_name: room.name,
+        total_members: room.total_members,
+        users: userDetails
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 };
 

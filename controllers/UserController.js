@@ -36,7 +36,9 @@ class UserController {
       const user = await userService.createUser(req.body);
       user.password = hashedPassword;
       await user.save();
-      return res.status(201).json({ message: "User registered successfully" });
+      return res
+        .status(201)
+        .json({ message: "User registered successfully", data: user });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

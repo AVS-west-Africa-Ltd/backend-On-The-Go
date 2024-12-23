@@ -4,15 +4,25 @@ const multer = require("multer");
 
 const Business = require("../models/Business");
 const { BusinessPosts } = require("../models/index");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinaryConfig");
 
 // Multer storage and configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "business_posts", // Cloudinary folder where files will be stored
+    allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
   },
 });
 
@@ -60,11 +70,10 @@ const businessController = {
           wifi,
         } = req.body;
 
-        console.log(hours);
         try {
           const socialArray = social ? JSON.parse(social) : [];
 
-          await Business.create({
+          const business = await Business.create({
             userId,
             name,
             type,
@@ -78,6 +87,7 @@ const businessController = {
 
           res.status(201).json({
             message: "Business created successfully",
+            data: business,
           });
         } catch (error) {
           console.error("Error creating business:", error);
@@ -99,7 +109,6 @@ const businessController = {
           wifi,
         } = req.body;
 
-        console.log(hours, social);
         try {
           // Extract file paths from Multer
           const logo = req.files.logo
@@ -115,7 +124,7 @@ const businessController = {
 
           const socialArray = social ? JSON.parse(social) : [];
 
-          await Business.create({
+          const business = await Business.create({
             userId,
             name,
             type,
@@ -131,6 +140,7 @@ const businessController = {
 
           res.status(201).json({
             message: "Business created successfully",
+            data: business,
           });
         } catch (error) {
           console.error("Error creating business:", error);
@@ -156,6 +166,34 @@ const businessController = {
         message: "Failed to retrieve businesses",
         error: error.message,
       });
+    }
+  },
+
+  // Get a user business
+
+  getUserBusinesses: async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const business = await Business.findOne({
+        where: { userId: userId },
+        // include: [
+        //   {
+        //     model: Business,
+        //     as: "businesses", // Match the alias used in the association
+        //   },
+        // ],
+      });
+
+      if (!business) {
+        return res.status(404).json({
+          message: "Business not found",
+        });
+      }
+
+      return res.status(200).json(business);
+    } catch (error) {
+      console.error("Error fetching user's businesses:", error);
+      throw error;
     }
   },
 

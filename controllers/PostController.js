@@ -2,14 +2,25 @@ const PostService = require("../services/PostService");
 const ImageService = require("../services/ImageService");
 const multer = require("multer");
 const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinaryConfig");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });\
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "business_posts", // Cloudinary folder where files will be stored
+    allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
   },
 });
 
@@ -33,14 +44,15 @@ class PostController {
         return res.status(400).json({ message: "All fields are required" });
 
       try {
-        const media = req.files
-          .map(
-            (file) =>
-              `${req.protocol}://${req.get("host")}/uploads/${
-                file.filename
-              }`
-          )
-          .toString();
+        // const media = req.files
+        //   .map(
+        //     (file) =>
+        //       `${req.protocol}://${req.get("host")}/uploads/${
+        //         file.filename
+        //       }`
+        //   )
+        //   .toString();
+        const media = req.files.map((file) => file.path);
 
         let payload = { userId, description, rating, businessId, media };
 

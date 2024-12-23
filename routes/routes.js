@@ -57,6 +57,7 @@ router.delete(
 router.post("/register-business", businessController.createBusiness);
 router.get("/businesses/:id", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
+router.get("/business/:userId/user", businessController.getUserBusinesses);
 router.put("/businesses/:id", businessController.updateBusiness);
 router.delete("/businesses/:id", businessController.deleteBusiness);
 router.get(
@@ -65,8 +66,8 @@ router.get(
 );
 
 // Business Posts
-router.post("/posts", businessPostsController.createPost);
-router.get("/posts", businessPostsController.getAllPosts);
+router.post("/bussiness/post", businessPostsController.createPost);
+router.get("/bussiness/posts", businessPostsController.getAllPosts);
 router.get("/posts/:id", businessPostsController.getPostById);
 router.put("/posts/:id", businessPostsController.updatePost);
 router.put("/like/:id", businessPostsController.toggleLike);

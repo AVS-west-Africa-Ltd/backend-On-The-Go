@@ -4,15 +4,25 @@ const multer = require("multer");
 
 const Business = require("../models/Business");
 const { BusinessPosts } = require("../models/index");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinaryConfig");
 
 // Multer storage and configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "business_posts", // Cloudinary folder where files will be stored
+    allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
   },
 });
 
@@ -39,7 +49,6 @@ const businessController = {
       { name: "cacDoc", maxCount: 1 },
     ]);
 
-    // Handle the file upload
     uploadHandler(req, res, async (err) => {
       if (err) {
         console.error("Error uploading files:", err);
@@ -48,71 +57,98 @@ const businessController = {
           .json({ message: "Error uploading files", error: err.message });
       }
 
-      const {
-        userId,
-        name,
-        type,
-        address,
-        description,
-        amenities,
-        openingTime,
-        closingTime,
-        social,
-        wifiName,
-        wifiPassword,
-      } = req.body;
-
-      try {
-        // Extract file paths from Multer
-        const logo = req.files.logo
-          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
-              req.files.logo[0].filename
-            }`
-          : null;
-        const cacDoc = req.files.cacDoc
-          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
-              req.files.cacDoc[0].filename
-            }`
-          : null;
-
-        // console.log(req.files.logo[0].path);
-        // console.log(
-        //   `${req.protocol}://${req.get("host")}/images/${
-        //     req.files.logo[0].filename
-        //   }`
-        // );
-        //
-
-        // Parse social array if it's a JSON string
-        const socialArray = social ? JSON.parse(social) : [];
-
-        // Create a new business
-        const newBusiness = await Business.create({
+      if (!req.files || (!req.files["logo"] && !req.files["cacDoc"])) {
+        const {
           userId,
           name,
           type,
           address,
           description,
-          logo,
           amenities,
-          cacDoc,
-          openingTime,
-          closingTime,
-          social: socialArray,
-          wifiName,
-          wifiPassword,
-        });
+          hours,
+          social,
+          wifi,
+        } = req.body;
 
-        res.status(201).json({
-          message: "Business created successfully",
-          data: newBusiness,
-        });
-      } catch (error) {
-        console.error("Error creating business:", error);
-        res.status(500).json({
-          message: "Error creating business",
-          error: error.message,
-        });
+        try {
+          const socialArray = social ? JSON.parse(social) : [];
+
+          const business = await Business.create({
+            userId,
+            name,
+            type,
+            address,
+            description,
+            amenities,
+            hours,
+            social: socialArray,
+            wifi,
+          });
+
+          res.status(201).json({
+            message: "Business created successfully",
+            data: business,
+          });
+        } catch (error) {
+          console.error("Error creating business:", error);
+          res.status(500).json({
+            message: "Error creating business",
+            error: error.message,
+          });
+        }
+      } else {
+        const {
+          userId,
+          name,
+          type,
+          address,
+          description,
+          amenities,
+          hours,
+          social,
+          wifi,
+        } = req.body;
+
+        try {
+          // Extract file paths from Multer
+          const logo = req.files.logo
+            ? `${req.protocol}://${req.get("host")}/uploads/${
+                req.files.logo[0].filename
+              }`
+            : null;
+          const cacDoc = req.files.cacDoc
+            ? `${req.protocol}://${req.get("host")}/uploads/${
+                req.files.cacDoc[0].filename
+              }`
+            : null;
+
+          const socialArray = social ? JSON.parse(social) : [];
+
+          const business = await Business.create({
+            userId,
+            name,
+            type,
+            address,
+            description,
+            logo,
+            amenities,
+            cacDoc,
+            hours,
+            social: socialArray,
+            wifi,
+          });
+
+          res.status(201).json({
+            message: "Business created successfully",
+            data: business,
+          });
+        } catch (error) {
+          console.error("Error creating business:", error);
+          res.status(500).json({
+            message: "Error creating business",
+            error: error.message,
+          });
+        }
       }
     });
   },
@@ -130,6 +166,34 @@ const businessController = {
         message: "Failed to retrieve businesses",
         error: error.message,
       });
+    }
+  },
+
+  // Get a user business
+
+  getUserBusinesses: async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const business = await Business.findOne({
+        where: { userId: userId },
+        // include: [
+        //   {
+        //     model: Business,
+        //     as: "businesses", // Match the alias used in the association
+        //   },
+        // ],
+      });
+
+      if (!business) {
+        return res.status(404).json({
+          message: "Business not found",
+        });
+      }
+
+      return res.status(200).json(business);
+    } catch (error) {
+      console.error("Error fetching user's businesses:", error);
+      throw error;
     }
   },
 
@@ -194,22 +258,18 @@ const businessController = {
 
         // Extract new file paths (if any) and save relative paths
         const updatedLogo = req.files.logo
-          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
+          ? `${req.protocol}://${req.get("host")}/uploads/${
               req.files.logo[0].filename
             }`
           : business.logo; // Keep existing logo if not updated
         const updatedCacDoc = req.files.cacDoc
-          ? `${req.protocol}://${req.get("host")}/api/v1/uploads/${
+          ? `${req.protocol}://${req.get("host")}/uploads/${
               req.files.cacDoc[0].filename
             }`
-          : business.cacDoc; // Keep existing document if not updated
+          : business.cacDoc;
 
-        // `${req.protocol}://${req.get("host")}/images/${file.filename}`;
-
-        // Parse social array if it's a JSON string
         const socialArray = social ? JSON.parse(social) : business.social;
 
-        // Update business details
         business.name = name || business.name;
         business.type = type || business.type;
         business.address = address || business.address;
@@ -223,7 +283,6 @@ const businessController = {
         business.wifiName = wifiName || business.wifiName;
         business.wifiPassword = wifiPassword || business.wifiPassword;
 
-        // Save the updated business
         await business.save();
 
         res.status(200).json({
@@ -271,11 +330,11 @@ const businessController = {
     try {
       // Query the Business table with its related posts
       const business = await Business.findByPk(businessId, {
-        attributes: ["id", "name", "type", "logo"], // Fields to include from Business
+        attributes: ["id", "name", "type", "logo"],
         include: {
           model: BusinessPosts,
-          as: "BusinessPosts", // Ensure the alias matches the association
-          attributes: ["id", "media", "postText", "createdAt"], // Fields to include from BusinessPosts
+          as: "BusinessPosts",
+          attributes: ["id", "media", "postText", "createdAt"],
         },
       });
 

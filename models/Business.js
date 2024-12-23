@@ -12,11 +12,11 @@ const Business = sequelize.define("Business", {
   },
   type: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   address: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   description: {
     type: DataTypes.TEXT,
@@ -25,31 +25,26 @@ const Business = sequelize.define("Business", {
     type: DataTypes.STRING,
   },
   amenities: {
-    type: DataTypes.TEXT,
+    type: DataTypes.JSON,
+    defaultValue: [],
   },
   cacDoc: {
     type: DataTypes.STRING,
   },
-  openingTime: {
+  hours: {
     type: DataTypes.JSON,
     allowNull: true,
-    defaultValue: [],
-  },
-  closingTime: {
-    type: DataTypes.JSON,
-    allowNull: true,
-    defaultValue: [],
+    defaultValue: {},
   },
   social: {
     type: DataTypes.JSON,
     allowNull: true,
-    defaultValue: [],
+    defaultValue: {},
   },
-  wifiName: {
-    type: DataTypes.STRING,
-  },
-  wifiPassword: {
-    type: DataTypes.STRING,
+  wifi: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: {},
   },
 });
 

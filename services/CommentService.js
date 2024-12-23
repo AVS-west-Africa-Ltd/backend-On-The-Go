@@ -1,5 +1,6 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
+const User = require("../models/User");
 
 
 class CommentService {
@@ -24,8 +25,21 @@ class CommentService {
                     {
                         model: Comment,
                         as: 'replies',
+                        include: [
+                            {
+                                model: User, // Replace `User` with your actual User model
+                                as: 'author', // Alias for author details
+                                attributes: ['id', 'firstName', 'lastName', 'picture', 'username'], // Specify fields you want to return
+                            },
+                        ],
+                    },
+                    {
+                        model: User, // Include the author of the main comment
+                        as: 'author', // Alias for author details
+                        attributes: ['id', 'firstName', 'lastName', 'picture', 'username'], // Specify fields you want to return
                     },
                 ],
+                order: [["createdAt", "DESC"]],
             });
         } catch (err) {
             throw new Error('Error fetching comments');

@@ -111,16 +111,34 @@ const businessController = {
 
         try {
           // Extract file paths from Multer
+          // const media = req.files.map((file) => file.path);
+
+          // const logo = req.files.logo
+          //   ? `${req.protocol}://${req.get("host")}/uploads/${
+          //       req.files.logo[0].filename
+          //     }`
+          //   : null;
+          // const cacDoc = req.files.cacDoc
+          //   ? `${req.protocol}://${req.get("host")}/uploads/${
+          //       req.files.cacDoc[0].filename
+          //     }`
+          //   : null;
+
           const logo = req.files.logo
-            ? `${req.protocol}://${req.get("host")}/uploads/${
-                req.files.logo[0].filename
-              }`
+            ? await cloudinary.uploader.upload(req.files.logo[0].path, {
+                folder: "business_posts",
+              })
             : null;
+
           const cacDoc = req.files.cacDoc
-            ? `${req.protocol}://${req.get("host")}/uploads/${
-                req.files.cacDoc[0].filename
-              }`
+            ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
+                folder: "business_posts",
+              })
             : null;
+
+          // Save the Cloudinary URLs or null if not uploaded
+          const logoUrl = logo ? logo.secure_url : null;
+          const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
 
           const socialArray = social ? JSON.parse(social) : [];
 
@@ -130,9 +148,9 @@ const businessController = {
             type,
             address,
             description,
-            logo,
+            logo: logoUrl,
             amenities,
-            cacDoc,
+            cacDoc: cacDocUrl,
             hours,
             social: socialArray,
             wifi,
@@ -257,16 +275,32 @@ const businessController = {
         }
 
         // Extract new file paths (if any) and save relative paths
-        const updatedLogo = req.files.logo
-          ? `${req.protocol}://${req.get("host")}/uploads/${
-              req.files.logo[0].filename
-            }`
-          : business.logo; // Keep existing logo if not updated
-        const updatedCacDoc = req.files.cacDoc
-          ? `${req.protocol}://${req.get("host")}/uploads/${
-              req.files.cacDoc[0].filename
-            }`
-          : business.cacDoc;
+        // const updatedLogo = req.files.logo
+        //   ? `${req.protocol}://${req.get("host")}/uploads/${
+        //       req.files.logo[0].filename
+        //     }`
+        //   : business.logo; // Keep existing logo if not updated
+        // const updatedCacDoc = req.files.cacDoc
+        //   ? `${req.protocol}://${req.get("host")}/uploads/${
+        //       req.files.cacDoc[0].filename
+        //     }`
+        //   : business.cacDoc;
+
+        const logo = req.files.logo
+          ? await cloudinary.uploader.upload(req.files.logo[0].path, {
+              folder: "business_posts",
+            })
+          : null;
+
+        const cacDoc = req.files.cacDoc
+          ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
+              folder: "business_posts",
+            })
+          : null;
+
+        // Save the Cloudinary URLs or null if not uploaded
+        const logoUrl = logo ? logo.secure_url : null;
+        const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
 
         const socialArray = social ? JSON.parse(social) : business.social;
 
@@ -274,9 +308,9 @@ const businessController = {
         business.type = type || business.type;
         business.address = address || business.address;
         business.description = description || business.description;
-        business.logo = updatedLogo;
+        business.logo = logoUrl;
         business.amenities = amenities || business.amenities;
-        business.cacDoc = updatedCacDoc;
+        business.cacDoc = cacDocUrl;
         business.openingTime = openingTime || business.openingTime;
         business.closingTime = closingTime || business.closingTime;
         business.social = socialArray;

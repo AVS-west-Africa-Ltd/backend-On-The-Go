@@ -3,15 +3,26 @@ const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
 const path = require("path");
 const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinaryConfig");
 
 // Multer storage and configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Upload directory
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/"); // Upload directory
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "business_posts", // Cloudinary folder where files will be stored
+    allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
   },
 });
 
@@ -57,9 +68,10 @@ class UserController {
       const { userId } = req.params;
 
       try {
-        const mediaPaths = `${req.protocol}://${req.get("host")}/uploads/${
-          req.file.filename
-        }`.toString();
+        // const mediaPaths = `${req.protocol}://${req.get("host")}/uploads/${
+        //   req.file.filename
+        // }`.toString();
+        const mediaPaths = req.files.map((file) => file.path);
 
         const user = await userService.updateUser(userId, {
           picture: mediaPaths,

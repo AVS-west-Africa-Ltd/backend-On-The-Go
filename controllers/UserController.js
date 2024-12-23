@@ -36,7 +36,9 @@ class UserController {
       const user = await userService.createUser(req.body);
       user.password = hashedPassword;
       await user.save();
-      return res.status(201).json({ message: "User registered successfully" });
+      return res
+        .status(201)
+        .json({ message: "User registered successfully", data: user });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -55,9 +57,9 @@ class UserController {
       const { userId } = req.params;
 
       try {
-        const mediaPaths = `${req.protocol}://${req.get(
-          "host"
-        )}/api/v1/uploads/${req.file.filename}`.toString();
+        const mediaPaths = `${req.protocol}://${req.get("host")}/uploads/${
+          req.file.filename
+        }`.toString();
 
         const user = await userService.updateUser(userId, {
           picture: mediaPaths,
@@ -79,7 +81,7 @@ class UserController {
   static async Login(req, res) {
     try {
       const { email, password } = req.body;
-      
+
       if (!email || !password)
         return res.status(400).json({ message: "All fields are required" });
 

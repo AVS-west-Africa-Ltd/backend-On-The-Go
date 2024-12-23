@@ -2,14 +2,25 @@ const BusinessPost = require("../models/BusinessPost");
 const { Business } = require("../models/index");
 const multer = require("multer");
 const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinaryConfig");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "business_posts", // Cloudinary folder where files will be stored
+    allowed_formats: ["jpg", "jpeg", "png", "gif"], // Allowed file types
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
   },
 });
 
@@ -37,20 +48,17 @@ const businessPostsController = {
           return res.status(404).json({ message: "Business not found" });
         }
 
-        const mediaPaths = req.files
-          .map(
-            (file) =>
-              `${req.protocol}://${req.get("host")}/api/v1/uploads/${
-                file.filename
-              }`
-          )
-          .toString();
+        // const mediaPaths = req.files.map(
+        //   (file) =>
+        //     `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
+        // );
+        const mediaPaths = req.files.map((file) => file.path);
 
         // Create a new post associated with the business
         const newPost = await BusinessPost.create({
           media: mediaPaths,
           postText,
-          businessId: business.id, // Assuming the foreign key is named `BusinessId`
+          businessId: business.id,
         });
 
         res.status(201).json({

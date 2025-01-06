@@ -85,6 +85,7 @@ const businessPostsController = {
             as: "Business",
           },
         ],
+        order: [["createdAt", "DESC"]],
       });
       return res.status(200).json({
         message: "Posts retrieved successfully",
@@ -191,7 +192,7 @@ const businessPostsController = {
           as: "Business",
           attributes: ["id", "media", "postText", "createdAt"],
         },
-        attributes: ["id", "name", "type"], // Fields from the Business model
+        attributes: ["id", "name", "type"],
       });
 
       if (!businessWithPosts) {
@@ -221,7 +222,7 @@ const businessPostsController = {
     console.log(postId, userId);
     try {
       const post = await BusinessPost.findByPk(postId);
-      if (!post) return false;
+      if (!post) return;
 
       let likes = post.likes || [];
       if (typeof likes === "string") {
@@ -239,7 +240,7 @@ const businessPostsController = {
 
       await post.update({ likes });
       return res.status(200).json({
-        message: "Post liked by successfully",
+        message: "Post liked successfully",
         post,
       });
     } catch (err) {

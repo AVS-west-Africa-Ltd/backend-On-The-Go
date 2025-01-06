@@ -137,9 +137,8 @@ exports.createRoom = async (req, res) => {
       req.body;
 
     try {
-      const media = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`.toString();
+      const media =
+        `https://api.onthegoafrica.com/uploads/${req.file.filename}`.toString();
 
       const room = await Room.create({
         name,

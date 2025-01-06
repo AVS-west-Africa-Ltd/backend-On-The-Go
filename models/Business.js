@@ -44,7 +44,7 @@ const Business = sequelize.define("Business", {
   wifi: {
     type: DataTypes.JSON,
     allowNull: true,
-    defaultValue: {},
+    defaultValue: [],
   },
 });
 

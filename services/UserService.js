@@ -83,7 +83,7 @@ class UserService {
                 userId: userId, // The user being followed
                 followerId: follower.id, // The follower
                 notificationType: 'followed', // Indicates the type of notification
-                message: `${follower.username} started following you.`,
+                message: `${user.username} started following you.`,
             });
 
             // Notification for the follower who started following someone
@@ -91,7 +91,7 @@ class UserService {
                 userId: follower.id, // The follower
                 followerId: user.id, // The user being followed
                 notificationType: 'following', // Indicates the type of notification
-                message: `You started following ${user.username}.`,
+                message: `You started following ${follower.username}.`,
             });
 
             return user;
@@ -118,7 +118,7 @@ class UserService {
                 where: {
                     userId: userId,
                     followerId: follower.id,
-                    type: 'followed',
+                    notificationType: 'followed',
                 },
             });
             if (followNotification) {
@@ -129,8 +129,8 @@ class UserService {
             await Notification.create({
                 userId: userId, // The user being unfollowed
                 followerId: follower.id, // The user who unfollowed
-                type: 'unfollowed', // A new type for "unfollowed"
-                message: `${follower.username} unfollowed you.`,
+                notificationType: 'unfollowed', // A new type for "unfollowed"
+                message: `${user.username} unfollowed you.`,
             });
 
             // Return the user who was unfollowed
@@ -144,7 +144,7 @@ class UserService {
     // Get notifications for user
     static async getNotifications(userId) {
         try {
-            const notification = await Notification.findAll({ where: { userId } });
+            const notification = await Notification.findAll({ where: { followerId: userId } });
             if (!notification) return false;
             return notification;
         } catch (error) {

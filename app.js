@@ -135,6 +135,9 @@ if (cluster.isMaster) {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use('/uploads', express.static(path.join(__dirname, './uploads')));
   app.use("/api/v1", router);
+  app.get('/', (req, res) => {
+    res.send(`hello from port ${PORT}`);
+  });
 
   // Create HTTP server
   const server = http.createServer(app);

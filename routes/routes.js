@@ -55,9 +55,11 @@ router.delete(
 
 // Business Profile
 router.post("/register-business", businessController.createBusiness);
+router.post("/business/toggle-follow", businessController.toggleFollow);
 router.get("/businesses/:id", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business/:userId/user", businessController.getUserBusinesses);
+router.get("/business/:businessId/following", businessController.getFollowing);
 router.put("/businesses/:id", businessController.updateBusiness);
 router.delete("/businesses/:id", businessController.deleteBusiness);
 router.get(

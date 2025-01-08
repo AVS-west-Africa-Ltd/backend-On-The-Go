@@ -4,7 +4,21 @@ const RoomMember = require("../models/RoomMember");
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const { io } = require('../app');
+const multer = require("multer");
+const path = require("path");
 
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 exports.getRoomMessages = async (req, res) => {
   const { roomId } = req.params;
@@ -57,50 +71,76 @@ exports.getRoomMessages = async (req, res) => {
 };
 
 // Send a message
+// Modified sendMessage to handle file uploads
 exports.sendMessage = async (req, res) => {
-  const { room_id, sender_id, content, media_url } = req.body;
+  const uploadHandler = upload.array("media", 10); // Allow up to 10 files
 
-  try {
-    // Verify sender is a member of the room
-    const isMember = await RoomMember.findOne({
-      where: { room_id, user_id: sender_id }
-    });
-
-    if (!isMember) {
-      return res.status(403).json({
+  uploadHandler(req, res, async (err) => {
+    if (err) {
+      console.error("Error uploading files:", err);
+      return res.status(501).json({
         success: false,
-        message: "You are not a member of this room"
+        message: "Error uploading files",
+        error: err.message
       });
     }
 
-    const message = await Chat.create({
-      room_id,
-      sender_id,
-      content,
-      media_url,
-      status: 'sent'
-    });
+    const { room_id, sender_id, content } = req.body;
 
-    // Emit the message through Socket.IO
-    io.to(`room_${room_id}`).emit('new_message', {
-      id: message.id,
-      room_id,
-      sender_id,
-      content,
-      media_url,
-      status: 'sent',
-      timestamp: message.createdAt
-    });
+    try {
+      // Verify sender is a member of the room
+      const isMember = await RoomMember.findOne({
+        where: { room_id, user_id: sender_id }
+      });
 
-    res.status(201).json({
-      success: true,
-      message: "Message sent successfully",
-      data: message,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+      if (!isMember) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not a member of this room"
+        });
+      }
+
+      // Handle media files if present
+      let media_url = null;
+      if (req.files && req.files.length > 0) {
+        media_url = req.files
+          .map(file => `https://api.onthegoafrica.com/uploads/${file.filename}`)
+          .toString();
+      }
+
+      const message = await Chat.create({
+        room_id,
+        sender_id,
+        content,
+        media_url,
+        status: 'sent'
+      });
+
+      // Emit the message through Socket.IO
+      io.to(`room_${room_id}`).emit('new_message', {
+        id: message.id,
+        room_id,
+        sender_id,
+        content,
+        media_url,
+        status: 'sent',
+        timestamp: message.createdAt
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Message sent successfully",
+        data: message,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  });
 };
+
 
 // Get messages in a room
 exports.getMessages = async (req, res) => {

@@ -1,6 +1,22 @@
 const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
 const userService = require("../services/UserService");
+const multer = require("multer");
+const path = require("path");
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+// Initialize multer
+const upload = multer({ storage });
 
 // Get all rooms
 exports.getAllRooms = async (req, res) => {
@@ -27,6 +43,7 @@ exports.getAllRooms = async (req, res) => {
     });
   }
 };
+
 // Get rooms for a specific user
 exports.getUserRooms = async (req, res) => {
   const { userId } = req.params;
@@ -65,6 +82,8 @@ exports.getUserRooms = async (req, res) => {
     });
   }
 };
+
+// Get room by ID
 exports.getRoomById = async (req, res) => {
   const { roomId } = req.params;
 
@@ -107,43 +126,114 @@ exports.getRoomById = async (req, res) => {
     });
   }
 };
+
 // Create a new room
 exports.createRoom = async (req, res) => {
-  const { name, type, description, image_url, status, created_by, member_ids } =
-    req.body;
+  const uploadHandler = upload.single("image");
 
-  try {
-    const room = await Room.create({
-      name,
-      type,
-      description,
-      image_url,
-      status,
-      created_by,
-      total_members: member_ids.length,
-    });
+  uploadHandler(req, res, async (err) => {
+    if (err) {
+      console.error("Error uploading file:", err);
+      return res.status(501).json({
+        success: false,
+        message: "Error uploading room image",
+        error: err.message,
+      });
+    }
 
-    // Add members to the room
-    const roomMembers = member_ids.map((user_id) => ({
-      room_id: room.id,
-      user_id,
-    }));
+    const { name, type, description, status, created_by, member_ids } = req.body;
 
-    await RoomMember.bulkCreate(roomMembers);
+    try {
+      let image_url = null;
+      if (req.file) {
+        image_url = `https://api.onthegoafrica.com/uploads/${req.file.filename}`;
+      }
 
-    res.status(201).json({
-      success: true,
-      message: "Room created successfully",
-      data: {
-        ...room.toJSON(),
-        members: roomMembers,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+      const room = await Room.create({
+        name,
+        type,
+        description,
+        image_url,
+        status,
+        created_by,
+        total_members: member_ids ? member_ids.length : 1,
+      });
+
+      const memberIds = typeof member_ids === "string" ? JSON.parse(member_ids) : member_ids;
+      const roomMembers = memberIds.map((user_id) => ({
+        room_id: room.id,
+        user_id,
+      }));
+
+      await RoomMember.bulkCreate(roomMembers);
+
+      res.status(201).json({
+        success: true,
+        message: "Room created successfully",
+        data: {
+          ...room.toJSON(),
+          members: roomMembers,
+        },
+      });
+    } catch (error) {
+      console.error("Error creating room:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
 };
-// Rest of the code remains the same
+
+// Update an existing room
+exports.updateRoom = async (req, res) => {
+  const uploadHandler = upload.single("image");
+
+  uploadHandler(req, res, async (err) => {
+    if (err) {
+      console.error("Error uploading file:", err);
+      return res.status(501).json({
+        success: false,
+        message: "Error uploading room image",
+        error: err.message,
+      });
+    }
+
+    const { roomId } = req.params;
+    const { name, type, description, status } = req.body;
+
+    try {
+      const room = await Room.findByPk(roomId);
+
+      if (!room) {
+        return res.status(404).json({
+          success: false,
+          message: "Room not found",
+        });
+      }
+
+      let updateData = { name, type, description, status };
+      if (req.file) {
+        updateData.image_url = `https://api.onthegoafrica.com/uploads/${req.file.filename}`;
+      }
+
+      await room.update(updateData);
+
+      res.status(200).json({
+        success: true,
+        message: "Room updated successfully",
+        data: room,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
+};
+
+// Add a member to a room
 exports.addMember = async (req, res) => {
   const { room_id, user_id } = req.body;
 
@@ -157,7 +247,6 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    // Check if the user is already a member of the room
     const existingMember = await RoomMember.findOne({
       where: { room_id, user_id },
     });
@@ -169,7 +258,6 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    // Increment total_members when adding a new member
     await room.increment("total_members", { by: 1 });
 
     const member = await RoomMember.create({
@@ -187,6 +275,7 @@ exports.addMember = async (req, res) => {
   }
 };
 
+// Remove a member from a room
 exports.removeMember = async (req, res) => {
   const { room_id, user_id } = req.body;
 
@@ -202,7 +291,6 @@ exports.removeMember = async (req, res) => {
       });
     }
 
-    // Decrement total_members when removing a member
     const room = await Room.findByPk(room_id);
     await room.decrement("total_members", { by: 1 });
 
@@ -216,28 +304,26 @@ exports.removeMember = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-// New endpoint to get all users in a room
+
+// Get all users in a room
 exports.getRoomUsers = async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    // First check if room exists
     const room = await Room.findByPk(roomId);
 
     if (!room) {
       return res.status(404).json({
         success: false,
-        message: "Room not found"
+        message: "Room not found",
       });
     }
 
-    // Get all room members with their user details
     const roomMembers = await RoomMember.findAll({
       where: { room_id: roomId },
-      attributes: ["user_id", "joined_at"]
+      attributes: ["user_id", "joined_at"],
     });
 
-    // Get user details for all members
     const userDetails = await Promise.all(
       roomMembers.map(async (member) => {
         const user = await userService.getUserById(member.user_id);
@@ -246,7 +332,7 @@ exports.getRoomUsers = async (req, res) => {
           joined_at: member.joined_at,
           username: user?.username,
           email: user?.email,
-          picture: user?.picture
+          picture: user?.picture,
         };
       })
     );
@@ -258,13 +344,13 @@ exports.getRoomUsers = async (req, res) => {
         room_id: roomId,
         room_name: room.name,
         total_members: room.total_members,
-        users: userDetails
-      }
+        users: userDetails,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
   }
 };

@@ -3,6 +3,7 @@ const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
+const { io } = require('../app');
 
 
 exports.getRoomMessages = async (req, res) => {
@@ -12,9 +13,9 @@ exports.getRoomMessages = async (req, res) => {
   try {
     // Verify user is a member of the room
     const isMember = await RoomMember.findOne({
-      where: { 
-        room_id: roomId, 
-        user_id: userId 
+      where: {
+        room_id: roomId,
+        user_id: userId
       }
     });
 
@@ -48,9 +49,9 @@ exports.getRoomMessages = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 };
@@ -78,6 +79,17 @@ exports.sendMessage = async (req, res) => {
       content,
       media_url,
       status: 'sent'
+    });
+
+    // Emit the message through Socket.IO
+    io.to(`room_${room_id}`).emit('new_message', {
+      id: message.id,
+      room_id,
+      sender_id,
+      content,
+      media_url,
+      status: 'sent',
+      timestamp: message.createdAt
     });
 
     res.status(201).json({
@@ -181,9 +193,9 @@ exports.getUserConversations = async (req, res) => {
     const formattedRooms = rooms.map(room => {
       const roomData = room.get({ plain: true });
       const latestMessage = roomData.Chats?.[0] || null;
-      
+
       let latestMessageContent = null;
-      
+
       // Check if there's a message and if it's an image (based on media_url presence)
       if (latestMessage) {
         if (latestMessage.media_url) {
@@ -222,10 +234,10 @@ exports.getUserConversations = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching user conversations:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: "Error fetching conversations",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -237,7 +249,7 @@ exports.deleteMessage = async (req, res) => {
 
   try {
     const message = await Chat.findOne({
-      where: { 
+      where: {
         id,
         sender_id,
         room_id

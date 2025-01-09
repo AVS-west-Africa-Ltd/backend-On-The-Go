@@ -44,15 +44,14 @@ class PostController {
         return res.status(400).json({ message: "All fields are required" });
 
       try {
-        // const media = req.files
-        //   .map(
-        //     (file) =>
-        //       `${req.protocol}://${req.get("host")}/uploads/${
-        //         file.filename
-        //       }`
-        //   )
-        //   .toString();
-        const media = req.files.map((file) => file.path);
+        const media = req.files
+          .map(
+            (file) =>
+              `https://api.onthegoafrica.com/uploads/${
+                file.filename
+              }`
+          )
+          .toString();
 
         let payload = { userId, description, rating, businessId, media };
 

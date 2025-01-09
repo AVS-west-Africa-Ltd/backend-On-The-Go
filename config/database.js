@@ -13,9 +13,9 @@ const config = require("./config");
 // });
 
 const sequelize = new Sequelize(
-  config.development.database,
-  config.development.username,
-  config.development.password,
+  config.production.database,
+  config.production.username,
+  config.production.password,
   {
     host: process.env.DB_HOST || "localhost",
     port: process.env.DB_PORT || 3306,

@@ -1,30 +1,30 @@
 const userService = require("../services/UserService");
 const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
-const path = require("path");
+// const path = require("path");
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../config/cloudinaryConfig");
+// const { CloudinaryStorage } = require("multer-storage-cloudinary");
+// const cloudinary = require("../config/cloudinaryConfig");
 
 // Multer storage and configuration
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/"); // Upload directory
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueName = Date.now() + "-" + file.originalname;
-//     cb(null, uniqueName);
-//   },
-// });
-
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "business_posts", // Cloudinary folder where files will be stored
-    allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
-    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/"); // Upload directory
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
   },
 });
+
+// const storage = new CloudinaryStorage({
+//   cloudinary: cloudinary,
+//   params: {
+//     folder: "business_posts", // Cloudinary folder where files will be stored
+//     allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
+//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
+//   },
+// });
 
 const upload = multer({ storage: storage });
 
@@ -34,7 +34,7 @@ class UserController {
       const { username, email, password } = req.body;
 
       if (!username || !email || !password)
-        return res.status(400).json({ message: "All mfields are required" });
+        return res.status(400).json({ message: "All fields are required" });
 
       let payload = { where: { email: email } };
       const isUserRegistered = await userService.getUserByEmailOrUsername(
@@ -68,10 +68,9 @@ class UserController {
       const { userId } = req.params;
 
       try {
-        // const mediaPaths = `${req.protocol}://${req.get("host")}/uploads/${
-        //   req.file.filename
-        // }`.toString();
-        const mediaPaths = req.files.map((file) => file.path);
+        const mediaPaths =
+          `https://api.onthegoafrica.com/api/v1/uploads/${req.file.filename}`.toString();
+        // const mediaPaths = req.files.map((file) => file.path);
 
         const user = await userService.updateUser(userId, {
           picture: mediaPaths,

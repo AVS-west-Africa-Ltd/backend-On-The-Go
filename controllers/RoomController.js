@@ -134,26 +134,45 @@ exports.createRoom = async (req, res) => {
         .json({ message: "Error uploading files", error: err.message });
     }
 
-    const { name, type, description, status, created_by, member_ids } =
-      req.body;
+    // Debug: Check if req.file is available
+    console.log("Uploaded file:", req.file);
+
+    const { name, type, description, status, created_by, member_ids } = req.body;
+
+    // Parse member_ids if it's a string
+    let memberIdsArray = [];
+    try {
+      // Check if member_ids is a valid JSON string
+      if (typeof member_ids === "string") {
+        memberIdsArray = JSON.parse(member_ids); // Convert the string to an array
+      } else {
+        memberIdsArray = member_ids; // If already an array
+      }
+    } catch (error) {
+      return res.status(400).json({ success: false, message: "Invalid member_ids format" });
+    }
 
     try {
-      const media = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`.toString();
+      // Check if req.file is defined before using it
+      let media = null;
+      if (req.file) {
+        media = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      } else {
+        console.warn("No file uploaded, proceeding without an image.");
+      }
 
       const room = await Room.create({
         name,
         type,
         description,
-        image_url: media,
+        image_url: media, // Media can be null if no file is uploaded
         status,
         created_by,
-        total_members: member_ids.length,
+        total_members: memberIdsArray.length,
       });
 
       // Add members to the room
-      const roomMembers = member_ids.map((user_id) => ({
+      const roomMembers = memberIdsArray.map((user_id) => ({
         room_id: room.id,
         user_id,
       }));
@@ -169,10 +188,13 @@ exports.createRoom = async (req, res) => {
         },
       });
     } catch (error) {
+      console.error("Error creating room:", error);
       res.status(500).json({ success: false, error: error.message });
     }
   });
 };
+
+
 // Rest of the code remains the same
 exports.addMember = async (req, res) => {
   const { room_id, user_id } = req.body;

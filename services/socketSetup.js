@@ -125,8 +125,9 @@ const setupSocketIO = (server) => {
         logAndEmitError(socket, 'message_read', error);
       }
     });
+
+    // Handle group leave
     socket.on('group_left', (data) => {
-      // Broadcast the event to all connected clients
       io.emit('group_left', {
         room_id: data.room_id,
         user_id: data.user_id,
@@ -134,6 +135,7 @@ const setupSocketIO = (server) => {
         type: data.type
       });
     });
+
     // Handle leaving a room
     socket.on('leave_room', async (data) => {
       try {

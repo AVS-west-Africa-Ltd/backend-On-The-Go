@@ -14,6 +14,13 @@ const storage = multer.diskStorage({
   },
 });
 
+let io;
+
+// Function to set up socket instance
+exports.initializeSocket = (socketIO) => {
+  io = socketIO;
+};
+
 const upload = multer({ storage: storage });
 const userService = require("../services/UserService");
 
@@ -134,38 +141,28 @@ exports.createRoom = async (req, res) => {
         .json({ message: "Error uploading files", error: err.message });
     }
 
-    // Debug: Check if req.file is available
     console.log("Uploaded file:", req.file);
 
     const { name, type, description, status, created_by, member_ids } = req.body;
 
-    // Parse member_ids if it's a string
     let memberIdsArray = [];
     try {
-      // Check if member_ids is a valid JSON string
-      if (typeof member_ids === "string") {
-        memberIdsArray = JSON.parse(member_ids); // Convert the string to an array
-      } else {
-        memberIdsArray = member_ids; // If already an array
-      }
+      memberIdsArray = typeof member_ids === "string" ? JSON.parse(member_ids) : member_ids;
     } catch (error) {
       return res.status(400).json({ success: false, message: "Invalid member_ids format" });
     }
 
     try {
-      // Check if req.file is defined before using it
       let media = null;
       if (req.file) {
         media = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-      } else {
-        console.warn("No file uploaded, proceeding without an image.");
       }
 
       const room = await Room.create({
         name,
         type,
         description,
-        image_url: media, // Media can be null if no file is uploaded
+        image_url: media,
         status,
         created_by,
         total_members: memberIdsArray.length,
@@ -179,13 +176,29 @@ exports.createRoom = async (req, res) => {
 
       await RoomMember.bulkCreate(roomMembers);
 
+      const roomData = {
+        ...room.toJSON(),
+        members: roomMembers,
+      };
+
+      // Emit socket events for room creation
+      if (io) {
+        // Emit to all clients
+        io.emit('room_created', roomData);
+
+        // Emit specific events to room members
+        memberIdsArray.forEach(userId => {
+          io.emit(`user_${userId}_rooms_updated`, {
+            type: 'new_room',
+            room: roomData
+          });
+        });
+      }
+
       res.status(201).json({
         success: true,
         message: "Room created successfully",
-        data: {
-          ...room.toJSON(),
-          members: roomMembers,
-        },
+        data: roomData,
       });
     } catch (error) {
       console.error("Error creating room:", error);
@@ -193,6 +206,7 @@ exports.createRoom = async (req, res) => {
     }
   });
 };
+
 
 
 // Rest of the code remains the same
@@ -209,7 +223,6 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    // Check if the user is already a member of the room
     const existingMember = await RoomMember.findOne({
       where: { room_id, user_id },
     });
@@ -221,13 +234,30 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    // Increment total_members when adding a new member
     await room.increment("total_members", { by: 1 });
 
     const member = await RoomMember.create({
       room_id,
       user_id,
     });
+
+    // Get updated room data
+    const updatedRoom = await Room.findByPk(room_id, {
+      include: [{
+        model: RoomMember,
+        as: "members",
+        attributes: ["user_id"],
+      }],
+    });
+
+    // Emit socket events for member addition
+    if (io) {
+      io.emit('room_updated', updatedRoom);
+      io.emit(`user_${user_id}_rooms_updated`, {
+        type: 'joined_room',
+        room: updatedRoom
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -239,6 +269,7 @@ exports.addMember = async (req, res) => {
   }
 };
 
+// Remove member with socket emission
 exports.removeMember = async (req, res) => {
   const { room_id, user_id } = req.body;
 
@@ -254,11 +285,27 @@ exports.removeMember = async (req, res) => {
       });
     }
 
-    // Decrement total_members when removing a member
     const room = await Room.findByPk(room_id);
     await room.decrement("total_members", { by: 1 });
-
     await member.destroy();
+
+    // Get updated room data
+    const updatedRoom = await Room.findByPk(room_id, {
+      include: [{
+        model: RoomMember,
+        as: "members",
+        attributes: ["user_id"],
+      }],
+    });
+
+    // Emit socket events for member removal
+    if (io) {
+      io.emit('room_updated', updatedRoom);
+      io.emit(`user_${user_id}_rooms_updated`, {
+        type: 'left_room',
+        room: updatedRoom
+      });
+    }
 
     res.status(200).json({
       success: true,

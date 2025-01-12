@@ -97,7 +97,7 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
-    const { room_id, sender_id, content } = req.body;
+    const { room_id, sender_id, content, request = false } = req.body; // Include `request`
 
     try {
       const isMember = await RoomMember.findOne({
@@ -121,10 +121,10 @@ exports.sendMessage = async (req, res) => {
         sender_id,
         content: content || '',
         media_url,
-        status: 'sent'
+        status: 'sent',
+        request // Add `request` to the created message
       });
 
-      // Fixed: Use the imported io directly
       if (io) {
         io.emit(`room_${room_id}`, {
           id: message.id,
@@ -133,6 +133,7 @@ exports.sendMessage = async (req, res) => {
           content: content || '',
           media_url,
           status: 'sent',
+          request, // Include `request` in the broadcasted message
           timestamp: message.createdAt
         });
       }
@@ -151,6 +152,7 @@ exports.sendMessage = async (req, res) => {
     }
   });
 };
+
 
 // Get messages in a room
 exports.getMessages = async (req, res) => {

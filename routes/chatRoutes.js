@@ -27,5 +27,6 @@ router.get("/invitations", invitationController.getAllInvitations);            /
 router.get("/invitation/:id", invitationController.getInvitationById);         // Get a single invitation
 router.put("/invitation/:id", invitationController.updateInvitation);          // Update an invitation
 router.delete("/invitation/:id", invitationController.deleteInvitation);       // Delete an invitation
+router.get("/user/:userId/invitations", invitationController.getUserInvitations);  // New route to get all invitations for a user
 
 module.exports = router;

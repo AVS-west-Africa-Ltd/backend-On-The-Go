@@ -2,6 +2,8 @@ const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
 const path = require("path");
 const multer = require("multer");
+const InvitationController = require("./InvitationController");
+const { sequelize } = require("../models/Room");
 
 // Multer storage and configuration
 const storage = multer.diskStorage({
@@ -207,11 +209,9 @@ exports.createRoom = async (req, res) => {
   });
 };
 
-
-
 // Rest of the code remains the same
 exports.addMember = async (req, res) => {
-  const { room_id, user_id } = req.body;
+  const { room_id, user_id, is_invite_acceptance = false } = req.body;
 
   try {
     const room = await Room.findByPk(room_id);
@@ -234,11 +234,22 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    await room.increment("total_members", { by: 1 });
+    // Start transaction
+    const result = await sequelize.transaction(async (t) => {
+      // Add member to room
+      await room.increment("total_members", { by: 1 }, { transaction: t });
+      
+      const member = await RoomMember.create({
+        room_id,
+        user_id,
+      }, { transaction: t });
 
-    const member = await RoomMember.create({
-      room_id,
-      user_id,
+      // If this is an invite acceptance, remove user from invitees
+      if (is_invite_acceptance) {
+        await InvitationController.removeUserFromInvitation(room_id, user_id);
+      }
+
+      return member;
     });
 
     // Get updated room data
@@ -262,7 +273,7 @@ exports.addMember = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Member added successfully",
-      data: member,
+      data: result,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -30,6 +30,11 @@ const Chat = sequelize.define('Chat', {
   timestamp: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  request: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: true 
   }
 }, {
   tableName: 'chats',

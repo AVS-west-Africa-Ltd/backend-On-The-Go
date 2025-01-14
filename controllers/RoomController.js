@@ -2,6 +2,8 @@ const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
 const path = require("path");
 const multer = require("multer");
+const InvitationController = require("./InvitationController");
+const { sequelize } = require("../models/Room");
 
 // Multer storage and configuration
 const storage = multer.diskStorage({
@@ -13,6 +15,13 @@ const storage = multer.diskStorage({
     cb(null, uniqueName);
   },
 });
+
+let io;
+
+// Function to set up socket instance
+exports.initializeSocket = (socketIO) => {
+  io = socketIO;
+};
 
 const upload = multer({ storage: storage });
 const userService = require("../services/UserService");
@@ -134,13 +143,22 @@ exports.createRoom = async (req, res) => {
         .json({ message: "Error uploading files", error: err.message });
     }
 
-    const { name, type, description, status, created_by, member_ids } =
-      req.body;
+    console.log("Uploaded file:", req.file);
+
+    const { name, type, description, status, created_by, member_ids } = req.body;
+
+    let memberIdsArray = [];
+    try {
+      memberIdsArray = typeof member_ids === "string" ? JSON.parse(member_ids) : member_ids;
+    } catch (error) {
+      return res.status(400).json({ success: false, message: "Invalid member_ids format" });
+    }
 
     try {
-      const media = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-      }`.toString();
+      let media = null;
+      if (req.file) {
+        media = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      }
 
       const room = await Room.create({
         name,
@@ -149,33 +167,51 @@ exports.createRoom = async (req, res) => {
         image_url: media,
         status,
         created_by,
-        total_members: member_ids.length,
+        total_members: memberIdsArray.length,
       });
 
       // Add members to the room
-      const roomMembers = member_ids.map((user_id) => ({
+      const roomMembers = memberIdsArray.map((user_id) => ({
         room_id: room.id,
         user_id,
       }));
 
       await RoomMember.bulkCreate(roomMembers);
 
+      const roomData = {
+        ...room.toJSON(),
+        members: roomMembers,
+      };
+
+      // Emit socket events for room creation
+      if (io) {
+        // Emit to all clients
+        io.emit('room_created', roomData);
+
+        // Emit specific events to room members
+        memberIdsArray.forEach(userId => {
+          io.emit(`user_${userId}_rooms_updated`, {
+            type: 'new_room',
+            room: roomData
+          });
+        });
+      }
+
       res.status(201).json({
         success: true,
         message: "Room created successfully",
-        data: {
-          ...room.toJSON(),
-          members: roomMembers,
-        },
+        data: roomData,
       });
     } catch (error) {
+      console.error("Error creating room:", error);
       res.status(500).json({ success: false, error: error.message });
     }
   });
 };
+
 // Rest of the code remains the same
 exports.addMember = async (req, res) => {
-  const { room_id, user_id } = req.body;
+  const { room_id, user_id, is_invite_acceptance = false } = req.body;
 
   try {
     const room = await Room.findByPk(room_id);
@@ -187,7 +223,6 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    // Check if the user is already a member of the room
     const existingMember = await RoomMember.findOne({
       where: { room_id, user_id },
     });
@@ -199,24 +234,53 @@ exports.addMember = async (req, res) => {
       });
     }
 
-    // Increment total_members when adding a new member
-    await room.increment("total_members", { by: 1 });
+    // Start transaction
+    const result = await sequelize.transaction(async (t) => {
+      // Add member to room
+      await room.increment("total_members", { by: 1 }, { transaction: t });
+      
+      const member = await RoomMember.create({
+        room_id,
+        user_id,
+      }, { transaction: t });
 
-    const member = await RoomMember.create({
-      room_id,
-      user_id,
+      // If this is an invite acceptance, remove user from invitees
+      if (is_invite_acceptance) {
+        await InvitationController.removeUserFromInvitation(room_id, user_id);
+      }
+
+      return member;
     });
+
+    // Get updated room data
+    const updatedRoom = await Room.findByPk(room_id, {
+      include: [{
+        model: RoomMember,
+        as: "members",
+        attributes: ["user_id"],
+      }],
+    });
+
+    // Emit socket events for member addition
+    if (io) {
+      io.emit('room_updated', updatedRoom);
+      io.emit(`user_${user_id}_rooms_updated`, {
+        type: 'joined_room',
+        room: updatedRoom
+      });
+    }
 
     res.status(201).json({
       success: true,
       message: "Member added successfully",
-      data: member,
+      data: result,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
+// Remove member with socket emission
 exports.removeMember = async (req, res) => {
   const { room_id, user_id } = req.body;
 
@@ -232,11 +296,27 @@ exports.removeMember = async (req, res) => {
       });
     }
 
-    // Decrement total_members when removing a member
     const room = await Room.findByPk(room_id);
     await room.decrement("total_members", { by: 1 });
-
     await member.destroy();
+
+    // Get updated room data
+    const updatedRoom = await Room.findByPk(room_id, {
+      include: [{
+        model: RoomMember,
+        as: "members",
+        attributes: ["user_id"],
+      }],
+    });
+
+    // Emit socket events for member removal
+    if (io) {
+      io.emit('room_updated', updatedRoom);
+      io.emit(`user_${user_id}_rooms_updated`, {
+        type: 'left_room',
+        room: updatedRoom
+      });
+    }
 
     res.status(200).json({
       success: true,

@@ -39,7 +39,8 @@ const Room = sequelize.define('Room', {
   },
 }, {
   tableName: 'rooms',
-  timestamps: true,
+  timestamps: true, // This enables createdAt and updatedAt
+
 });
 
 module.exports = Room;

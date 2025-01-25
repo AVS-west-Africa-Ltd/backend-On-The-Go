@@ -8,6 +8,7 @@ const router = require("./routes/routes");
 const path = require('path');
 const setupSocketIO = require('./services/socketSetup');
 const setupAssociations = require('./models/associations');
+const mediaCleanupService = require('./mediaCleanupService');
 const cluster = require('cluster');
 const os = require('os');
 

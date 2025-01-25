@@ -36,6 +36,8 @@ exports.getRoomMessages = async (req, res) => {
   const { roomId } = req.params;
   const { userId } = req.query; // For verification purposes
 
+  const { limit = 5 } = req.query; // Default limit to 5
+
   try {
     // Verify user is a member of the room
     const isMember = await RoomMember.findOne({
@@ -54,7 +56,8 @@ exports.getRoomMessages = async (req, res) => {
 
     const messages = await Chat.findAll({
       where: { room_id: roomId },
-      order: [["timestamp", "ASC"]],
+      order: [["timestamp", "DESC"]],
+      limit: parseInt(limit, 10), // Convert limit to integer
       attributes: [
         'id',
         'content',
@@ -70,7 +73,7 @@ exports.getRoomMessages = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        messages,
+        messages: messages.reverse(), // Reverse to get the latest messages first
         total: messages.length
       }
     });
@@ -156,7 +159,7 @@ exports.sendMessage = async (req, res) => {
 
 // Get messages in a room
 exports.getMessages = async (req, res) => {
-  const { room_id, user_id } = req.query;
+  const { room_id, user_id, limit = 5 } = req.query; // Default limit to 10
 
   try {
     // Verify user is a member of the room
@@ -173,7 +176,8 @@ exports.getMessages = async (req, res) => {
 
     const messages = await Chat.findAll({
       where: { room_id },
-      order: [["timestamp", "ASC"]],
+      order: [["timestamp", "DESC"]],
+      limit: parseInt(limit, 10), // Convert limit to integer
       include: [{
         model: Room,
         attributes: ['name', 'type']
@@ -182,7 +186,7 @@ exports.getMessages = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: messages,
+      data: messages.reverse(), // Reverse to get the latest messages first
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

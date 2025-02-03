@@ -1,4 +1,5 @@
 const Chat = require("../models/Chat");
+const User = require("../models/User");
 const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
 const { Op } = require('sequelize');
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -92,25 +93,46 @@ exports.sendMessage = async (req, res) => {
   uploadHandler(req, res, async (err) => {
     if (err) {
       console.error("Error uploading file:", err);
-      return res.status(400).json({ 
-        success: false, 
-        message: err instanceof multer.MulterError 
-          ? "File upload error" 
-          : err.message 
+      return res.status(400).json({
+        success: false,
+        message: err instanceof multer.MulterError
+          ? "File upload error"
+          : err.message
       });
     }
 
-    const { room_id, sender_id, content, request = false } = req.body; // Include `request`
+    const { room_id, sender_id, content, request = false } = req.body;
 
     try {
-      const isMember = await RoomMember.findOne({
+      // First check if user is a member of the room
+      const memberInfo = await RoomMember.findOne({
         where: { room_id, user_id: sender_id }
       });
 
-      if (!isMember) {
+      if (!memberInfo) {
         return res.status(403).json({
           success: false,
           message: "You are not a member of this room"
+        });
+      }
+
+      // Get room details including broadcast status
+      const room = await Room.findOne({
+        where: { id: room_id }
+      });
+
+      if (!room) {
+        return res.status(403).json({
+          success: false,
+          message: "Room not found"
+        });
+      }
+
+      // Check broadcast permissions
+      if (room.broadcast_enabled && !memberInfo.is_admin) {
+        return res.status(403).json({
+          success: false,
+          message: "Only administrators can send messages when broadcast mode is enabled"
         });
       }
 
@@ -125,7 +147,7 @@ exports.sendMessage = async (req, res) => {
         content: content || '',
         media_url,
         status: 'sent',
-        request // Add `request` to the created message
+        request
       });
 
       if (io) {
@@ -136,7 +158,7 @@ exports.sendMessage = async (req, res) => {
           content: content || '',
           media_url,
           status: 'sent',
-          request, // Include `request` in the broadcasted message
+          request,
           timestamp: message.createdAt
         });
       }
@@ -148,14 +170,13 @@ exports.sendMessage = async (req, res) => {
       });
     } catch (error) {
       console.error('Error sending message:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: error.message 
+      res.status(500).json({
+        success: false,
+        error: error.message
       });
     }
   });
 };
-
 
 // Get messages in a room
 exports.getMessages = async (req, res) => {
@@ -298,6 +319,130 @@ exports.getUserConversations = async (req, res) => {
   }
 };
 
+exports.toggleBroadcast = async (req, res) => {
+  try {
+    const { room_id, user_id, broadcast_enabled } = req.body;
+
+    if (!room_id || !user_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameters: room_id or user_id"
+      });
+    }
+
+    // Find the room
+    const room = await Room.findByPk(room_id);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found"
+      });
+    }
+
+    // Check if user is an admin
+    const isAdmin = await RoomMember.findOne({
+      where: { room_id, user_id, is_admin: true }
+    });
+
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Only an admin can toggle the broadcast feature"
+      });
+    }
+
+    // Update broadcast setting
+    room.broadcast_enabled = broadcast_enabled;
+    await room.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Broadcast feature ${broadcast_enabled ? 'enabled' : 'disabled'}`,
+      data: room
+    });
+  } catch (error) {
+    console.error('Error toggling broadcast:', error);
+    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+
+exports.getBroadcastStatus = async (req, res) => {
+  try {
+    const { room_id } = req.params;  // Extract room_id from URL
+
+    if (!room_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameter: room_id"
+      });
+    }
+
+    // Find the room
+    const room = await Room.findByPk(room_id);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found"
+      });
+    }
+
+    // Return the current broadcast state
+    return res.status(200).json({
+      success: true,
+      broadcast_enabled: room.broadcast_enabled
+    });
+  } catch (error) {
+    console.error('Error fetching broadcast status:', error);
+    return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
+};
+exports.getRoomMembers = async (req, res) => {
+  const { room_id, limit = 5 } = req.query;
+
+  console.log("Received room_id:", room_id); // Debugging log
+
+  if (!room_id) {
+      return res.status(400).json({
+          success: false,
+          message: "room_id is required"
+      });
+  }
+
+  try {
+      const members = await RoomMember.findAll({
+          where: { room_id },
+          limit: parseInt(limit, 10),
+          include: [{
+              model: User,
+              as: 'user',
+              attributes: ['id', 'firstName', 'lastName', 'username', 'picture'],
+          }],
+          order: [['joined_at', 'DESC']]
+      });
+
+      const formattedMembers = members.map(member => ({
+          id: member.user.id,
+          name: `${member.user.firstName} ${member.user.lastName}`.trim() || member.user.username,
+          avatar_url: member.user.picture || 'https://yourapp.com/default-avatar.png',
+          is_admin: member.is_admin
+      }));
+
+      res.status(200).json({
+          success: true,
+          data: {
+              members: formattedMembers,
+              total: formattedMembers.length
+          }
+      });
+  } catch (error) {
+      console.error('Error fetching room members:', error);
+      res.status(500).json({
+          success: false,
+          message: "Error fetching room members",
+          error: error.message
+      });
+  }
+};
 
 // Delete a message
 exports.deleteMessage = async (req, res) => {

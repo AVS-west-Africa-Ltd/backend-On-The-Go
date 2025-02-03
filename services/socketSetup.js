@@ -9,12 +9,17 @@ const setupSocketIO = (server) => {
     cors: {
       origin: "*",
       methods: ["GET", "POST"]
-    }
+    },
+    transports: ['websocket', 'polling'], // Allow multiple transport methods
+    reconnect: true, // Enable reconnection
+    reconnectionAttempts: 5, // Number of reconnection attempts
+    reconnectionDelay: 1000, // Delay between reconnection attempts
   });
+
   console.log('✅ Socket.IO server created with CORS configuration');
 
   const activeUsers = new Map();
-  const userSockets = new Map(); // Initialize userSockets
+  const userSockets = new Map();
 
   const logAndEmitError = (socket, event, error) => {
     console.error(`❌ Error in ${event}:`, error);
@@ -41,6 +46,14 @@ const setupSocketIO = (server) => {
         console.log(`👤 User ${userId} connected with socket ${socket.id}. Active users: ${activeUsers.size}`);
 
         socket.emit('user_connected', { userId, socketId: socket.id });
+
+        // Rejoin rooms if user was previously in any rooms
+        RoomMember.findAll({ where: { user_id: userId } }).then((rooms) => {
+          rooms.forEach((room) => {
+            socket.join(`${room.room_id}`);
+            console.log(`✅ User ${userId} rejoined room ${room.room_id}`);
+          });
+        });
       } catch (error) {
         console.error('Error in join_user:', error);
         logAndEmitError(socket, 'join_user', error);
@@ -63,17 +76,6 @@ const setupSocketIO = (server) => {
         }, 'Group join broadcasted');
       } catch (error) {
         logAndEmitError(socket, 'group_joined', error);
-      }
-    });
-
-    socket.on('room_joined', async (data) => {
-      try {
-        const { room_id, user_id } = data;
-        console.log(`👥 User ${user_id} joined room ${room_id}`);
-        broadcastEvent('room_updated', { room_id, user_id, action: 'joined', timestamp: new Date().toISOString() }, 'Room join broadcasted');
-        io.emit(`user_${user_id}_rooms_updated`, { room_id, action: 'joined', timestamp: new Date().toISOString() });
-      } catch (error) {
-        logAndEmitError(socket, 'room_joined', error);
       }
     });
 
@@ -128,48 +130,6 @@ const setupSocketIO = (server) => {
 
     socket.on('typing_start', (data) => handleTyping('typing_start', data));
     socket.on('typing_end', (data) => handleTyping('typing_end', data));
-
-    socket.on('message_read', async (data) => {
-      try {
-        const { message_id, room_id, user_id } = data;
-        console.log('👁️ Message read:', data);
-
-        await Chat.update({ status: 'read' }, { where: { id: message_id } });
-        io.to(`${room_id}`).emit('message_status_update', { message_id, status: 'read', read_by: user_id });
-        console.log('✅ Read status broadcasted for message:', message_id);
-      } catch (error) {
-        logAndEmitError(socket, 'message_read', error);
-      }
-    });
-
-    socket.on('group_left', (data) => {
-      io.emit('group_left', {
-        room_id: data.room_id,
-        user_id: data.user_id,
-        timestamp: data.timestamp,
-        type: data.type
-      });
-    });
-
-    socket.on('leave_room', async (data) => {
-      try {
-        const { room_id, user_id } = data;
-        console.log(`🚪 Leave room request:`, data);
-
-        const isMember = await RoomMember.findOne({ where: { room_id, user_id } });
-        if (!isMember) {
-          console.log(`❌ Unauthorized access by user ${user_id} to leave room ${room_id}`);
-          return socket.emit('error', { message: 'Not authorized to leave this room' });
-        }
-
-        socket.leave(`${room_id}`);
-        socket.emit('room_left', { room_id });
-        console.log(`✅ User ${user_id} left room ${room_id}`);
-        io.to(`${room_id}`).emit('room_updated', { room_id, user_id, action: 'left', timestamp: new Date().toISOString() });
-      } catch (error) {
-        logAndEmitError(socket, 'leave_room', error);
-      }
-    });
 
     socket.on('disconnect', (reason) => {
       try {

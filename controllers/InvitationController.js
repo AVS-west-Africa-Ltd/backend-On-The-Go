@@ -270,35 +270,33 @@ exports.deleteInvitation = async (req, res) => {
 exports.getUserInvitations = async (req, res) => {
   const { userId } = req.params;
 
+  console.log(`Received request to get invitations for userId: ${userId}`);
+
   try {
-    // Find all invitations where the user's ID is in the invitees array
+    const query = `JSON_CONTAINS(invitees, ${JSON.stringify(userId)})`;
+    console.log(`Generated JSON_CONTAINS query: ${query}`);
+
     const invitations = await Invitation.findAll({
-      where: sequelize.literal(`JSON_CONTAINS(invitees, '"${userId}"')`), // Wrap userId in quotes for JSON string comparison
+      where: sequelize.literal(query), 
       include: [{
         model: Room,
         as: 'room',
-        required: true, // Ensures room data is present
+        required: true,
         attributes: [
-          'id',
-          'name',
-          'type',
-          'description',
-          'image_url',
-          'status',
-          'total_members',
-          'created_by',
-          'createdAt',
-          'updatedAt'
+          'id', 'name', 'type', 'description', 'image_url', 'status', 
+          'total_members', 'created_by', 'createdAt', 'updatedAt'
         ],
         include: [{
           model: RoomMember,
           as: 'members',
           attributes: ['user_id']
         }]
-      }]
+      }],
+      logging: (sql) => console.log(`Executing SQL Query: ${sql}`) // Logs exact SQL
     });
 
-    // Transform the data to include both invitation and room information clearly
+    console.log(`Fetched invitations: ${JSON.stringify(invitations, null, 2)}`);
+
     const transformedInvitations = invitations.map(invitation => {
       const invitationData = invitation.toJSON();
       const roomData = invitationData.room;
@@ -328,6 +326,8 @@ exports.getUserInvitations = async (req, res) => {
       };
     });
 
+    console.log(`Transformed invitations: ${JSON.stringify(transformedInvitations, null, 2)}`);
+
     res.status(200).json({
       success: true,
       data: transformedInvitations
@@ -341,3 +341,4 @@ exports.getUserInvitations = async (req, res) => {
     });
   }
 };
+

@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 const UserFollowers = require('./UserFollowers');
 const BusinessSchema = require('./Business');
 
-const userSchema = sequelize.define('Users', {
+const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     firstName: {
         type: DataTypes.STRING,
     },
@@ -32,28 +32,24 @@ const userSchema = sequelize.define('Users', {
     interests: {
         type: DataTypes.JSON,
     },
+}, {
+    tableName: 'users' // Explicitly set table name
 });
 
-userSchema.belongsToMany(userSchema, {
+User.belongsToMany(User, {
     as: 'Followers',
     through: UserFollowers,
     foreignKey: 'followedId',
     otherKey: 'followerId',
 });
 
-userSchema.belongsToMany(userSchema, {
+User.belongsToMany(User, {
     as: 'Following',
     through: UserFollowers,
     foreignKey: 'followerId',
     otherKey: 'followedId',
 });
 
-userSchema.hasMany(BusinessSchema, {foreignKey: 'userId', onDelete: 'CASCADE'});
+User.hasMany(BusinessSchema, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
-sequelize.sync().then(() => {
-    console.log('User Schema table created successfully!');
-}).catch((error) => {
-    console.error('Unable to create table : ', error);
-});
-
-module.exports = userSchema;
+module.exports = User; // Export as 'User'

@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require("cors");
@@ -11,6 +12,13 @@ const setupAssociations = require('./models/associations');
 const mediaCleanupService = require('./mediaCleanupService');
 const cluster = require('cluster');
 const os = require('os');
+const helmet = require('helmet');
+const compression = require('compression');
+// const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
+const errorHandler = require('./handlers/errorHandler');
+
+
 
 // Import models
 const Room = require('./models/Room');
@@ -22,22 +30,28 @@ const validateApiKey = require("./middlewares/apiMiddleWare");
 
 const PORT = process.env.PORT || 5001;
 
-if (cluster.isMaster) {
-  console.log(`Master process running with PID: ${process.pid}`);
-
-  const numCPUs = os.cpus().length;
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
-
-  cluster.on('exit', (worker, code, signal) => {
-    console.log(`Worker ${worker.process.pid} exited. Restarting...`);
-    cluster.fork();
-  });
-
-} else {
+// if (cluster.isMaster) {
+//   // Master process
+//   console.log(`Master process running with PID: ${process.pid}`);
+//
+//   // Fork workers for each CPU core
+//   const numCPUs = os.cpus().length;
+//   for (let i = 0; i < numCPUs; i++) {
+//     cluster.fork();
+//   }
+//
+//   // Restart workers on exit
+//   cluster.on('exit', (worker, code, signal) => {
+//     console.log(`Worker ${worker.process.pid} exited. Restarting...`);
+//     cluster.fork();
+//   });
+//
+// } else {
+  // Worker process
   const app = express();
-
+  // Security Middleware
+  app.use(helmet());
+  // CORS Headers
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
@@ -52,6 +66,19 @@ if (cluster.isMaster) {
   setupAssociations();
 
   app.use(cors());
+// Compression
+  app.use(compression());
+
+// Logging
+  if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('combined'));
+    app.use(errorHandler.productionErrors);
+  } else {
+    app.use(morgan('dev'));
+    app.use(errorHandler.developmentErrors);
+  }
+
+  // app.use(validateApiKey);
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use('/uploads', express.static(path.join(__dirname, './uploads')));
@@ -74,7 +101,8 @@ if (cluster.isMaster) {
 
       console.log("Database synced successfully!");
 
-      server.listen(PORT, () => {
+      // Start server after sync
+      app.listen(PORT, () => {
         console.log(`Worker running on http://localhost:${PORT}, PID: ${process.pid}`);
       });
     } catch (err) {
@@ -84,6 +112,6 @@ if (cluster.isMaster) {
   };
 
   syncDatabase();
-}
+// }
 
 module.exports = { app: express(), io: setupSocketIO };

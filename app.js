@@ -9,6 +9,7 @@ const router = require("./routes/routes");
 const path = require('path');
 const setupSocketIO = require('./services/socketSetup');
 const setupAssociations = require('./models/associations');
+const mediaCleanupService = require('./mediaCleanupService');
 const cluster = require('cluster');
 const os = require('os');
 const helmet = require('helmet');
@@ -23,10 +24,11 @@ const errorHandler = require('./handlers/errorHandler');
 const Room = require('./models/Room');
 const RoomMember = require('./models/RoomMember');
 const Chat = require('./models/Chat');
+const Invitation = require('./models/Invitation');
 
 const validateApiKey = require("./middlewares/apiMiddleWare");
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // if (cluster.isMaster) {
 //   // Master process
@@ -53,17 +55,17 @@ const PORT = process.env.PORT || 5000;
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept"
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
     );
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     next();
   });
 
+  // Only call setupAssociations once
   setupAssociations();
 
   app.use(cors());
-
 // Compression
   app.use(compression());
 
@@ -83,22 +85,18 @@ const PORT = process.env.PORT || 5000;
   app.use("/api/v1", router);
   app.get('/', (req, res) => {
     res.send(`hello from port ${PORT}`);
-  });
+  });
 
-  // Create HTTP server
-  // const server = http.createServer(app);
-  //
-  // // Setup Socket.IO
-  // const io = setupSocketIO(app);
+  const server = http.createServer(app);
+  const io = setupSocketIO(server);
 
-  // Database sync
   const syncDatabase = async () => {
     try {
-      // Force sync in development only!
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
       await Room.sync();
       await RoomMember.sync();
       await Chat.sync();
+      await Invitation.sync();
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
       console.log("Database synced successfully!");
@@ -113,7 +111,6 @@ const PORT = process.env.PORT || 5000;
     }
   };
 
-  // Start the application
   syncDatabase();
 // }
 

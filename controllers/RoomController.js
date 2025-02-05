@@ -168,6 +168,7 @@ exports.createRoom = async (req, res) => {
         status,
         created_by,
         total_members: memberIdsArray.length,
+        created_date: new Date() // Explicitly set the creation date
       });
 
       // Add members to the room
@@ -374,6 +375,44 @@ exports.getRoomUsers = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
+      error: error.message
+    });
+  }
+};
+
+exports.getRoomMembers = async (req, res) => {
+  const { room_id, limit = 5 } = req.query;
+
+  try {
+    const members = await RoomMember.findAll({
+      where: { room_id },
+      limit: parseInt(limit, 10),
+      include: [{
+        model: User,
+        attributes: ['id', 'firstName', 'lastName', 'username', 'picture'],
+      }],
+      order: [['joined_at', 'DESC']]
+    });
+
+    const formattedMembers = members.map(member => ({
+      id: member.User.id,
+      name: `${member.User.firstName} ${member.User.lastName}`.trim() || member.User.username, // Fallback to username if no name
+      avatar_url: member.User.picture || DEFAULT_AVATAR_URL,
+      is_admin: member.is_admin
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        members: formattedMembers,
+        total: formattedMembers.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching room members:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching room members",
       error: error.message
     });
   }

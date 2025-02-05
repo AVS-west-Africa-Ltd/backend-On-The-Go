@@ -24,7 +24,7 @@ const Room = sequelize.define('Room', {
     allowNull: true, // Optional field for room image URL
   },
   status: {
-    type: DataTypes.ENUM('Public', 'Private'),
+    type: DataTypes.ENUM('Public', 'Private' , 'Broadcast'),
     allowNull: false,
     defaultValue: 'Public', // Default to Public if not provided
   },
@@ -37,9 +37,19 @@ const Room = sequelize.define('Room', {
     allowNull: false,
     defaultValue: 0, // Default to 0 for new rooms
   },
+  broadcast_enabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false, // Default to false (broadcast feature is off)
+    allowNull: false
+  },
+  created_date: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW // This will automatically set the current timestamp when a room is created
+  }
 }, {
   tableName: 'rooms',
-  timestamps: true,
+  timestamps: true, // This enables createdAt and updatedAt
 });
 
 module.exports = Room;

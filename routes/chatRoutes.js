@@ -12,6 +12,9 @@ router.delete("/message/delete", chatController.deleteMessage);
 router.get("/conversations", chatController.getUserConversations);
 router.get("/room/:roomId/messages", chatController.getRoomMessages);
 
+router.patch('/:room_id/toggle-broadcast', chatController.toggleBroadcast);
+router.get('/:room_id/broadcast-status', chatController.getBroadcastStatus);
+
 // Room operations
 router.post("/room/create", roomController.createRoom);
 router.post("/room/member/add", roomController.addMember);
@@ -20,6 +23,7 @@ router.get("/rooms", roomController.getAllRooms);
 router.get("/room/:roomId", roomController.getRoomById);
 router.get("/user/:userId/rooms", roomController.getUserRooms);
 router.get("/rooms/:roomId/users", roomController.getRoomUsers);
+router.get("/room/:roomId/members", chatController.getRoomMembers);
 
 // Invitation operations
 router.post("/invitation/create", invitationController.createInvitation);       // Create an invitation

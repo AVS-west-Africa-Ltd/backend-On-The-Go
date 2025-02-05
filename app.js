@@ -29,25 +29,6 @@ const Invitation = require('./models/Invitation');
 const validateApiKey = require("./middlewares/apiMiddleWare");
 
 const PORT = process.env.PORT || 5001;
-
-// if (cluster.isMaster) {
-//   // Master process
-//   console.log(`Master process running with PID: ${process.pid}`);
-//
-//   // Fork workers for each CPU core
-//   const numCPUs = os.cpus().length;
-//   for (let i = 0; i < numCPUs; i++) {
-//     cluster.fork();
-//   }
-//
-//   // Restart workers on exit
-//   cluster.on('exit', (worker, code, signal) => {
-//     console.log(`Worker ${worker.process.pid} exited. Restarting...`);
-//     cluster.fork();
-//   });
-//
-// } else {
-  // Worker process
   const app = express();
   // Security Middleware
   app.use(helmet());
@@ -112,6 +93,5 @@ const PORT = process.env.PORT || 5001;
   };
 
   syncDatabase();
-// }
 
 module.exports = { app: express(), io: setupSocketIO };

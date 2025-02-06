@@ -12,7 +12,7 @@ const setupAssociations = require('./models/associations');
 const mediaCleanupService = require('./mediaCleanupService');
 const cluster = require('cluster');
 const os = require('os');
-const helmet = require('helmet');
+// const helmet = require('helmet');
 const compression = require('compression');
 // const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
@@ -31,7 +31,7 @@ const validateApiKey = require("./middlewares/apiMiddleWare");
 const PORT = process.env.PORT || 5001;
   const app = express();
   // Security Middleware
-  app.use(helmet());
+  // app.use(helmet());
   // CORS Headers
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");

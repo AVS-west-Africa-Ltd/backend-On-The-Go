@@ -355,9 +355,9 @@ exports.getRoomUsers = async (req, res) => {
         return {
           user_id: member.user_id,
           joined_at: member.joined_at,
-          username: user?.username,
-          email: user?.email,
-          picture: user?.picture
+          username: user && user.username ? user.username : null,
+          email: user && user.email ? user.email : null,
+          picture: user && user.picture ? user.picture : null
         };
       })
     );
@@ -379,6 +379,7 @@ exports.getRoomUsers = async (req, res) => {
     });
   }
 };
+
 
 exports.getRoomMembers = async (req, res) => {
   const { room_id, limit = 5 } = req.query;

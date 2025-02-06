@@ -18,13 +18,21 @@ module.exports = {
             dialect: 'mysql',
         },
         production: {
-            username: "onthelbo_afrocode2k",
-            password: "Justkeepitsimple2@",
-            database:"onthelbo_otgdb",
+            username: "onthego",
+            password: "jsmre8JPhtKmnw72",
+            database:"onthego",
             host:"localhost",
             port: 3306,
             dialect: 'mysql',
         },
+        // production: {
+        //     username: "onthelbo_afrocode2k",
+        //     password: "Justkeepitsimple2@",
+        //     database:"onthelbo_otgdb",
+        //     host:"localhost",
+        //     port: 3306,
+        //     dialect: 'mysql',
+        // },
     APIKEY: '26a3281bfc65b39527447691941d6a707357a1278b1b2ec91742faec9de53ac8'
 };
 

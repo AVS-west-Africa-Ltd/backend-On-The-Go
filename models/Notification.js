@@ -25,6 +25,10 @@ const Notification = sequelize.define('Notification', {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
-});
+},
+{
+    tableName: 'notifications' // Explicitly set table name
+  }
+);
 
 module.exports = Notification;

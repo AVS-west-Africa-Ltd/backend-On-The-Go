@@ -20,6 +20,10 @@ const BusinessPosts = sequelize.define("BusinessPosts", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-});
+},
+  {
+    tableName: 'businessposts' // Explicitly set table name
+  }
+);
 
 module.exports = BusinessPosts;

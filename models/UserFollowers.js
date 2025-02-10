@@ -15,6 +15,9 @@ const UserFollowers = sequelize.define('UserFollowers', {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
-});
+},{
+tableName: 'userfollowers' // Explicitly set table name
+}
+);
 
 module.exports = UserFollowers;

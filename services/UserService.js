@@ -40,7 +40,7 @@ class UserService {
             return await User.findAll({});
         }
         catch (error) {
-            throw new Error('Error fetching users');
+            throw error;
         }
     }
 

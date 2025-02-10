@@ -35,8 +35,6 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     userType: {
         type: DataTypes.STRING,
     }
-}, {
-    tableName: 'Users' // Explicitly set table name
 });
 
 User.belongsToMany(User, {

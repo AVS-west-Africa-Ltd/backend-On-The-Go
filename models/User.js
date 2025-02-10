@@ -32,6 +32,9 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     interests: {
         type: DataTypes.JSON,
     },
+    userType: {
+        type: DataTypes.STRING,
+    }
 }, {
     tableName: 'Users' // Explicitly set table name
 });

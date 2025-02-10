@@ -46,6 +46,10 @@ const Business = sequelize.define("Business", {
     allowNull: true,
     defaultValue: {},
   },
-});
+},
+{
+  tableName: 'businesses' // Explicitly set table name
+  }
+);
 
 module.exports = Business;

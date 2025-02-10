@@ -35,21 +35,23 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     userType: {
         type: DataTypes.STRING,
     }
+}, {
+    tableName: 'users' // Explicitly set table name
 });
 
-// User.belongsToMany(User, {
-//     as: 'Followers',
-//     through: UserFollowers,
-//     foreignKey: 'followedId',
-//     otherKey: 'followerId',
-// });
+User.belongsToMany(User, {
+    as: 'Followers',
+    through: UserFollowers,
+    foreignKey: 'followedId',
+    otherKey: 'followerId',
+});
 
-// User.belongsToMany(User, {
-//     as: 'Following',
-//     through: UserFollowers,
-//     foreignKey: 'followerId',
-//     otherKey: 'followedId',
-// });
+User.belongsToMany(User, {
+    as: 'Following',
+    through: UserFollowers,
+    foreignKey: 'followerId',
+    otherKey: 'followedId',
+});
 
 User.hasMany(BusinessSchema, { foreignKey: 'userId', onDelete: 'CASCADE' });
 

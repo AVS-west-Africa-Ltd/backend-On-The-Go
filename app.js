@@ -71,6 +71,10 @@ const PORT = process.env.PORT || 5001;
   const server = http.createServer(app);
   const io = setupSocketIO(server);
 
+  app.get('/', (req, res) => {
+    res.send('<h1>Welcome Onthego server</h1>');
+  })
+
   const syncDatabase = async () => {
     try {
       await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');

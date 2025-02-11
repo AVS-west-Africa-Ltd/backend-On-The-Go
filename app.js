@@ -59,7 +59,7 @@ const PORT = process.env.PORT || 5000;
     app.use(errorHandler.developmentErrors);
   }
 
-  // app.use(validateApiKey);
+  app.use(validateApiKey);
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use('/uploads', express.static(path.join(__dirname, './uploads')));

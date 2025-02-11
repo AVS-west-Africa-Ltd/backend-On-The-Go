@@ -23,13 +23,14 @@ router.get("/user/:userId", catchErrors(UserController.getUserById));
 router.delete("/delete/user/:userId", catchErrors(UserController.deleteUser));
 router.put("/update/user/:userId", catchErrors(UserController.updateUser));
 router.put("/update/userimage/:userId", catchErrors(UserController.UpdateUserImage)); // Update profile image
-router.post("/:userId/follow/:followerId", catchErrors(UserController.addFollower));
-router.delete("/:userId/unfollow/:followerId", catchErrors(UserController.removeFollower));
+router.post("/:userId/follow/:followedId", catchErrors(UserController.addFollower));
+router.delete("/:userId/unfollow/:followedId", catchErrors(UserController.removeFollower));
 router.get("/notifications/:userId", catchErrors(UserController.getNotifications));
 router.patch(
-  "/notifications/:notificationId/read",
+  "/notifications/:notificationId/:userId/read",
     catchErrors(UserController.markNotificationAsRead)
 );
+router.put("/mark-all-as-read/:userId", catchErrors(UserController.markAllNotificationsAsRead));
 router.get("/:userId/followers", catchErrors(UserController.getUserWithFollowers));
 router.post("/:userId/interests", catchErrors(UserController.addInterests));
 router.put("/:userId/interests/:index", catchErrors(UserController.updateInterest));

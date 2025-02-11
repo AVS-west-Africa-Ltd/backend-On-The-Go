@@ -154,8 +154,8 @@ class UserController {
 
   static async addFollower(req, res) {
     try {
-      const { userId, followerId } = req.params;
-      const user = await userService.addFollower(userId, followerId);
+      const { userId, followedId } = req.params;
+      const user = await userService.followUser(userId, followedId);
 
       if (!user) return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ message: "Follower added successfully" });
@@ -166,8 +166,8 @@ class UserController {
 
   static async removeFollower(req, res) {
     try {
-      const { userId, followerId } = req.params;
-      const user = await userService.removeFollower(userId, followerId);
+      const { userId, followedId } = req.params;
+      const user = await userService.unfollowUser(userId, followedId);
 
       if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -177,11 +177,35 @@ class UserController {
     }
   }
 
+  static async getFollowers(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const followers = await userService.getFollowers(userId);
+      if (!followers) return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ followers: followers });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getFollowing(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const following = await userService.getFollowing(userId);
+      if (!following) return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ following: following });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   static async getNotifications(req, res) {
     try {
       const { userId } = req.params;
 
-      const userNotification = await userService.getNotifications(userId);
+      const userNotification = await userService.getUserNotifications(userId);
       if (!userNotification)
         return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ notifications: userNotification });
@@ -192,16 +216,31 @@ class UserController {
 
   static async markNotificationAsRead(req, res) {
     try {
-      const { notificationId } = req.params;
+      const { notificationId, userId } = req.params;
 
-      const notification = await userService.markNotificationAsRead(
-        notificationId
+      const notification = await userService.markAsRead(
+        notificationId, userId
       );
       if (!notification)
         return res.status(404).json({ message: "Notification not found" });
       return res
         .status(200)
         .json({ message: "Notification marked as read", notification });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async markAllNotificationsAsRead(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const notifications = await userService.markAllAsRead(userId);
+      if (!notifications)
+        return res.status(404).json({ message: "User not found" });
+      return res
+        .status(200)
+        .json({ message: "All notifications marked as read", notifications });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

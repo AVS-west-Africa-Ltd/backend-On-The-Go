@@ -2,18 +2,38 @@ const PostService = require("../services/PostService");
 const ImageService = require("../services/ImageService");
 const multer = require("multer");
 const path = require("path");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
-const upload = multer({ storage: storage });
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });
+
+const upload = multer({ storage: multerS3({
+  s3: s3,
+  bucket: process.env.AWS_BUCKET_NAME,
+  acl: "public-read",
+  metadata: function (req, file, cb) {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: function (req, file, cb) {
+    cb(null, `posts/${Date.now()}-${file.originalname}`);
+  },
+})  });
 
 class PostController {
   static async createPost(req, res) {
@@ -33,14 +53,16 @@ class PostController {
         return res.status(400).json({ message: "All fields are required" });
 
       try {
-        const media = req.files
-          .map(
-            (file) =>
-              `https://api.onthegoafrica.com/uploads/${
-                file.filename
-              }`
-          )
-          .toString();
+        // const media = req.files
+        //   .map(
+        //     (file) =>
+        //       `https://api.onthegoafrica.com/uploads/${
+        //         file.filename
+        //       }`
+        //   )
+        //   .toString();
+
+        const media = req.files.map((file) => file.filename).toString();
 
         let payload = { userId, description, rating, businessId, media };
 

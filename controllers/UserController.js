@@ -117,7 +117,7 @@ class UserController {
     try {
       const users = await userService.getUsers();
       if (!users || users.length === 0)
-        return res.status(404).json({ message: "Users not found", info: [] });
+        return res.status(404).json({ message: "No record", info: [] });
       return res.status(200).json({ info: users });
     } catch (error) {
       return res.status(500).json({ error: error.message });

@@ -24,11 +24,15 @@ const Comment = sequelize.define('Comments', {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: 'Comments',
+            model: 'comments',
             key: 'id',
         },
     },
-});
+},
+{
+    tableName: 'comments' // Explicitly set table name
+  }
+);
 
 Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments', onDelete: 'CASCADE' });
 Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' });

@@ -2,29 +2,29 @@ const PostService = require("../services/PostService");
 const ImageService = require("../services/ImageService");
 const multer = require("multer");
 const path = require("path");
-// const { CloudinaryStorage } = require("multer-storage-cloudinary");
-// const cloudinary = require("../config/cloudinaryConfig");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "business_posts", // Cloudinary folder where files will be stored
-//     allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
-//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
-//   },
-// });
-
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `posts/${Date.now()}-${file.originalname}`);
+    },
+  })
+});
 
 class PostController {
   static async createPost(req, res) {
@@ -34,8 +34,8 @@ class PostController {
       if (err) {
         console.error("Error uploading files:", err);
         return res
-          .status(501)
-          .json({ message: "Error uploading files", error: err.message });
+            .status(501)
+            .json({ message: "Error uploading files", error: err.message });
       }
 
       const { userId, businessId, description, rating } = req.body;
@@ -44,19 +44,19 @@ class PostController {
         return res.status(400).json({ message: "All fields are required" });
 
       try {
+        // Get the S3 URLs from the uploaded files
         const media = req.files
-          .map(
-            (file) =>
-              `https://api.onthegoafrica.com/api/v1/uploads/${file.filename}`
-          )
-          .toString();
-        // const media = req.files.map((file) => file.path);
+            .map((file) => file.location)
+            .toString();
 
         let payload = { userId, description, rating, businessId, media };
 
         const post = await PostService.createPost(payload);
 
-        return res.status(201).json({ message: "Post successfully created" });
+        return res.status(201).json({
+          message: "Post successfully created",
+          post
+        });
       } catch (error) {
         console.error("Error creating post:", error);
         res.status(500).json({

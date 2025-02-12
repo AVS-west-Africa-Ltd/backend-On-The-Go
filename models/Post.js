@@ -42,7 +42,11 @@ const PostSchema = sequelize.define("Posts", {
     allowNull: true,
     defaultValue: [],
   },
-});
+},
+{
+  tableName: 'posts' // Explicitly set table name
+}
+);
 
 PostSchema.belongsTo(Business, { foreignKey: 'businessId', as: 'business' });
 PostSchema.belongsTo(User, { foreignKey: 'userId', as: 'user' });

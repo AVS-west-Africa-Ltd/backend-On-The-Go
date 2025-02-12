@@ -23,7 +23,7 @@ class PostService {
     try {
       return await Post.create(data);
     } catch (err) {
-      throw new Error("Error creating post");
+      throw err;
     }
   }
 

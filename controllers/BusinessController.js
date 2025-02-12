@@ -1,30 +1,30 @@
-const fs = require("fs");
-const path = require("path");
+// const fs = require("fs");
+// const path = require("path");
 const multer = require("multer");
 
 const Business = require("../models/Business");
-const { BusinessPosts } = require("../models/index");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("../config/cloudinaryConfig");
+const { BusinessPosts, BusinessFollowers } = require("../models/index");
+// const { CloudinaryStorage } = require("multer-storage-cloudinary");
+// const cloudinary = require("../config/cloudinaryConfig");
 
 // Multer storage and configuration
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/");
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueName = Date.now() + "-" + file.originalname;
-//     cb(null, uniqueName);
-//   },
-// });
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "business_posts", // Cloudinary folder where files will be stored
-    allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
-    public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
   },
 });
+// const storage = new CloudinaryStorage({
+//   cloudinary: cloudinary,
+//   params: {
+//     folder: "business_posts", // Cloudinary folder where files will be stored
+//     allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
+//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
+//   },
+// });
 
 // File filter for images and PDFs
 const fileFilter = (req, file, cb) => {
@@ -111,16 +111,30 @@ const businessController = {
 
         try {
           // Extract file paths from Multer
+          const media = req.files.map((file) => file.path);
+
           const logo = req.files.logo
-            ? `${req.protocol}://${req.get("host")}/uploads/${
-                req.files.logo[0].filename
-              }`
+            ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.logo[0].filename}`
             : null;
           const cacDoc = req.files.cacDoc
-            ? `${req.protocol}://${req.get("host")}/uploads/${
-                req.files.cacDoc[0].filename
-              }`
+            ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.cacDoc[0].filename}`
             : null;
+
+          // const logo = req.files.logo
+          //   ? await cloudinary.uploader.upload(req.files.logo[0].path, {
+          //       folder: "business_posts",
+          //     })
+          //   : null;
+
+          // const cacDoc = req.files.cacDoc
+          //   ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
+          //       folder: "business_posts",
+          //     })
+          //   : null;
+
+          // Save the Cloudinary URLs or null if not uploaded
+          const logoUrl = logo ? logo.secure_url : null;
+          const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
 
           const socialArray = social ? JSON.parse(social) : [];
 
@@ -130,9 +144,9 @@ const businessController = {
             type,
             address,
             description,
-            logo,
+            logo: logoUrl,
             amenities,
-            cacDoc,
+            cacDoc: cacDocUrl,
             hours,
             social: socialArray,
             wifi,
@@ -221,6 +235,7 @@ const businessController = {
 
   // Update a Business
   updateBusiness: async (req, res) => {
+    console.log(0);
     const uploadHandler = upload.fields([
       { name: "logo", maxCount: 1 },
       { name: "cacDoc", maxCount: 1 },
@@ -241,8 +256,7 @@ const businessController = {
         address,
         description,
         amenities,
-        openingTime,
-        closingTime,
+        hours,
         social,
         wifiName,
         wifiPassword,
@@ -258,15 +272,27 @@ const businessController = {
 
         // Extract new file paths (if any) and save relative paths
         const updatedLogo = req.files.logo
-          ? `${req.protocol}://${req.get("host")}/uploads/${
-              req.files.logo[0].filename
-            }`
+          ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.logo[0].filename}`
           : business.logo; // Keep existing logo if not updated
         const updatedCacDoc = req.files.cacDoc
-          ? `${req.protocol}://${req.get("host")}/uploads/${
-              req.files.cacDoc[0].filename
-            }`
+          ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.cacDoc[0].filename}`
           : business.cacDoc;
+
+        // const logo = req.files.logo
+        //   ? await cloudinary.uploader.upload(req.files.logo[0].path, {
+        //       folder: "business_posts",
+        //     })
+        //   : null;
+
+        // const cacDoc = req.files.cacDoc
+        //   ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
+        //       folder: "business_posts",
+        //     })
+        //   : null;
+
+        // Save the Cloudinary URLs or null if not uploaded
+        // const logoUrl = logo ? logo.secure_url : null;
+        // const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
 
         const socialArray = social ? JSON.parse(social) : business.social;
 
@@ -277,8 +303,7 @@ const businessController = {
         business.logo = updatedLogo;
         business.amenities = amenities || business.amenities;
         business.cacDoc = updatedCacDoc;
-        business.openingTime = openingTime || business.openingTime;
-        business.closingTime = closingTime || business.closingTime;
+        business.hours = hours || business.hours;
         business.social = socialArray;
         business.wifiName = wifiName || business.wifiName;
         business.wifiPassword = wifiPassword || business.wifiPassword;
@@ -350,6 +375,77 @@ const businessController = {
       console.error("Error retrieving business info with posts:", error);
       res.status(500).json({
         message: "Error retrieving business info with posts",
+        error: error.message,
+      });
+    }
+  },
+
+  toggleFollow: async (req, res) => {
+    try {
+      const { followerId, followedId } = req.body;
+
+      // Validate inputs
+      if (!followerId || !followedId) {
+        return res.status(400).json({
+          message: "Follower ID and Followed ID are required",
+        });
+      }
+
+      // Check if both businesses exist
+      const follower = await Business.findByPk(followerId);
+      const followed = await Business.findByPk(followedId);
+
+      if (!follower || !followed) {
+        return res.status(404).json({
+          message: "Invalid follower or followed business ID",
+        });
+      }
+
+      // Check for existing follow relationship
+      const existingFollow = await BusinessFollowers.findOne({
+        where: { followerId, followedId },
+      });
+
+      if (existingFollow) {
+        // Unfollow
+        await existingFollow.destroy();
+        return res.status(200).json({
+          message: "Unfollowed successfully",
+        });
+      } else {
+        // Follow
+        await BusinessFollowers.create({ followerId, followedId });
+        return res.status(200).json({
+          message: "Followed successfully",
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        message: "An error occurred while toggling follow",
+        error: error.message,
+      });
+    }
+  },
+
+  getFollowing: async (req, res) => {
+    try {
+      const { businessId } = req.params;
+
+      // Validate the business ID
+      const business = await Business.findByPk(businessId);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+
+      // Fetch all businesses that this business is following
+      const following = await business.getFollowing({
+        attributes: ["id", "name", "type", "logo"], // Fetch desired attributes
+      });
+
+      return res.status(200).json({ following });
+    } catch (error) {
+      return res.status(500).json({
+        message: "An error occurred while fetching following businesses",
         error: error.message,
       });
     }

@@ -1,128 +1,163 @@
-// services/socketSetup.js
-
 const socketIo = require('socket.io');
 const Chat = require('../models/Chat');
 const RoomMember = require('../models/RoomMember');
 
 const setupSocketIO = (server) => {
+  console.log('🚀 Initializing Socket.IO server...');
+
   const io = socketIo(server, {
     cors: {
       origin: "*",
       methods: ["GET", "POST"]
-    }
+    },
+    transports: ['websocket', 'polling'], // Allow multiple transport methods
+    reconnect: true, // Enable reconnection
+    reconnectionAttempts: 5, // Number of reconnection attempts
+    reconnectionDelay: 1000, // Delay between reconnection attempts
   });
 
-  // Store active users
+  console.log('✅ Socket.IO server created with CORS configuration');
+
   const activeUsers = new Map();
+  const userSockets = new Map();
+
+  const logAndEmitError = (socket, event, error) => {
+    console.error(`❌ Error in ${event}:`, error);
+    socket.emit('error', { message: error.message });
+  };
 
   io.on('connection', (socket) => {
-    console.log('New client connected:', socket.id);
+    console.log('🔌 Client connected:', socket.id);
 
-    // Handle user joining
     socket.on('join_user', (userId) => {
-      activeUsers.set(socket.id, userId);
-      console.log(`User ${userId} connected with socket ${socket.id}`);
-    });
+      if (!userId) {
+        console.log('❌ No user ID provided for join_user');
+        return;
+      }
 
-    // Handle joining a room
-    socket.on('join_room', async (data) => {
-      const { room_id, user_id } = data;
-      
       try {
-        // Verify user is a member of the room
-        const isMember = await RoomMember.findOne({
-          where: { room_id, user_id }
-        });
+        activeUsers.set(socket.id, userId);
 
-        if (isMember) {
-          socket.join(`room_${room_id}`);
-          socket.emit('room_joined', { room_id });
-          console.log(`User ${user_id} joined room ${room_id}`);
-        } else {
-          socket.emit('error', { message: 'Not authorized to join this room' });
+        if (!userSockets.has(userId)) {
+          userSockets.set(userId, new Set());
         }
+        userSockets.get(userId).add(socket.id);
+
+        console.log(`👤 User ${userId} connected with socket ${socket.id}. Active users: ${activeUsers.size}`);
+
+        socket.emit('user_connected', { userId, socketId: socket.id });
+
+        // Rejoin rooms if user was previously in any rooms
+        RoomMember.findAll({ where: { user_id: userId } }).then((rooms) => {
+          rooms.forEach((room) => {
+            socket.join(`${room.room_id}`);
+            console.log(`✅ User ${userId} rejoined room ${room.room_id}`);
+          });
+        });
       } catch (error) {
-        socket.emit('error', { message: error.message });
+        console.error('Error in join_user:', error);
+        logAndEmitError(socket, 'join_user', error);
       }
     });
 
-    // Handle new message
-    socket.on('send_message', async (messageData) => {
-      const { room_id, sender_id, content, media_url } = messageData;
-      
-      try {
-        // Verify sender is a member of the room
-        const isMember = await RoomMember.findOne({
-          where: { room_id, user_id: sender_id }
-        });
+    const broadcastEvent = (event, data, logMessage) => {
+      io.emit(event, data);
+      console.log(`📢 ${logMessage}`, data);
+    };
 
+    socket.on('group_joined', async (data) => {
+      try {
+        const { room_id, user_id } = data;
+        console.log(`👥 User ${user_id} joined group ${room_id}`);
+        broadcastEvent('member_joined', {
+          room_id,
+          user_id,
+          timestamp: new Date().toISOString()
+        }, 'Group join broadcasted');
+      } catch (error) {
+        logAndEmitError(socket, 'group_joined', error);
+      }
+    });
+
+    socket.on('join_room', async (data) => {
+      try {
+        const { room_id, user_id } = data;
+        console.log(`📝 Join room request:`, data);
+
+        const isMember = await RoomMember.findOne({ where: { room_id, user_id } });
         if (!isMember) {
-          socket.emit('error', { message: 'Not authorized to send messages in this room' });
-          return;
+          console.log(`❌ Unauthorized access by user ${user_id} to room ${room_id}`);
+          return socket.emit('error', { message: 'Not authorized to join this room' });
         }
 
-        // Save message to database
-        const message = await Chat.create({
-          room_id,
-          sender_id,
-          content,
-          media_url,
-          status: 'sent'
-        });
+        socket.join(`${room_id}`);
+        socket.emit('room_joined', { room_id });
+        console.log(`✅ User ${user_id} joined room ${room_id}`);
+      } catch (error) {
+        logAndEmitError(socket, 'join_room', error);
+      }
+    });
 
-        // Broadcast message to room
-        io.to(`room_${room_id}`).emit('new_message', {
-          id: message.id,
-          room_id,
-          sender_id,
-          content,
-          media_url,
-          status: 'sent',
+    socket.on('send_message', async (messageData) => {
+      try {
+        const { room_id, sender_id, content, media_url } = messageData;
+
+        const isMember = await RoomMember.findOne({ where: { room_id, user_id: sender_id } });
+        if (!isMember) {
+          console.log(`❌ Unauthorized message by user ${sender_id} in room ${room_id}`);
+          return socket.emit('error', { message: 'Not authorized to send messages in this room' });
+        }
+
+        const message = await Chat.create({ room_id, sender_id, content, media_url, status: 'sent' });
+
+        io.to(`${room_id}`).emit('new_message', {
+          ...message.dataValues,
           timestamp: message.createdAt
         });
 
+        console.log('✅ Message broadcasted:', message.id);
       } catch (error) {
-        socket.emit('error', { message: error.message });
+        console.error('❌ Error sending message:', error);
+        socket.emit('error', { message: 'Failed to send message. Please try again.' });
       }
     });
 
-    // Handle typing status
-    socket.on('typing_start', (data) => {
+    const handleTyping = (event, data) => {
       const { room_id, user_id } = data;
-      socket.to(`room_${room_id}`).emit('user_typing', { user_id });
-    });
+      console.log(`⌨️ User ${user_id} ${event === 'typing_start' ? 'started' : 'stopped'} typing in room ${room_id}`);
+      socket.to(`${room_id}`).emit(event === 'typing_start' ? 'user_typing' : 'user_stopped_typing', { user_id });
+    };
 
-    socket.on('typing_end', (data) => {
-      const { room_id, user_id } = data;
-      socket.to(`room_${room_id}`).emit('user_stopped_typing', { user_id });
-    });
+    socket.on('typing_start', (data) => handleTyping('typing_start', data));
+    socket.on('typing_end', (data) => handleTyping('typing_end', data));
 
-    // Handle read receipts
-    socket.on('message_read', async (data) => {
-      const { message_id, room_id, user_id } = data;
-      
+    socket.on('disconnect', (reason) => {
       try {
-        await Chat.update(
-          { status: 'read' },
-          { where: { id: message_id } }
-        );
+        const userId = activeUsers.get(socket.id);
 
-        io.to(`room_${room_id}`).emit('message_status_update', {
-          message_id,
-          status: 'read',
-          read_by: user_id
-        });
+        if (userId) {
+          console.log(`👋 User ${userId} disconnected, socket: ${socket.id}, reason: ${reason}`);
+
+          const userSocketSet = userSockets.get(userId);
+          if (userSocketSet) {
+            userSocketSet.delete(socket.id);
+
+            if (userSocketSet.size === 0) {
+              userSockets.delete(userId);
+              console.log(`🚫 User ${userId} has no remaining active connections`);
+            } else {
+              console.log(`✅ User ${userId} still has ${userSocketSet.size} active connections`);
+            }
+          }
+
+          activeUsers.delete(socket.id);
+        } else {
+          console.log(`👋 Unknown socket disconnected: ${socket.id}, reason: ${reason}`);
+        }
+
+        console.log(`👥 Remaining active users: ${userSockets.size}, Active sockets: ${activeUsers.size}`);
       } catch (error) {
-        socket.emit('error', { message: error.message });
-      }
-    });
-
-    // Handle disconnection
-    socket.on('disconnect', () => {
-      const userId = activeUsers.get(socket.id);
-      if (userId) {
-        console.log(`User ${userId} disconnected`);
-        activeUsers.delete(socket.id);
+        console.error('Error handling disconnect:', error);
       }
     });
   });

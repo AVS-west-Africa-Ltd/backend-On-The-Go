@@ -3,7 +3,7 @@ const config = require('../config/config');
 const validateApiKey = (req, res, next) => {
     const userApiKey = req.headers['x-api-key'];
 
-    if (userApiKey && userApiKey === config.APIKEY || process.env.API_KEY  ) {
+    if (userApiKey && (userApiKey === config.APIKEY || userApiKey === process.env.API_KEY)) {
         next();
     } else {
         return res.status(403).json({ error: 'Access Denied: Unauthorized Request' });

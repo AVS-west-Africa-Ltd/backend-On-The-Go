@@ -5,11 +5,49 @@ const path = require("path");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
+
+// Maximum file size (5MB)
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
+
+// Allowed file types
+const ALLOWED_FILE_TYPES = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'video/mp4': 'mp4',
+  // 'application/pdf': 'pdf'
+};
+
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
+
+
+// File filter function
+const fileFilter = (req, file, cb) => {
+  // Check file type
+  if (!ALLOWED_FILE_TYPES[file.mimetype]) {
+    cb(new Error(`File type ${file.mimetype} is not allowed. Allowed types: ${Object.keys(ALLOWED_FILE_TYPES).join(', ')}`), false);
+    return;
+  }
+  cb(null, true);
+};
+
+// Error handling middleware
+// const handleMulterError = (error, req, res, next) => {
+//   if (error instanceof multer.MulterError) {
+//     if (error.code === 'LIMIT_FILE_SIZE') {
+//       return res.status(400).json({
+//         error: `File size too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`
+//       });
+//     }
+//   }
+//   next(error);
+// };
+
 
 const upload = multer({
   storage: multerS3({
@@ -23,7 +61,12 @@ const upload = multer({
     key: function (req, file, cb) {
       cb(null, `posts/${Date.now()}-${file.originalname}`);
     },
-  })
+  }),
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    files: 5 // Maximum number of files per upload
+  },
+  fileFilter: fileFilter
 });
 
 class PostController {

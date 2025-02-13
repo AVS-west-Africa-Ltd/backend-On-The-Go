@@ -3,30 +3,31 @@ const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
 // const path = require("path");
 const multer = require("multer");
-// const { CloudinaryStorage } = require("multer-storage-cloudinary");
-// const cloudinary = require("../config/cloudinaryConfig");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
-// Multer storage and configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Upload directory
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "business_posts", // Cloudinary folder where files will be stored
-//     allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
-//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
-//   },
-// });
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `profiles/${Date.now()}-${file.originalname}`);
+    },
+  })
+});
 
-const upload = multer({ storage: storage });
 
 class UserController {
   static async CreateUser(req, res) {
@@ -68,9 +69,7 @@ class UserController {
       const { userId } = req.params;
 
       try {
-        const mediaPaths =
-          `https://api.onthegoafrica.com/api/v1/uploads/${req.file.filename}`.toString();
-        // const mediaPaths = req.files.map((file) => file.path);
+        const mediaPaths = req.file.location.toString();
 
         const user = await userService.updateUser(userId, {
           picture: mediaPaths,
@@ -165,8 +164,8 @@ class UserController {
 
   static async addFollower(req, res) {
     try {
-      const { userId, followerId } = req.params;
-      const user = await userService.addFollower(userId, followerId);
+      const { userId, followedId } = req.params;
+      const user = await userService.followUser(userId, followedId);
 
       if (!user) return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ message: "Follower added successfully" });
@@ -177,8 +176,8 @@ class UserController {
 
   static async removeFollower(req, res) {
     try {
-      const { userId, followerId } = req.params;
-      const user = await userService.removeFollower(userId, followerId);
+      const { userId, followedId } = req.params;
+      const user = await userService.unfollowUser(userId, followedId);
 
       if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -188,11 +187,35 @@ class UserController {
     }
   }
 
+  static async getFollowers(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const followers = await userService.getFollowers(userId);
+      if (!followers) return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ followers: followers });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getFollowing(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const following = await userService.getFollowing(userId);
+      if (!following) return res.status(404).json({ message: "User not found" });
+      return res.status(200).json({ following: following });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   static async getNotifications(req, res) {
     try {
       const { userId } = req.params;
 
-      const userNotification = await userService.getNotifications(userId);
+      const userNotification = await userService.getUserNotifications(userId);
       if (!userNotification)
         return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ notifications: userNotification });
@@ -203,10 +226,10 @@ class UserController {
 
   static async markNotificationAsRead(req, res) {
     try {
-      const { notificationId } = req.params;
+      const { notificationId, userId } = req.params;
 
-      const notification = await userService.markNotificationAsRead(
-        notificationId
+      const notification = await userService.markAsRead(
+        notificationId, userId
       );
       if (!notification)
         return res.status(404).json({ message: "Notification not found" });
@@ -218,17 +241,32 @@ class UserController {
     }
   }
 
-  static async getUserWithFollowers(req, res) {
+  static async markAllNotificationsAsRead(req, res) {
     try {
       const { userId } = req.params;
 
-      const user = await userService.getUserWithFollowers(userId);
-      if (!user) return res.status(404).json({ message: "User not found" });
-      return res.status(200).json({ info: user });
-    } catch (e) {
-      return res.status(500).json({ error: e });
+      const notifications = await userService.markAllAsRead(userId);
+      if (!notifications)
+        return res.status(404).json({ message: "User not found" });
+      return res
+        .status(200)
+        .json({ message: "All notifications marked as read", notifications });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
   }
+
+  // static async getUserWithFollowers(req, res) {
+  //   try {
+  //     const { userId } = req.params;
+  //
+  //     const user = await userService.getUserWithFollowers(userId);
+  //     if (!user) return res.status(404).json({ message: "User not found" });
+  //     return res.status(200).json({ info: user });
+  //   } catch (e) {
+  //     return res.status(500).json({ error: e });
+  //   }
+  // }
 
   static async addInterests(req, res) {
     try {

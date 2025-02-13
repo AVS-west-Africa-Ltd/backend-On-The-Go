@@ -3,23 +3,37 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Notification = sequelize.define('Notification', {
-    userId: {
+    recipientId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: 'users',
+            key: 'id',
+        },
     },
-    followerId: {
+    senderId: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'users',
+            key: 'id',
+        },
+    },
+    type: {
+        type: DataTypes.ENUM('follow', 'unfollow', 'mention', 'like', 'comment'),
+        allowNull: false,
     },
     message: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    notificationType: {
-        type: DataTypes.STRING,
-    },
     read: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+    },
+    metadata: {
+        type: DataTypes.JSON,
+        defaultValue: {},
     },
     createdAt: {
         type: DataTypes.DATE,

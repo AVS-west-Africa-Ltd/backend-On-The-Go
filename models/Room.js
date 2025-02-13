@@ -24,7 +24,7 @@ const Room = sequelize.define('Room', {
     allowNull: true, // Optional field for room image URL
   },
   status: {
-    type: DataTypes.ENUM('Public', 'Private' , 'Broadcast'),
+    type: DataTypes.ENUM('Public', 'Private', 'Broadcast'),
     allowNull: false,
     defaultValue: 'Public', // Default to Public if not provided
   },
@@ -52,4 +52,11 @@ const Room = sequelize.define('Room', {
   timestamps: true, // This enables createdAt and updatedAt
 });
 
+// Define the association between Room and Chat
+Room.associate = (models) => {
+  Room.hasMany(models.Chat, {
+    foreignKey: 'room_id',
+    as: 'Chats', // Changed to match the error message
+  });
+};
 module.exports = Room;

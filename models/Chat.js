@@ -41,4 +41,12 @@ const Chat = sequelize.define('Chat', {
   timestamps: true
 });
 
+// Define the association between Chat and Room
+Chat.associate = (models) => {
+  Chat.belongsTo(models.Room, {
+    foreignKey: 'room_id', // Foreign key in the Chat model
+    as: 'room', // Alias for the association
+  });
+};
+
 module.exports = Chat;

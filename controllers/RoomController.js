@@ -1,14 +1,45 @@
+const fs = require("fs");
 const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
 const path = require("path");
 const multer = require("multer");
 const InvitationController = require("./InvitationController");
 const { sequelize } = require("../models/Room");
+const Chat = require('../models/Chat');
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `community/${Date.now()}-${file.originalname}`);
+    },
+  })
+});
+
+// Ensure the uploads directory exists
+const uploadDir = "uploads";
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Multer storage and configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Upload directory
+    cb(null, uploadDir); // Upload directory
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + "-" + file.originalname;
@@ -23,114 +54,8 @@ exports.initializeSocket = (socketIO) => {
   io = socketIO;
 };
 
-const upload = multer({ storage: storage });
 const userService = require("../services/UserService");
 
-// Get all rooms
-exports.getAllRooms = async (req, res) => {
-  try {
-    const rooms = await Room.findAll({
-      include: [
-        {
-          model: RoomMember,
-          as: "members", // Use 'members' alias from associations.js
-          attributes: ["user_id"],
-        },
-      ],
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Rooms retrieved successfully",
-      data: rooms,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-// Get rooms for a specific user
-exports.getUserRooms = async (req, res) => {
-  const { userId } = req.params;
-
-  try {
-    const rooms = await Room.findAll({
-      include: [
-        {
-          model: RoomMember,
-          as: "members",
-          where: { user_id: userId }, // Filter rooms where the user is a member
-          attributes: [], // We don't need to return member details
-        },
-      ],
-      attributes: [
-        "id",
-        "name",
-        "type",
-        "description",
-        "image_url",
-        "status",
-        "total_members",
-        "created_by",
-      ],
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "User rooms retrieved successfully",
-      data: rooms,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
-exports.getRoomById = async (req, res) => {
-  const { roomId } = req.params;
-
-  try {
-    const room = await Room.findByPk(roomId, {
-      attributes: [
-        "id",
-        "name",
-        "total_members",
-        "image_url",
-        "status",
-        "description",
-        "created_by",
-      ],
-      include: [
-        {
-          model: RoomMember,
-          as: "members",
-          attributes: ["user_id"],
-        },
-      ],
-    });
-
-    if (!room) {
-      return res.status(404).json({
-        success: false,
-        message: "Room not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Room retrieved successfully",
-      data: room,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-};
 // Create a new room
 exports.createRoom = async (req, res) => {
   const uploadHandler = upload.single("image_url");
@@ -155,9 +80,10 @@ exports.createRoom = async (req, res) => {
     }
 
     try {
-      let media = null;
+      const media = null
+
       if (req.file) {
-        media = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+        media = req.file.location.toString();
       }
 
       const room = await Room.create({
@@ -210,6 +136,124 @@ exports.createRoom = async (req, res) => {
   });
 };
 
+// Get all rooms
+exports.getAllRooms = async (req, res) => {
+  try {
+    const rooms = await Room.findAll({
+      include: [
+        {
+          model: RoomMember,
+          as: "members", // Use 'members' alias from associations.js
+          attributes: ["user_id"],
+        },
+      ],
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Rooms retrieved successfully",
+      data: rooms,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+// Get rooms for a specific user
+exports.getUserRooms = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const rooms = await Room.findAll({
+      include: [
+        {
+          model: RoomMember,
+          as: "members",
+          where: { user_id: userId },
+          attributes: [],
+        },
+        {
+          model: Chat,
+          as: "Chats", // Changed to match the model association
+          attributes: ['content', 'timestamp', 'sender_id'],
+          order: [['timestamp', 'DESC']],
+          limit: 1,
+        },
+      ],
+      attributes: [
+        "id",
+        "name",
+        "type",
+        "description",
+        "image_url",
+        "status",
+        "total_members",
+        "created_by",
+      ],
+    });
+
+    const formattedRooms = rooms.map(room => ({
+      ...room.toJSON(),
+      last_message: room.Chats?.[0] || null, // Updated to match the new alias
+    }));
+
+    res.status(200).json({
+      success: true,
+      message: "User rooms retrieved successfully",
+      data: formattedRooms,
+    });
+  } catch (error) {
+    console.error("Error fetching user rooms:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+exports.getRoomById = async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    const room = await Room.findByPk(roomId, {
+      attributes: [
+        "id",
+        "name",
+        "total_members",
+        "image_url",
+        "status",
+        "description",
+        "created_by",
+      ],
+      include: [
+        {
+          model: RoomMember,
+          as: "members",
+          attributes: ["user_id"],
+        },
+      ],
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Room retrieved successfully",
+      data: room,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
 // Rest of the code remains the same
 exports.addMember = async (req, res) => {
   const { room_id, user_id, is_invite_acceptance = false } = req.body;
@@ -280,7 +324,6 @@ exports.addMember = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 // Remove member with socket emission
 exports.removeMember = async (req, res) => {
   const { room_id, user_id } = req.body;
@@ -330,37 +373,69 @@ exports.removeMember = async (req, res) => {
 // New endpoint to get all users in a room
 exports.getRoomUsers = async (req, res) => {
   const { roomId } = req.params;
+  console.log(`[INFO] Received request to get users for room ID: ${roomId}`);
 
   try {
-    // First check if room exists
+    console.log(`[INFO] Fetching room details for room ID: ${roomId}`);
     const room = await Room.findByPk(roomId);
 
     if (!room) {
+      console.log(`[ERROR] Room with ID ${roomId} not found.`);
       return res.status(404).json({
         success: false,
         message: "Room not found"
       });
     }
 
-    // Get all room members with their user details
+    console.log(`[INFO] Room found: ${room.name}, Total Members: ${room.total_members}`);
+
+    console.log(`[INFO] Fetching room members for room ID: ${roomId}`);
     const roomMembers = await RoomMember.findAll({
       where: { room_id: roomId },
       attributes: ["user_id", "joined_at"]
     });
 
-    // Get user details for all members
+    console.log(`[INFO] Found ${roomMembers.length} members in the room.`);
+    console.log(`[INFO] Fetching user details for each member...`);
+
     const userDetails = await Promise.all(
       roomMembers.map(async (member) => {
-        const user = await userService.getUserById(member.user_id);
-        return {
-          user_id: member.user_id,
-          joined_at: member.joined_at,
-          username: user && user.username ? user.username : null,
-          email: user && user.email ? user.email : null,
-          picture: user && user.picture ? user.picture : null
-        };
+        try {
+          console.log(`[INFO] Fetching user data for user ID: ${member.user_id}`);
+          const user = await userService.getUserById(member.user_id);
+
+          if (!user) {
+            console.log(`[WARNING] User with ID ${member.user_id} not found.`);
+            return {
+              user_id: member.user_id,
+              joined_at: member.joined_at,
+              username: "Unknown",
+              email: "Unknown",
+              picture: null
+            };
+          }
+
+          return {
+            user_id: member.user_id,
+            joined_at: member.joined_at,
+            username: user.username || "Unknown",
+            email: user.email || "Unknown",
+            picture: user.picture || null
+          };
+        } catch (err) {
+          console.error(`[ERROR] Failed to fetch user ID ${member.user_id}: ${err.message}`);
+          return {
+            user_id: member.user_id,
+            joined_at: member.joined_at,
+            username: "Error fetching user",
+            email: "Error fetching user",
+            picture: null
+          };
+        }
       })
     );
+
+    console.log(`[SUCCESS] Successfully retrieved users for room ID: ${roomId}`);
 
     res.status(200).json({
       success: true,
@@ -373,14 +448,13 @@ exports.getRoomUsers = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error(`[ERROR] Failed to get room users: ${error.message}`);
     res.status(500).json({
       success: false,
       error: error.message
     });
   }
 };
-
-
 exports.getRoomMembers = async (req, res) => {
   const { room_id, limit = 5 } = req.query;
 
@@ -418,5 +492,4 @@ exports.getRoomMembers = async (req, res) => {
     });
   }
 };
-
 module.exports = exports;

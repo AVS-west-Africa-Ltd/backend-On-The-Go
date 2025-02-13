@@ -7,31 +7,76 @@ const sequelize = require('../config/database');
 const { io } = require('../app');
 const multer = require("multer");
 const path = require("path");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
-// Multer storage configuration for chat images
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/chat/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = `chat-${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
-  },
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
 const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  },
-  limits: {
-    fileSize: 5 * 1024 * 1024
-  }
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `chat/${Date.now()}-${file.originalname}`);
+    },
+  }),
 });
+
+exports.sendMessage = async (req, res) => {
+  const uploadHandler = upload.single("media");
+
+  uploadHandler(req, res, async (err) => {
+    if (err) {
+      console.error("Error uploading file:", err);
+      return res.status(400).json({ success: false, message: "File upload error", error: err.message });
+    }
+
+    const { room_id, sender_id, content, request = false } = req.body;
+
+    try {
+      const memberInfo = await RoomMember.findOne({ where: { room_id, user_id: sender_id } });
+      if (!memberInfo) {
+        return res.status(403).json({ success: false, message: "You are not a member of this room" });
+      }
+
+      const room = await Room.findOne({ where: { id: room_id } });
+      if (!room) {
+        return res.status(404).json({ success: false, message: "Room not found" });
+      }
+
+      if (room.broadcast_enabled && !memberInfo.is_admin) {
+        return res.status(403).json({ success: false, message: "Only administrators can send messages when broadcast mode is enabled" });
+      }
+
+      let media_url = req.file ? req.file.location : null;
+      const message = await Chat.create({
+        room_id,
+        sender_id,
+        content: content || "",
+        media_url,
+        status: "sent",
+        request,
+      });
+
+      if (io) {
+        io.emit(`room_${room_id}`, { ...message.toJSON() });
+      }
+
+      res.status(201).json({ success: true, message: "Message sent successfully", data: message });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+};
 
 exports.getRoomMessages = async (req, res) => {
   const { roomId } = req.params;
@@ -85,99 +130,6 @@ exports.getRoomMessages = async (req, res) => {
     });
   }
 };
-
-// Send a message
-exports.sendMessage = async (req, res) => {
-  const uploadHandler = upload.single("media");
-
-  uploadHandler(req, res, async (err) => {
-    if (err) {
-      console.error("Error uploading file:", err);
-      return res.status(400).json({
-        success: false,
-        message: err instanceof multer.MulterError
-          ? "File upload error"
-          : err.message
-      });
-    }
-
-    const { room_id, sender_id, content, request = false } = req.body;
-
-    try {
-      // First check if user is a member of the room
-      const memberInfo = await RoomMember.findOne({
-        where: { room_id, user_id: sender_id }
-      });
-
-      if (!memberInfo) {
-        return res.status(403).json({
-          success: false,
-          message: "You are not a member of this room"
-        });
-      }
-
-      // Get room details including broadcast status
-      const room = await Room.findOne({
-        where: { id: room_id }
-      });
-
-      if (!room) {
-        return res.status(403).json({
-          success: false,
-          message: "Room not found"
-        });
-      }
-
-      // Check broadcast permissions
-      if (room.broadcast_enabled && !memberInfo.is_admin) {
-        return res.status(403).json({
-          success: false,
-          message: "Only administrators can send messages when broadcast mode is enabled"
-        });
-      }
-
-      let media_url = null;
-      if (req.file) {
-        media_url = `${req.protocol}://${req.get("host")}/uploads/chat/${req.file.filename}`;
-      }
-
-      const message = await Chat.create({
-        room_id,
-        sender_id,
-        content: content || '',
-        media_url,
-        status: 'sent',
-        request
-      });
-
-      if (io) {
-        io.emit(`room_${room_id}`, {
-          id: message.id,
-          room_id,
-          sender_id,
-          content: content || '',
-          media_url,
-          status: 'sent',
-          request,
-          timestamp: message.createdAt
-        });
-      }
-
-      res.status(201).json({
-        success: true,
-        message: "Message sent successfully",
-        data: message,
-      });
-    } catch (error) {
-      console.error('Error sending message:', error);
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
-    }
-  });
-};
-
 // Get messages in a room
 exports.getMessages = async (req, res) => {
   const { room_id, user_id, limit = 5 } = req.query; // Default limit to 10
@@ -213,8 +165,6 @@ exports.getMessages = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
-
 exports.toggleBroadcast = async (req, res) => {
   try {
     const { room_id, user_id, broadcast_enabled } = req.body;
@@ -235,15 +185,11 @@ exports.toggleBroadcast = async (req, res) => {
       });
     }
 
-    // Check if user is an admin
-    const isAdmin = await RoomMember.findOne({
-      where: { room_id, user_id, is_admin: true }
-    });
-
-    if (!isAdmin) {
+    // Check if the user is the creator of the room (admin)
+    if (room.created_by !== user_id) {
       return res.status(403).json({
         success: false,
-        message: "Only an admin can toggle the broadcast feature"
+        message: "Only the room creator can toggle the broadcast feature"
       });
     }
 
@@ -261,7 +207,6 @@ exports.toggleBroadcast = async (req, res) => {
     return res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
   }
 };
-
 exports.getBroadcastStatus = async (req, res) => {
   try {
     const { room_id } = req.params;  // Extract room_id from URL
@@ -339,7 +284,6 @@ exports.getRoomMembers = async (req, res) => {
       });
   }
 };
-
 // Delete a message
 exports.deleteMessage = async (req, res) => {
   const { id, sender_id, room_id } = req.body;

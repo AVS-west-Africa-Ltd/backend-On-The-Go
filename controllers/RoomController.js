@@ -5,6 +5,7 @@ const path = require("path");
 const multer = require("multer");
 const InvitationController = require("./InvitationController");
 const { sequelize } = require("../models/Room");
+const Chat = require('../models/Chat');
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
@@ -79,7 +80,7 @@ exports.createRoom = async (req, res) => {
     }
 
     try {
-      let media = null
+      const media = null
 
       if (req.file) {
         media = req.file.location.toString();
@@ -163,8 +164,6 @@ exports.getAllRooms = async (req, res) => {
 // Get rooms for a specific user
 exports.getUserRooms = async (req, res) => {
   const { userId } = req.params;
-  console.log("Fetching rooms for user:", userId);
-
 
   try {
     const rooms = await Room.findAll({
@@ -172,8 +171,15 @@ exports.getUserRooms = async (req, res) => {
         {
           model: RoomMember,
           as: "members",
-          where: { user_id: userId }, // Filter rooms where the user is a member
-          attributes: [], // We don't need to return member details
+          where: { user_id: userId },
+          attributes: [],
+        },
+        {
+          model: Chat,
+          as: "Chats", // Changed to match the model association
+          attributes: ['content', 'timestamp', 'sender_id'],
+          order: [['timestamp', 'DESC']],
+          limit: 1,
         },
       ],
       attributes: [
@@ -188,12 +194,18 @@ exports.getUserRooms = async (req, res) => {
       ],
     });
 
+    const formattedRooms = rooms.map(room => ({
+      ...room.toJSON(),
+      last_message: room.Chats?.[0] || null, // Updated to match the new alias
+    }));
+
     res.status(200).json({
       success: true,
       message: "User rooms retrieved successfully",
-      data: rooms,
+      data: formattedRooms,
     });
   } catch (error) {
+    console.error("Error fetching user rooms:", error);
     res.status(500).json({
       success: false,
       error: error.message,

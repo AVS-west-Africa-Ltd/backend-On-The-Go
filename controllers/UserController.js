@@ -3,19 +3,30 @@ const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
 const path = require("path");
 const multer = require("multer");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
-// Multer storage and configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Upload directory
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `profiles/${Date.now()}-${file.originalname}`);
+    },
+  })
+});
 
 class UserController {
   static async CreateUser(req, res) {
@@ -57,9 +68,7 @@ class UserController {
       const { userId } = req.params;
 
       try {
-        const mediaPaths = `${req.protocol}://${req.get("host")}/uploads/${
-          req.file.filename
-        }`.toString();
+        const mediaPaths = req.file.location.toString();
 
         const user = await userService.updateUser(userId, {
           picture: mediaPaths,
@@ -246,17 +255,17 @@ class UserController {
     }
   }
 
-  static async getUserWithFollowers(req, res) {
-    try {
-      const { userId } = req.params;
-
-      const user = await userService.getUserWithFollowers(userId);
-      if (!user) return res.status(404).json({ message: "User not found" });
-      return res.status(200).json({ info: user });
-    } catch (e) {
-      return res.status(500).json({ error: e });
-    }
-  }
+  // static async getUserWithFollowers(req, res) {
+  //   try {
+  //     const { userId } = req.params;
+  //
+  //     const user = await userService.getUserWithFollowers(userId);
+  //     if (!user) return res.status(404).json({ message: "User not found" });
+  //     return res.status(200).json({ info: user });
+  //   } catch (e) {
+  //     return res.status(500).json({ error: e });
+  //   }
+  // }
 
   static async addInterests(req, res) {
     try {

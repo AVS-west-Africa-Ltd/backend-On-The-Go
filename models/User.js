@@ -43,6 +43,12 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     followingCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
+    },
+    profession: {
+        type: DataTypes.STRING,
+    },
+    skills: {
+        type: DataTypes.STRING,
     }
 }, {
     tableName: 'users', // Explicitly set table name
@@ -75,6 +81,24 @@ User.hasMany(Notification, {
     foreignKey: 'senderId',
     as: 'SentNotifications',
 });
+
+Notification.belongsTo(User, {
+    foreignKey: 'senderId',
+    as: 'Sender'
+});
+Notification.belongsTo(User, {
+    foreignKey: 'recipientId',
+    as: 'Recipient'
+});
+
+// User.hasMany(Notification, {
+//     foreignKey: 'senderId',
+//     as: 'SentNotifications'
+// });
+// User.hasMany(Notification, {
+//     foreignKey: 'recipientId',
+//     as: 'ReceivedNotifications'
+// });
 
 User.hasMany(BusinessSchema, { foreignKey: 'userId', onDelete: 'CASCADE' });
 

@@ -4,6 +4,7 @@ const UserFollower = require('../models/UserFollowers');
 const { Op } = require('sequelize');
 const Notification = require('../models/Notification');
 const sequelize = require('../config/database');
+const NotificationService = require('./NotificationService');
 
 class UserService {
     // Create a new user
@@ -70,9 +71,81 @@ class UserService {
     }
 
 
+    // static async followUser(followerId, followedId) {
+    //     const transaction = await sequelize.transaction();
+    //
+    //     try {
+    //         // Check if users exist and are different
+    //         if (followerId === followedId) {
+    //             throw new Error('Users cannot follow themselves');
+    //         }
+    //
+    //         const [follower, followed] = await Promise.all([
+    //             User.findByPk(followerId),
+    //             User.findByPk(followedId)
+    //         ]);
+    //
+    //         if (!follower || !followed) {
+    //             throw new Error('One or both users not found');
+    //         }
+    //
+    //         // Check if already following
+    //         const existingFollow = await UserFollower.findOne({
+    //             where: {
+    //                 followerId,
+    //                 followedId,
+    //                 status: 'active'
+    //             }
+    //         });
+    //
+    //         if (existingFollow) {
+    //             throw new Error('Already following this user');
+    //         }
+    //
+    //         // Create follow relationship
+    //         await UserFollower.create({
+    //             followerId,
+    //             followedId,
+    //             status: 'active'
+    //         }, { transaction });
+    //
+    //         // Update follower counts
+    //         await Promise.all([
+    //             User.increment('followingCount', {
+    //                 where: { id: followerId },
+    //                 transaction
+    //             }),
+    //             User.increment('followersCount', {
+    //                 where: { id: followedId },
+    //                 transaction
+    //             })
+    //         ]);
+    //
+    //         // Create notification
+    //         await Notification.create({
+    //             recipientId: followedId,
+    //             senderId: followerId,
+    //             type: 'follow',
+    //             message: `@${follower.username} started following you`,
+    //             metadata: {
+    //                 followerUsername: follower.username,
+    //                 followerPicture: follower.picture
+    //             }
+    //         }, { transaction });
+    //
+    //         await transaction.commit();
+    //         return true;
+    //
+    //     } catch (error) {
+    //         await transaction.rollback();
+    //         throw error;
+    //     }
+    // }
+
+
     static async followUser(followerId, followedId) {
         const transaction = await sequelize.transaction();
-        
+
         try {
             // Check if users exist and are different
             if (followerId === followedId) {
@@ -88,25 +161,30 @@ class UserService {
                 throw new Error('One or both users not found');
             }
 
-            // Check if already following
+            // Find any existing follow relationship regardless of status
             const existingFollow = await UserFollower.findOne({
                 where: {
                     followerId,
-                    followedId,
-                    status: 'active'
+                    followedId
                 }
             });
 
             if (existingFollow) {
-                throw new Error('Already following this user');
+                if (existingFollow.status === 'active') {
+                    throw new Error('Already following this user');
+                }
+                // Update existing record instead of creating new one
+                await existingFollow.update({
+                    status: 'active'
+                }, { transaction });
+            } else {
+                // Create new follow relationship
+                await UserFollower.create({
+                    followerId,
+                    followedId,
+                    status: 'active'
+                }, { transaction });
             }
-
-            // Create follow relationship
-            await UserFollower.create({
-                followerId,
-                followedId,
-                status: 'active'
-            }, { transaction });
 
             // Update follower counts
             await Promise.all([
@@ -121,11 +199,11 @@ class UserService {
             ]);
 
             // Create notification
-            await Notification.create({
+            const notification = await Notification.create({
                 recipientId: followedId,
                 senderId: followerId,
                 type: 'follow',
-                message: `@${follower.username} started following you`,
+                message: `${follower.username} started following you`,
                 metadata: {
                     followerUsername: follower.username,
                     followerPicture: follower.picture
@@ -133,7 +211,7 @@ class UserService {
             }, { transaction });
 
             await transaction.commit();
-            return true;
+            return { success: true, notification };
 
         } catch (error) {
             await transaction.rollback();
@@ -184,7 +262,7 @@ class UserService {
     static async getFollowers(userId) {
         // const offset = (page - 1) * limit;
 
-        return User.findOne({
+        return await User.findOne({
             where: { id: userId },
             include: [{
                 model: User,

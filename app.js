@@ -9,14 +9,15 @@ const router = require("./routes/routes");
 const path = require('path');
 const setupSocketIO = require('./services/socketSetup');
 const setupAssociations = require('./models/associations');
-const mediaCleanupService = require('./mediaCleanupService');
-const cluster = require('cluster');
-const os = require('os');
+// const mediaCleanupService = require('./mediaCleanupService');
+// const cluster = require('cluster');
+// const os = require('os');
 // const helmet = require('helmet');
 const compression = require('compression');
 // const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const errorHandler = require('./handlers/errorHandler');
+const socketConfig = require('./services/UserNotificationSocket');
 
 
 
@@ -33,6 +34,12 @@ const PORT = process.env.PORT || 5000;
   // Security Middleware
   // app.use(helmet());
   // CORS Headers
+
+
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'landing.html'));
+  });
+
   app.use(validateApiKey);
 
   app.use((req, res, next) => {
@@ -65,12 +72,10 @@ const PORT = process.env.PORT || 5000;
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use('/uploads', express.static(path.join(__dirname, './uploads')));
   app.use("/api/v1", router);
-  app.get('/', (req, res) => {
-    res.send(`hello from port ${PORT}`);
-  });
 
   const server = http.createServer(app);
   const io = setupSocketIO(server);
+  socketConfig.initialize(server);
 
   app.get('/', (req, res) => {
     res.send('<h1>Welcome Onthego server</h1>');

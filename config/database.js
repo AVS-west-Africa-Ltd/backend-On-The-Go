@@ -13,12 +13,12 @@ const config = require("./config");
 // });
 
 const sequelize = new Sequelize(
-  config.production.database,
-  config.production.username,
-  config.production.password,
+  config.development.database,
+  config.development.username,
+  config.development.password,
   {
-    host: config.production.host,
-    port: config.production.port,
+    host: config.development.host,
+    port: config.development.port,
     dialect: "mysql",
   }
 );

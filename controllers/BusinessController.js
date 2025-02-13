@@ -1,5 +1,4 @@
-// const fs = require("fs");
-// const path = require("path");
+require("dotenv").config();
 const multer = require("multer");
 
 const Business = require("../models/Business");
@@ -72,6 +71,8 @@ const businessController = {
 
         try {
           const socialArray = social ? JSON.parse(social) : [];
+          const hoursArray = hours ? JSON.parse(hours) : [];
+          const wifiArray = wifi ? JSON.parse(wifi) : [];
 
           const business = await Business.create({
             userId,
@@ -80,9 +81,9 @@ const businessController = {
             address,
             description,
             amenities,
-            hours,
+            hours: hoursArray,
             social: socialArray,
-            wifi,
+            wifi: wifiArray,
           });
 
           res.status(201).json({
@@ -114,29 +115,18 @@ const businessController = {
           const media = req.files.map((file) => file.path);
 
           const logo = req.files.logo
-            ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.logo[0].filename}`
+            ? `${process.env.BASE_URL}uploads/${req.files.logo[0].filename}`
             : null;
           const cacDoc = req.files.cacDoc
-            ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.cacDoc[0].filename}`
+            ? `${process.env.BASE_URL}uploads/${req.files.cacDoc[0].filename}`
             : null;
-
-          // const logo = req.files.logo
-          //   ? await cloudinary.uploader.upload(req.files.logo[0].path, {
-          //       folder: "business_posts",
-          //     })
-          //   : null;
-
-          // const cacDoc = req.files.cacDoc
-          //   ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
-          //       folder: "business_posts",
-          //     })
-          //   : null;
 
           // Save the Cloudinary URLs or null if not uploaded
           const logoUrl = logo ? logo.secure_url : null;
           const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
-
           const socialArray = social ? JSON.parse(social) : [];
+          const hoursArray = hours ? JSON.parse(hours) : [];
+          const wifiArray = wifi ? JSON.parse(wifi) : [];
 
           const business = await Business.create({
             userId,
@@ -147,9 +137,9 @@ const businessController = {
             logo: logoUrl,
             amenities,
             cacDoc: cacDocUrl,
-            hours,
+            hours: hoursArray,
             social: socialArray,
-            wifi,
+            wifi: wifiArray,
           });
 
           res.status(201).json({
@@ -272,27 +262,11 @@ const businessController = {
 
         // Extract new file paths (if any) and save relative paths
         const updatedLogo = req.files.logo
-          ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.logo[0].filename}`
+          ? `${process.env.BASE_URL}uploads/${req.files.logo[0].filename}`
           : business.logo; // Keep existing logo if not updated
         const updatedCacDoc = req.files.cacDoc
-          ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.cacDoc[0].filename}`
+          ? `${process.env.BASE_URL}uploads/${req.files.cacDoc[0].filename}`
           : business.cacDoc;
-
-        // const logo = req.files.logo
-        //   ? await cloudinary.uploader.upload(req.files.logo[0].path, {
-        //       folder: "business_posts",
-        //     })
-        //   : null;
-
-        // const cacDoc = req.files.cacDoc
-        //   ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
-        //       folder: "business_posts",
-        //     })
-        //   : null;
-
-        // Save the Cloudinary URLs or null if not uploaded
-        // const logoUrl = logo ? logo.secure_url : null;
-        // const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
 
         const socialArray = social ? JSON.parse(social) : business.social;
 

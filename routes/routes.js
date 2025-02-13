@@ -25,13 +25,15 @@ router.put("/update/user/:userId", catchErrors(UserController.updateUser));
 router.put("/update/userimage/:userId", catchErrors(UserController.UpdateUserImage)); // Update profile image
 router.post("/:userId/follow/:followedId", catchErrors(UserController.addFollower));
 router.delete("/:userId/unfollow/:followedId", catchErrors(UserController.removeFollower));
+router.get('/my-followers/:userId', catchErrors(UserController.getFollowers));
+router.get('/users-following-me/:userId', catchErrors(UserController.getFollowing));
 router.get("/notifications/:userId", catchErrors(UserController.getNotifications));
 router.patch(
   "/notifications/:notificationId/:userId/read",
     catchErrors(UserController.markNotificationAsRead)
 );
 router.put("/mark-all-as-read/:userId", catchErrors(UserController.markAllNotificationsAsRead));
-router.get("/:userId/followers", catchErrors(UserController.getUserWithFollowers));
+// router.get("/:userId/followers", catchErrors(UserController.getUserWithFollowers));
 router.post("/:userId/interests", catchErrors(UserController.addInterests));
 router.put("/:userId/interests/:index", catchErrors(UserController.updateInterest));
 router.delete("/:userId/interests/:index", catchErrors(UserController.deleteInterest));

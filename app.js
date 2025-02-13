@@ -56,8 +56,19 @@ const PORT = process.env.PORT || 5000;
   setupAssociations();
 
   app.use(cors());
-// Compression
-  app.use(compression());
+  // Compression
+  app.use(
+      compression({
+        threshold: 0, // Compress everything, even small responses
+        level: 9, // Maximum compression (0-9, where 9 is the most compressed)
+        filter: (req, res) => {
+          if (req.headers['x-no-compression']) {
+            return false; // Disable compression if client requests no compression
+          }
+          return compression.filter(req, res);
+        },
+      })
+  );
 
 // Logging
   if (process.env.NODE_ENV === 'production') {

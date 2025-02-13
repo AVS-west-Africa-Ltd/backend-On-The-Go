@@ -1,7 +1,7 @@
 const userService = require("../services/UserService");
 const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
-const path = require("path");
+// const path = require("path");
 const multer = require("multer");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
@@ -27,6 +27,7 @@ const upload = multer({
     },
   })
 });
+
 
 class UserController {
   static async CreateUser(req, res) {

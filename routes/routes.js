@@ -58,12 +58,23 @@ router.delete(
 );
 
 // Business Profile
-router.post("/register-business", catchErrors(businessController.createBusiness));
-router.get("/businesses/:id", catchErrors(businessController.getBusinessById));
-router.get("/businesses", catchErrors(businessController.getAllBusinesses));
-router.get("/business/:userId/user", catchErrors(businessController.getUserBusinesses));
-router.put("/businesses/:id", catchErrors(businessController.updateBusiness));
-router.delete("/businesses/:id", catchErrors(businessController.deleteBusiness));
+
+router.post("/register-business", businessController.createBusiness);
+router.post("/business/toggle-follow", businessController.toggleFollow);
+router.get("/businesses/:id", businessController.getBusinessById);
+router.get("/businesses", businessController.getAllBusinesses);
+router.get("/business/:userId/user", businessController.getUserBusinesses);
+router.get("/business/:businessId/following", businessController.getFollowing);
+router.put("/businesses/:id", businessController.updateBusiness);
+router.delete("/businesses/:id", businessController.deleteBusiness);
+
+// router.post("/register-business", catchErrors(businessController.createBusiness));
+// router.get("/businesses/:id", catchErrors(businessController.getBusinessById));
+// router.get("/businesses", catchErrors(businessController.getAllBusinesses));
+// router.get("/business/:userId/user", catchErrors(businessController.getUserBusinesses));
+// router.put("/businesses/:id", catchErrors(businessController.updateBusiness));
+// router.delete("/businesses/:id", catchErrors(businessController.deleteBusiness));
+
 router.get(
   "/businesses/:businessId/posts",
     catchErrors(businessController.getBusinessPosts)

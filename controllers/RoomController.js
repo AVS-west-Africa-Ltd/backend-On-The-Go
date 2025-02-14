@@ -80,7 +80,7 @@ exports.createRoom = async (req, res) => {
     }
 
     try {
-      const media = null
+      let media = null
 
       if (req.file) {
         media = req.file.location.toString();

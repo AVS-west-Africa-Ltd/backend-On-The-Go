@@ -6,7 +6,6 @@ const multer = require("multer");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
-
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -25,16 +24,15 @@ const upload = multer({
     key: function (req, file, cb) {
       cb(null, `profiles/${Date.now()}-${file.originalname}`);
     },
-  })
+  }),
 });
-
 
 class UserController {
   static async CreateUser(req, res) {
     try {
-      const { username, email, password } = req.body;
+      const { email, password } = req.body;
 
-      if (!username || !email || !password)
+      if (!email || !password)
         return res.status(400).json({ message: "All fields are required" });
 
       let payload = { where: { email: email } };
@@ -192,7 +190,8 @@ class UserController {
       const { userId } = req.params;
 
       const followers = await userService.getFollowers(userId);
-      if (!followers) return res.status(404).json({ message: "User not found" });
+      if (!followers)
+        return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ followers: followers });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -204,7 +203,8 @@ class UserController {
       const { userId } = req.params;
 
       const following = await userService.getFollowing(userId);
-      if (!following) return res.status(404).json({ message: "User not found" });
+      if (!following)
+        return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ following: following });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -228,9 +228,7 @@ class UserController {
     try {
       const { notificationId, userId } = req.params;
 
-      const notification = await userService.markAsRead(
-        notificationId, userId
-      );
+      const notification = await userService.markAsRead(notificationId, userId);
       if (!notification)
         return res.status(404).json({ message: "Notification not found" });
       return res

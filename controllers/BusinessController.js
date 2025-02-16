@@ -1,49 +1,38 @@
-// const fs = require("fs");
-// const path = require("path");
+require("dotenv").config();
 const multer = require("multer");
+// const multer = require("multer");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
 const Business = require("../models/Business");
 const { BusinessPosts, BusinessFollowers } = require("../models/index");
-// const { CloudinaryStorage } = require("multer-storage-cloudinary");
-// const cloudinary = require("../config/cloudinaryConfig");
 
-// Multer storage and configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "business_posts", // Cloudinary folder where files will be stored
-//     allowed_formats: ["jpg", "jpeg", "pdf", "png", "gif"], // Allowed file types
-//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
-//   },
-// });
+// gh
 
-// File filter for images and PDFs
-const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype.startsWith("image/") ||
-    file.mimetype === "application/pdf"
-  ) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images and PDF documents are allowed!"), false);
-  }
-};
-
-// Multer middleware
-const upload = multer({ storage, fileFilter });
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `business/${Date.now()}-${file.originalname}`);
+    },
+  }),
+});
 
 const businessController = {
   // Create a new Business
   createBusiness: async (req, res) => {
+    console.log("Request Body:", req.body);
     const uploadHandler = upload.fields([
       { name: "logo", maxCount: 1 },
       { name: "cacDoc", maxCount: 1 },
@@ -57,112 +46,54 @@ const businessController = {
           .json({ message: "Error uploading files", error: err.message });
       }
 
-      if (!req.files || (!req.files["logo"] && !req.files["cacDoc"])) {
-        const {
+      const {
+        userId,
+        name,
+        type,
+        address,
+        description,
+        amenities,
+        hours,
+        social,
+        wifi,
+      } = req.body;
+
+      try {
+        // Extract file URLs from S3
+        const logoUrl = req.files.logo ? req.files.logo[0].location : null;
+        const cacDocUrl = req.files.cacDoc
+          ? req.files.cacDoc[0].location
+          : null;
+
+        const socialArray = social ? JSON.parse(social) : null;
+        const wifiArray = wifi ? JSON.parse(wifi) : null;
+        const hoursArray = hours ? JSON.parse(hours) : null;
+        const amenitiesArray = amenities ? JSON.parse(amenities) : null;
+
+        const business = await Business.create({
           userId,
           name,
           type,
           address,
           description,
-          amenities,
-          hours,
-          social,
-          wifi,
-        } = req.body;
+          logo: logoUrl,
+          amenities: amenitiesArray,
+          cacDoc: cacDocUrl,
+          hours: hoursArray,
+          social: socialArray,
+          wifi: wifiArray,
+        });
 
-        try {
-          const socialArray = social ? JSON.parse(social) : [];
-
-          const business = await Business.create({
-            userId,
-            name,
-            type,
-            address,
-            description,
-            amenities,
-            hours,
-            social: socialArray,
-            wifi,
-          });
-
-          res.status(201).json({
-            message: "Business created successfully",
-            data: business,
-          });
-        } catch (error) {
-          console.error("Error creating business:", error);
-          res.status(500).json({
-            message: "Error creating business",
-            error: error.message,
-          });
-        }
-      } else {
-        const {
-          userId,
-          name,
-          type,
-          address,
-          description,
-          amenities,
-          hours,
-          social,
-          wifi,
-        } = req.body;
-
-        try {
-          // Extract file paths from Multer
-          const media = req.files.map((file) => file.path);
-
-          const logo = req.files.logo
-            ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.logo[0].filename}`
-            : null;
-          const cacDoc = req.files.cacDoc
-            ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.cacDoc[0].filename}`
-            : null;
-
-          // const logo = req.files.logo
-          //   ? await cloudinary.uploader.upload(req.files.logo[0].path, {
-          //       folder: "business_posts",
-          //     })
-          //   : null;
-
-          // const cacDoc = req.files.cacDoc
-          //   ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
-          //       folder: "business_posts",
-          //     })
-          //   : null;
-
-          // Save the Cloudinary URLs or null if not uploaded
-          const logoUrl = logo ? logo.secure_url : null;
-          const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
-
-          const socialArray = social ? JSON.parse(social) : [];
-
-          const business = await Business.create({
-            userId,
-            name,
-            type,
-            address,
-            description,
-            logo: logoUrl,
-            amenities,
-            cacDoc: cacDocUrl,
-            hours,
-            social: socialArray,
-            wifi,
-          });
-
-          res.status(201).json({
-            message: "Business created successfully",
-            data: business,
-          });
-        } catch (error) {
-          console.error("Error creating business:", error);
-          res.status(500).json({
-            message: "Error creating business",
-            error: error.message,
-          });
-        }
+        res.status(201).json({
+          message: "Business created successfully",
+          data: business,
+        });
+      } catch (error) {
+        console.error("Error creating business:", error);
+        res.status(500).json({
+          message: "Error creating business",
+          error: error.message,
+        });
       }
     });
   },
@@ -171,9 +102,19 @@ const businessController = {
   getAllBusinesses: async (req, res) => {
     try {
       const businesses = await Business.findAll();
+
+      // Parse JSON strings into objects
+      const parsedBusinesses = businesses.map((business) => ({
+        ...business.toJSON(),
+        amenities: JSON.parse(business.amenities),
+        hours: JSON.parse(business.hours),
+        social: JSON.parse(business.social),
+        wifi: JSON.parse(business.wifi),
+      }));
+
       return res.status(200).json({
         message: "Businesses retrieved successfully",
-        data: businesses,
+        data: parsedBusinesses,
       });
     } catch (error) {
       return res.status(500).json({
@@ -190,12 +131,6 @@ const businessController = {
       const { userId } = req.params;
       const business = await Business.findOne({
         where: { userId: userId },
-        // include: [
-        //   {
-        //     model: Business,
-        //     as: "businesses", // Match the alias used in the association
-        //   },
-        // ],
       });
 
       if (!business) {
@@ -204,10 +139,19 @@ const businessController = {
         });
       }
 
-      return res.status(200).json(business);
+      // Parse stringified JSON fields
+      const formattedBusiness = {
+        ...business.toJSON(), // Convert Sequelize model instance to plain object
+        amenities: JSON.parse(business.amenities || "[]"),
+        hours: JSON.parse(business.hours || "{}"),
+        social: JSON.parse(business.social || "{}"),
+        wifi: JSON.parse(business.wifi || "[]"),
+      };
+
+      return res.status(200).json(formattedBusiness);
     } catch (error) {
       console.error("Error fetching user's businesses:", error);
-      throw error;
+      res.status(500).json({ message: "Internal Server Error" });
     }
   },
 
@@ -235,7 +179,6 @@ const businessController = {
 
   // Update a Business
   updateBusiness: async (req, res) => {
-    console.log(0);
     const uploadHandler = upload.fields([
       { name: "logo", maxCount: 1 },
       { name: "cacDoc", maxCount: 1 },
@@ -258,8 +201,7 @@ const businessController = {
         amenities,
         hours,
         social,
-        wifiName,
-        wifiPassword,
+        wifi,
       } = req.body;
 
       try {
@@ -270,49 +212,58 @@ const businessController = {
           return res.status(404).json({ message: "Business not found" });
         }
 
-        // Extract new file paths (if any) and save relative paths
+        // Extract new file URLs (if any) from S3
         const updatedLogo = req.files.logo
-          ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.logo[0].filename}`
-          : business.logo; // Keep existing logo if not updated
+          ? req.files.logo[0].location
+          : business.logo;
         const updatedCacDoc = req.files.cacDoc
-          ? `https://api.onthegoafrica.com/api/v1/uploads/${req.files.cacDoc[0].filename}`
+          ? req.files.cacDoc[0].location
           : business.cacDoc;
 
-        // const logo = req.files.logo
-        //   ? await cloudinary.uploader.upload(req.files.logo[0].path, {
-        //       folder: "business_posts",
-        //     })
-        //   : null;
-
-        // const cacDoc = req.files.cacDoc
-        //   ? await cloudinary.uploader.upload(req.files.cacDoc[0].path, {
-        //       folder: "business_posts",
-        //     })
-        //   : null;
-
-        // Save the Cloudinary URLs or null if not uploaded
-        // const logoUrl = logo ? logo.secure_url : null;
-        // const cacDocUrl = cacDoc ? cacDoc.secure_url : null;
-
+        // Ensure JSON fields are correctly parsed before storing/updating
         const socialArray = social ? JSON.parse(social) : business.social;
+        const wifiArray = wifi ? JSON.parse(wifi) : business.wifi;
+        const hoursArray = hours ? JSON.parse(hours) : business.hours;
+        const amenitiesArray = amenities
+          ? JSON.parse(amenities)
+          : business.amenities;
 
+        // Update business fields
         business.name = name || business.name;
         business.type = type || business.type;
         business.address = address || business.address;
         business.description = description || business.description;
-        business.logo = updatedLogo;
-        business.amenities = amenities || business.amenities;
-        business.cacDoc = updatedCacDoc;
-        business.hours = hours || business.hours;
-        business.social = socialArray;
-        business.wifiName = wifiName || business.wifiName;
-        business.wifiPassword = wifiPassword || business.wifiPassword;
+        business.logo = updatedLogo || business.logo;
+        business.amenities = amenitiesArray || business.amenities;
+        business.cacDoc = updatedCacDoc || business.cacDoc;
+        business.hours = hoursArray || business.hours;
+        business.social = socialArray || business.social;
+        business.wifi = wifiArray || business.wifi;
 
         await business.save();
 
+        // Ensure the response data is formatted properly
         res.status(200).json({
           message: "Business updated successfully",
-          data: business,
+          data: {
+            ...business.toJSON(),
+            social:
+              typeof business.social === "string"
+                ? JSON.parse(business.social)
+                : business.social,
+            wifi:
+              typeof business.wifi === "string"
+                ? JSON.parse(business.wifi)
+                : business.wifi,
+            amenities:
+              typeof business.amenities === "string"
+                ? JSON.parse(business.amenities)
+                : business.amenities,
+            hours:
+              typeof business.hours === "string"
+                ? JSON.parse(business.hours)
+                : business.hours,
+          },
         });
       } catch (error) {
         console.error("Error updating business:", error);
@@ -325,7 +276,6 @@ const businessController = {
   },
 
   // Delete a Business
-
   deleteBusiness: async (req, res) => {
     try {
       const { id } = req.params;

@@ -16,6 +16,7 @@ router.get('/:room_id/broadcast-status', chatController.getBroadcastStatus);
 
 // Room operations
 router.post("/room/create", roomController.createRoom);
+router.delete("/room/:roomId", roomController.deleteRoom);
 router.post("/room/member/add", roomController.addMember);
 router.delete("/room/member/remove", roomController.removeMember);
 router.get("/rooms", roomController.getAllRooms);

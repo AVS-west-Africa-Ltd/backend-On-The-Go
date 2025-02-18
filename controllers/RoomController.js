@@ -283,7 +283,7 @@ exports.addMember = async (req, res) => {
     const result = await sequelize.transaction(async (t) => {
       // Add member to room
       await room.increment("total_members", { by: 1 }, { transaction: t });
-      
+
       const member = await RoomMember.create({
         room_id,
         user_id,
@@ -488,6 +488,88 @@ exports.getRoomMembers = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error fetching room members",
+      error: error.message
+    });
+  }
+};
+
+exports.deleteRoom = async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    const room = await Room.findByPk(roomId, {
+      include: [{
+        model: RoomMember,
+        as: "members",
+        attributes: ["user_id"],
+      }]
+    });
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found"
+      });
+    }
+
+    // Get list of member IDs before deletion for socket notifications
+    const memberIds = room.members.map(member => member.user_id);
+
+    // Start transaction for atomic operations
+    await sequelize.transaction(async (t) => {
+      // Delete all room members
+      await RoomMember.destroy({
+        where: { room_id: roomId },
+        transaction: t
+      });
+
+      // Delete all chats in the room
+      await Chat.destroy({
+        where: { room_id: roomId },
+        transaction: t
+      });
+
+      // Delete the room itself
+      await room.destroy({ transaction: t });
+
+      // If room has an image in S3, delete it
+      if (room.image_url) {
+        try {
+          const key = room.image_url.split('/').pop();
+          await s3.deleteObject({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: `community/${key}`
+          }).promise();
+        } catch (error) {
+          console.error('Error deleting room image from S3:', error);
+          // Continue with room deletion even if image deletion fails
+        }
+      }
+    });
+
+    // Emit socket events for room deletion
+    if (io) {
+      // Emit general room deleted event
+      io.emit('room_deleted', { roomId });
+
+      // Notify each member of the room deletion
+      memberIds.forEach(userId => {
+        io.emit(`user_${userId}_rooms_updated`, {
+          type: 'room_deleted',
+          roomId
+        });
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Room and all associated data deleted successfully"
+    });
+
+  } catch (error) {
+    console.error('Error deleting room:', error);
+    res.status(500).json({
+      success: false,
       error: error.message
     });
   }

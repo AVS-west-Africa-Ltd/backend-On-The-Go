@@ -5,17 +5,16 @@ const path = require("path");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
-
 // Maximum file size (5MB)
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
 // Allowed file types
 const ALLOWED_FILE_TYPES = {
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
-  'image/gif': 'gif',
-  'video/mp4': 'mp4',
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/gif": "gif",
+  "video/mp4": "mp4",
   // 'application/pdf': 'pdf'
 };
 
@@ -25,12 +24,20 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
 });
 
-
 // File filter function
 const fileFilter = (req, file, cb) => {
   // Check file type
   if (!ALLOWED_FILE_TYPES[file.mimetype]) {
-    cb(new Error(`File type ${file.mimetype} is not allowed. Allowed types: ${Object.keys(ALLOWED_FILE_TYPES).join(', ')}`), false);
+    cb(
+      new Error(
+        `File type ${
+          file.mimetype
+        } is not allowed. Allowed types: ${Object.keys(ALLOWED_FILE_TYPES).join(
+          ", "
+        )}`
+      ),
+      false
+    );
     return;
   }
   cb(null, true);
@@ -48,7 +55,6 @@ const fileFilter = (req, file, cb) => {
 //   next(error);
 // };
 
-
 const upload = multer({
   storage: multerS3({
     s3: s3,
@@ -64,9 +70,9 @@ const upload = multer({
   }),
   limits: {
     fileSize: MAX_FILE_SIZE,
-    files: 5 // Maximum number of files per upload
+    files: 5, // Maximum number of files per upload
   },
-  fileFilter: fileFilter
+  fileFilter: fileFilter,
 });
 
 class PostController {
@@ -77,8 +83,8 @@ class PostController {
       if (err) {
         console.error("Error uploading files:", err);
         return res
-            .status(501)
-            .json({ message: "Error uploading files", error: err.message });
+          .status(501)
+          .json({ message: "Error uploading files", error: err.message });
       }
 
       const { userId, businessId, description, rating } = req.body;
@@ -88,9 +94,7 @@ class PostController {
 
       try {
         // Get the S3 URLs from the uploaded files
-        const media = req.files
-            .map((file) => file.location)
-            .toString();
+        const media = req.files.map((file) => file.location).toString();
 
         let payload = { userId, description, rating, businessId, media };
 
@@ -98,7 +102,7 @@ class PostController {
 
         return res.status(201).json({
           message: "Post successfully created",
-          post
+          post,
         });
       } catch (error) {
         console.error("Error creating post:", error);

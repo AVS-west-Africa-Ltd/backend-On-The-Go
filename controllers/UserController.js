@@ -6,7 +6,6 @@ const multer = require("multer");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
-
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -25,9 +24,8 @@ const upload = multer({
     key: function (req, file, cb) {
       cb(null, `profiles/${Date.now()}-${file.originalname}`);
     },
-  })
+  }),
 });
-
 
 class UserController {
   static async CreateUser(req, res) {
@@ -165,9 +163,24 @@ class UserController {
   static async addFollower(req, res) {
     try {
       const { userId, followedId } = req.params;
-      const user = await userService.followUser(userId, followedId);
+      const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (!followedType || !["user", "business"].includes(followedType)) {
+        return res.status(400).json({
+          message:
+            "Invalid or missing followedType (must be 'user' or 'business')",
+        });
+      }
+
+      const follow = await userService.followUser(
+        userId,
+        followedId,
+        followedType
+      );
+
+      if (!follow)
+        return res.status(404).json({ message: "User or Business not found" });
+
       return res.status(200).json({ message: "Follower added successfully" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -177,9 +190,23 @@ class UserController {
   static async removeFollower(req, res) {
     try {
       const { userId, followedId } = req.params;
-      const user = await userService.unfollowUser(userId, followedId);
+      const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (!followedType || !["user", "business"].includes(followedType)) {
+        return res.status(400).json({
+          message:
+            "Invalid or missing followedType (must be 'user' or 'business')",
+        });
+      }
+
+      const follow = await userService.unfollowUser(
+        userId,
+        followedId,
+        followedType
+      );
+
+      if (!follow)
+        return res.status(404).json({ message: "User or Business not found" });
 
       return res.status(200).json({ message: "Follower removed successfully" });
     } catch (error) {
@@ -187,13 +214,36 @@ class UserController {
     }
   }
 
+  // static async getFollowers(req, res) {
+  //   try {
+  //     const { userId } = req.params;
+
+  //     const followers = await userService.getFollowers(userId);
+  //     if (!followers)
+  //       return res.status(404).json({ message: "User not found" });
+  //     return res.status(200).json({ followers: followers });
+  //   } catch (error) {
+  //     return res.status(500).json({ error: error.message });
+  //   }
+  // }
+
   static async getFollowers(req, res) {
     try {
-      const { userId } = req.params;
+      const { userId, followedType } = req.params; // followedType can be 'user' or 'business'
 
-      const followers = await userService.getFollowers(userId);
-      if (!followers) return res.status(404).json({ message: "User not found" });
-      return res.status(200).json({ followers: followers });
+      if (!["user", "business"].includes(followedType)) {
+        return res.status(400).json({
+          message: "Invalid followedType. Must be 'user' or 'business'",
+        });
+      }
+
+      const followers = await userService.getFollowers(userId, followedType);
+
+      if (!followers) {
+        return res.status(404).json({ message: `${followedType} not found` });
+      }
+
+      return res.status(200).json({ followers });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -204,7 +254,8 @@ class UserController {
       const { userId } = req.params;
 
       const following = await userService.getFollowing(userId);
-      if (!following) return res.status(404).json({ message: "User not found" });
+      if (!following)
+        return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ following: following });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -228,9 +279,7 @@ class UserController {
     try {
       const { notificationId, userId } = req.params;
 
-      const notification = await userService.markAsRead(
-        notificationId, userId
-      );
+      const notification = await userService.markAsRead(notificationId, userId);
       if (!notification)
         return res.status(404).json({ message: "Notification not found" });
       return res

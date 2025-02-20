@@ -70,10 +70,6 @@ const businessPostsController = {
           return res.status(404).json({ message: "Business not found" });
         }
 
-        // const mediaPaths = req.files.map(
-        //   (file) =>
-        //     `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
-        // );
         const mediaPaths = req.files.map((file) => file.location);
 
         // Create a new post associated with the business

@@ -1,27 +1,34 @@
 // models/UserFollowers.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-const UserFollowers = sequelize.define('UserFollowers', {
+const UserFollowers = sequelize.define(
+  "UserFollowers",
+  {
     followerId: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
     followedId: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    followedType: {
+      type: DataTypes.ENUM("user", "business"), // Distinguishes users from businesses
+      allowNull: false,
     },
     status: {
-        type: DataTypes.ENUM('active', 'blocked'),
-        defaultValue: 'active',
+      type: DataTypes.ENUM("active", "blocked"),
+      defaultValue: "active",
     },
     followedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
-},{
-tableName: 'userfollowers' // Explicitly set table name
-}
+  },
+  {
+    tableName: "userfollowers",
+  }
 );
 
 module.exports = UserFollowers;

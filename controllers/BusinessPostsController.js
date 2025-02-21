@@ -44,6 +44,7 @@ const upload = multer({
 //     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
 //   },
 // });
+//
 
 // const upload = multer({ storage: storage });
 

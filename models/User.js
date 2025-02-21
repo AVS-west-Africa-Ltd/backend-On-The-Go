@@ -49,6 +49,9 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     },
     skills: {
         type: DataTypes.STRING,
+    },
+    gender: {
+        type: DataTypes.STRING,
     }
 }, {
     tableName: 'users', // Explicitly set table name

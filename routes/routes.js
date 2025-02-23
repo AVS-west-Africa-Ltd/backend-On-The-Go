@@ -37,6 +37,10 @@ router.put("/mark-all-as-read/:userId", catchErrors(UserController.markAllNotifi
 router.post("/:userId/interests", catchErrors(UserController.addInterests));
 router.put("/:userId/interests/:index", catchErrors(UserController.updateInterest));
 router.delete("/:userId/interests/:index", catchErrors(UserController.deleteInterest));
+router.post("/forgot-password", catchErrors(UserController.ForgotPassword));
+router.get("/confirm-password-otp/:otp", catchErrors(UserController.confirmPasswordOTP))
+router.put("/reset-password/:otp", catchErrors(UserController.ResetPassword));
+
 
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));

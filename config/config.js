@@ -33,6 +33,9 @@ module.exports = {
         //     port: 3306,
         //     dialect: 'mysql',
         // },
-    APIKEY: '26a3281bfc65b39527447691941d6a707357a1278b1b2ec91742faec9de53ac8'
+    APIKEY: '26a3281bfc65b39527447691941d6a707357a1278b1b2ec91742faec9de53ac8',
+    EMAIL_HOST: 'smtp.gmail.com',
+    EMAIL_ADDRESS: 'otitojuoluwapelumi@gmail.com',
+    EMAIL_PASSWORD: 'tkqt ibao vzbo wtvn'
 };
 

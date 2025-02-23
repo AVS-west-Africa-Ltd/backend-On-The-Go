@@ -32,7 +32,7 @@ class UserService {
         try {
             return await User.findOne(props);
         } catch (error) {
-            throw new Error('Error fetching user');
+            throw error;
         }
     }
 

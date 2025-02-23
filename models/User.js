@@ -52,7 +52,13 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     },
     gender: {
         type: DataTypes.STRING,
-    }
+    },
+    resetPasswordOTP: {
+        type: DataTypes.INTEGER,
+    },
+    resetPasswordExpires: {
+        type: DataTypes.TEXT
+    },
 }, {
     tableName: 'users', // Explicitly set table name
     indexes: [

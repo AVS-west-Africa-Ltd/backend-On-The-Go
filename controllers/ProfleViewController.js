@@ -1,4 +1,4 @@
-const ProfileViewService = require("../services/profileViewService");
+const ProfileViewService = require("../services/ProfileViewService");
 
 class ProfileViewController {
     // Track profile views when a profile is accessed

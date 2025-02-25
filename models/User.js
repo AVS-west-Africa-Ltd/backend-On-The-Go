@@ -59,6 +59,9 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     resetPasswordExpires: {
         type: DataTypes.TEXT
     },
+    location: {
+        type: DataTypes.TEXT,
+    }
 }, {
     tableName: 'users', // Explicitly set table name
     indexes: [

@@ -11,7 +11,7 @@ const businessPostsController = require("../controllers/BusinessPostsController"
 const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
 const { catchErrors } = require("../handlers/errorHandler");
-
+const ProfileViewController = require('../controllers/ProfleViewController')
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
 
@@ -60,6 +60,15 @@ router.delete(
   "/posts/:postId/comments/:commentId/:userId",
     catchErrors(CommentController.deleteComment)
 );
+
+// Track profile views
+router.get("/profile/:profileOwnerId/view/:viewerId",  catchErrors(ProfileViewController.viewProfile));
+
+// Get profile views count
+router.get("/profile/views/:profileOwnerId", catchErrors(ProfileViewController.getProfileViews));
+
+// Get profile viewers list
+router.get("/profile/viewers/:profileOwnerId", catchErrors(ProfileViewController.getProfileViewers));
 
 // Business Profile
 

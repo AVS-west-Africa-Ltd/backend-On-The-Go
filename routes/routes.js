@@ -22,21 +22,50 @@ router.get("/users", catchErrors(UserController.getUsers));
 router.get("/user/:userId", catchErrors(UserController.getUserById));
 router.delete("/delete/user/:userId", catchErrors(UserController.deleteUser));
 router.put("/update/user/:userId", catchErrors(UserController.updateUser));
-router.put("/update/userimage/:userId", catchErrors(UserController.UpdateUserImage)); // Update profile image
-router.post("/:userId/follow/:followedId", catchErrors(UserController.addFollower));
-router.delete("/:userId/unfollow/:followedId", catchErrors(UserController.removeFollower));
-router.get('/my-followers/:userId', catchErrors(UserController.getFollowers));
-router.get('/users-following-me/:userId', catchErrors(UserController.getFollowing));
-router.get("/notifications/:userId", catchErrors(UserController.getNotifications));
+router.put(
+  "/update/user-password/:userId",
+  catchErrors(UserController.updateUserPassword)
+);
+router.put(
+  "/update/userimage/:userId",
+  catchErrors(UserController.UpdateUserImage)
+); // Update profile image
+
+router.post(
+  "/:userId/follow/:followedId",
+  catchErrors(UserController.addFollower)
+);
+router.delete(
+  "/:userId/unfollow/:followedId",
+  catchErrors(UserController.removeFollower)
+);
+router.get("/my-followers/:userId", catchErrors(UserController.getFollowers));
+router.get(
+  "/users-following-me/:userId",
+  catchErrors(UserController.getFollowing)
+);
+router.get(
+  "/notifications/:userId",
+  catchErrors(UserController.getNotifications)
+);
 router.patch(
   "/notifications/:notificationId/:userId/read",
-    catchErrors(UserController.markNotificationAsRead)
+  catchErrors(UserController.markNotificationAsRead)
 );
-router.put("/mark-all-as-read/:userId", catchErrors(UserController.markAllNotificationsAsRead));
+router.put(
+  "/mark-all-as-read/:userId",
+  catchErrors(UserController.markAllNotificationsAsRead)
+);
 // router.get("/:userId/followers", catchErrors(UserController.getUserWithFollowers));
 router.post("/:userId/interests", catchErrors(UserController.addInterests));
-router.put("/:userId/interests/:index", catchErrors(UserController.updateInterest));
-router.delete("/:userId/interests/:index", catchErrors(UserController.deleteInterest));
+router.put(
+  "/:userId/interests/:index",
+  catchErrors(UserController.updateInterest)
+);
+router.delete(
+  "/:userId/interests/:index",
+  catchErrors(UserController.deleteInterest)
+);
 
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));
@@ -46,15 +75,27 @@ router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
 router.post("/:userId/likes/:postId", catchErrors(PostController.toggleLike));
 router.post("/:postId/rating", catchErrors(PostController.ratePost));
-router.post("/:userId/bookmark/:postId", catchErrors(PostController.bookmarkPost));
-router.get("/users/:userId/bookmarks", catchErrors(PostController.getBookmarkedPosts));
+router.post(
+  "/:userId/bookmark/:postId",
+  catchErrors(PostController.bookmarkPost)
+);
+router.get(
+  "/users/:userId/bookmarks",
+  catchErrors(PostController.getBookmarkedPosts)
+);
 
 // Comments routes
-router.post("/posts/:postId/comments", catchErrors(CommentController.createComment));
-router.get("/posts/:postId/comments", catchErrors(CommentController.getComments));
+router.post(
+  "/posts/:postId/comments",
+  catchErrors(CommentController.createComment)
+);
+router.get(
+  "/posts/:postId/comments",
+  catchErrors(CommentController.getComments)
+);
 router.delete(
   "/posts/:postId/comments/:commentId/:userId",
-    catchErrors(CommentController.deleteComment)
+  catchErrors(CommentController.deleteComment)
 );
 
 // Business Profile
@@ -77,12 +118,12 @@ router.delete("/businesses/:id", businessController.deleteBusiness);
 
 router.get(
   "/businesses/:businessId/posts",
-    catchErrors(businessController.getBusinessPosts)
+  catchErrors(businessController.getBusinessPosts)
 );
 
 // Business Posts
-router.post("/bussiness/post", catchErrors(businessPostsController.createPost));
-router.get("/bussiness/posts", catchErrors(businessPostsController.getAllPosts));
+router.post("/business/post", catchErrors(businessPostsController.createPost));
+router.get("/business/posts", catchErrors(businessPostsController.getAllPosts));
 router.get("/posts/:id", catchErrors(businessPostsController.getPostById));
 router.put("/posts/:id", catchErrors(businessPostsController.updatePost));
 router.put("/like/:id", catchErrors(businessPostsController.toggleLike));
@@ -90,7 +131,7 @@ router.delete("/posts/:id", catchErrors(businessPostsController.deletePost));
 
 router.get(
   "/posts/:businessId/posts",
-    catchErrors(businessPostsController.getBusinessPosts)
+  catchErrors(businessPostsController.getBusinessPosts)
 );
 
 // Get Images

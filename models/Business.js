@@ -33,6 +33,9 @@ const Business = sequelize.define(
     cacDoc: {
       type: DataTypes.STRING,
     },
+    Plan: {
+      type: DataTypes.STRING,
+    },
     hours: {
       type: DataTypes.JSON,
       allowNull: true,

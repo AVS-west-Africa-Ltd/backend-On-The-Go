@@ -1,6 +1,8 @@
 // models/UserFollowers.js
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const Business = require("./Business");
+const User = require("./User");
 
 const UserFollowers = sequelize.define(
   "UserFollowers",
@@ -30,5 +32,26 @@ const UserFollowers = sequelize.define(
     tableName: "userfollowers",
   }
 );
+
+// Define associations
+UserFollowers.associate = (models) => {
+  UserFollowers.belongsTo(models.User, {
+    foreignKey: "followerId",
+    as: "follower",
+  });
+
+  // Polymorphic association for followedId
+  UserFollowers.belongsTo(models.User, {
+    foreignKey: "followedId",
+    constraints: false,
+    as: "followedUser",
+  });
+
+  UserFollowers.belongsTo(models.Business, {
+    foreignKey: "followedId",
+    constraints: false,
+    as: "followedBusiness",
+  });
+};
 
 module.exports = UserFollowers;

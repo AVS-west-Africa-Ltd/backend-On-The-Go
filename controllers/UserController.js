@@ -121,6 +121,32 @@ class UserController {
     }
   }
 
+  static async updateUserPassword(req, res) {
+    try {
+      const { userId } = req.params;
+      const { oldPassword, newPassword } = req.body;
+      if (!userId || !oldPassword || !newPassword)
+        return res.status(400).json({ message: "All fields are required" });
+      const user = await userService.getUserById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const isPasswordMatch = await bcrypt.compareSync(
+        oldPassword,
+        user.password
+      );
+      if (!isPasswordMatch)
+        return res.status(401).json({ message: "Invalid password" });
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const updatedUser = await userService.updateUser(userId, {
+        password: hashedPassword,
+      });
+      return res
+        .status(200)
+        .json({ message: "Password updated successfully", info: updatedUser });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   static async getUserById(req, res) {
     try {
       const { userId } = req.params;
@@ -229,7 +255,8 @@ class UserController {
 
   static async getFollowers(req, res) {
     try {
-      const { userId, followedType } = req.params; // followedType can be 'user' or 'business'
+      const { userId } = req.params; // followedType can be 'user' or 'business'
+      const { followedType } = req.body;
 
       if (!["user", "business"].includes(followedType)) {
         return res.status(400).json({

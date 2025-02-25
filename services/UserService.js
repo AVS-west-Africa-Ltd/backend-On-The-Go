@@ -5,6 +5,7 @@ const Notification = require("../models/Notification");
 const sequelize = require("../config/database");
 const NotificationService = require("./NotificationService");
 const Business = require("../models/Business");
+const UserFollowers = require("../models/UserFollowers");
 
 class UserService {
   // Create a new user
@@ -292,28 +293,47 @@ class UserService {
   static async getFollowers(userId, followedType) {
     let entityModel = followedType === "user" ? User : Business;
 
-    // Check if entity exists
+    // Check if the followed entity (User or Business) exists
     const entity = await entityModel.findByPk(userId);
     if (!entity) return null;
 
     // Fetch followers (users or businesses)
-    const followers = await UserFollower.findAll({
+    const followers = await UserFollowers.findAll({
       where: { followedId: userId, followedType, status: "active" },
       include: [
         {
           model: User,
-          as: "FollowerUser",
-          attributes: ["id", "username", "picture"], // User followers
+          as: "follower", // Association for user followers
+          attributes: ["id", "username", "picture"],
         },
         {
           model: Business,
-          as: "FollowerBusiness",
-          attributes: ["id", "name", "logo"], // Business followers
+          as: "followedBusiness", // Association for business followers
+          attributes: ["id", "name", "logo"],
         },
       ],
     });
 
-    return followers;
+    // Map the results to return only the relevant follower data
+    const result = followers.map((follower) => {
+      if (followedType === "user") {
+        return {
+          id: follower.follower.id,
+          username: follower.follower.username,
+          picture: follower.follower.picture,
+          followedAt: follower.followedAt,
+        };
+      } else if (followedType === "business") {
+        return {
+          id: follower.followedBusiness.id,
+          name: follower.followedBusiness.name,
+          logo: follower.followedBusiness.logo,
+          followedAt: follower.followedAt,
+        };
+      }
+    });
+
+    return result;
   }
 
   // static async getFollowers(userId) {

@@ -12,6 +12,8 @@ const s3 = new AWS.S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
+// gh
+// gh
 
 const upload = multer({
   storage: multerS3({
@@ -164,15 +166,9 @@ const businessController = {
           message: "Business not found",
         });
       }
-      const formattedBusiness = {
-        ...business.toJSON(), // Convert Sequelize model instance to plain object
-        amenities: JSON.parse(business.amenities || "[]"),
-        hours: JSON.parse(business.hours || "{}"),
-        social: JSON.parse(business.social || "{}"),
-        wifi: JSON.parse(business.wifi || "[]"),
-      };
       return res.status(200).json({
-        data: formattedBusiness,
+        message: "Business retrieved successfully",
+        data: business,
       });
     } catch (error) {
       return res.status(500).json({

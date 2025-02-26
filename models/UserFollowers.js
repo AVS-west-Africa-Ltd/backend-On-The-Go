@@ -1,63 +1,27 @@
 // models/UserFollowers.js
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
-const Business = require("./Business");
-const User = require("./User");
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
 
-const UserFollowers = sequelize.define(
-  "UserFollowers",
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-    },
+const UserFollowers = sequelize.define('UserFollowers', {
     followerId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+        type: DataTypes.INTEGER,
+        primaryKey: true,
     },
     followedId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    followedType: {
-      type: DataTypes.ENUM("individual", "business"), // Distinguishes users from businesses
-      allowNull: false,
+        type: DataTypes.INTEGER,
+        primaryKey: true,
     },
     status: {
-      type: DataTypes.ENUM("active", "blocked"),
-      defaultValue: "active",
+        type: DataTypes.ENUM('active', 'blocked'),
+        defaultValue: 'active',
     },
     followedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
     },
-  },
-  {
-    tableName: "userfollowers",
-  }
+},{
+tableName: 'userfollowers' // Explicitly set table name
+}
 );
-
-// Define associations
-UserFollowers.associate = (models) => {
-  UserFollowers.belongsTo(models.User, {
-    foreignKey: "followerId",
-    as: "follower",
-  });
-
-  // Polymorphic association for followedId
-  UserFollowers.belongsTo(models.User, {
-    foreignKey: "followedId",
-    constraints: false,
-    as: "followedUser",
-  });
-
-  UserFollowers.belongsTo(models.Business, {
-    foreignKey: "followedId",
-    constraints: false,
-    as: "followedBusiness",
-  });
-};
 
 module.exports = UserFollowers;

@@ -28,15 +28,15 @@ class UserService {
     }
   }
 
-  // Get user by email/username
-  static async getUserByEmailOrUsername(props) {
-    try {
-      return await User.findOne(props);
-    } catch (error) {
-      throw new Error("Error fetching user");
+    // Get user by email/username
+    static async getUserByEmailOrUsername(props) {
+        try {
+            return await User.findOne(props);
+        } catch (error) {
+            throw error;
+        }
     }
-  }
-
+  
   // Get all users
   static async getUsers(props) {
     try {

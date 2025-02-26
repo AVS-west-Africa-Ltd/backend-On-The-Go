@@ -34,4 +34,4 @@ const RepeatedCustomer = sequelize.define(
 // WifiScan.hasMany(RepeatedCustomer, { foreignKey: "userId" });
 RepeatedCustomer.belongsTo(WifiScan, { foreignKey: "userId" });
 
-module.exports = { WifiScan, RepeatedCustomer };
+module.exports = RepeatedCustomer;

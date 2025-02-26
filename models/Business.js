@@ -33,7 +33,7 @@ const Business = sequelize.define(
     cacDoc: {
       type: DataTypes.STRING,
     },
-    Plan: {
+    plan: {
       type: DataTypes.STRING,
     },
     hours: {

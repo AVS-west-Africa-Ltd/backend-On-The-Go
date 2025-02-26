@@ -22,6 +22,7 @@ const config = require("./config");
 //     dialect: "mysql",
 //   }
 // );
+
 const sequelize = new Sequelize(
   config.production.database,
   config.production.username,

@@ -291,46 +291,38 @@ class UserService {
   }
 
   static async getFollowers(userId, followedType) {
-    let entityModel = followedType === "user" ? User : Business;
+    // Determine the model based on the followedType
+    const entityModel = followedType === "user" ? User : Business;
 
     // Check if the followed entity (User or Business) exists
     const entity = await entityModel.findByPk(userId);
-    if (!entity) return null;
+    if (!entity) {
+      throw new Error(`${followedType} with ID ${userId} not found`);
+    }
 
-    // Fetch followers (users or businesses)
+    // Fetch followers from UserFollowers
     const followers = await UserFollowers.findAll({
       where: { followedId: userId, followedType, status: "active" },
-      include: [
-        {
-          model: User,
-          as: "follower", // Association for user followers
-          attributes: ["id", "username", "picture"],
-        },
-        {
-          model: Business,
-          as: "followedBusiness", // Association for business followers
-          attributes: ["id", "name", "logo"],
-        },
-      ],
     });
 
-    // Map the results to return only the relevant follower data
+    // Extract followerIds from the UserFollowers results
+    const followerIds = followers.map((follower) => follower.followerId);
+
+    // Fetch User records for the followerIds
+    const users = await User.findAll({
+      where: { id: followerIds },
+      attributes: ["id", "username", "picture"], // Select only necessary fields
+    });
+
+    // Map the results to include User data and followedAt
     const result = followers.map((follower) => {
-      if (followedType === "user") {
-        return {
-          id: follower.follower.id,
-          username: follower.follower.username,
-          picture: follower.follower.picture,
-          followedAt: follower.followedAt,
-        };
-      } else if (followedType === "business") {
-        return {
-          id: follower.followedBusiness.id,
-          name: follower.followedBusiness.name,
-          logo: follower.followedBusiness.logo,
-          followedAt: follower.followedAt,
-        };
-      }
+      const user = users.find((u) => u.id === follower.followerId);
+      return {
+        id: user.id,
+        username: user.username,
+        picture: user.picture,
+        followedAt: follower.followedAt,
+      };
     });
 
     return result;

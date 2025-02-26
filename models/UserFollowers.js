@@ -7,6 +7,12 @@ const User = require("./User");
 const UserFollowers = sequelize.define(
   "UserFollowers",
   {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+    },
     followerId: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -201,10 +201,10 @@ class UserController {
       const { userId, followedId } = req.params;
       const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!followedType || !["user", "business"].includes(followedType)) {
+      if (!followedType || !["individual", "business"].includes(followedType)) {
         return res.status(400).json({
           message:
-            "Invalid or missing followedType (must be 'user' or 'business')",
+            "Invalid or missing followedType (must be 'individual' or 'business')",
         });
       }
 
@@ -228,10 +228,10 @@ class UserController {
       const { userId, followedId } = req.params;
       const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!followedType || !["user", "business"].includes(followedType)) {
+      if (!followedType || !["individual", "business"].includes(followedType)) {
         return res.status(400).json({
           message:
-            "Invalid or missing followedType (must be 'user' or 'business')",
+            "Invalid or missing followedType (must be 'individual' or 'business')",
         });
       }
 
@@ -268,9 +268,9 @@ class UserController {
       const { userId } = req.params; // followedType can be 'user' or 'business'
       const { followedType } = req.body;
 
-      if (!["user", "business"].includes(followedType)) {
+      if (!["individual", "business"].includes(followedType)) {
         return res.status(400).json({
-          message: "Invalid followedType. Must be 'user' or 'business'",
+          message: "Invalid followedType. Must be 'individual' or 'business'",
         });
       }
 
@@ -610,9 +610,12 @@ class UserController {
           console.error(err);
           res.json({ message: "Request could not be sent" });
         } else {
-          res.status(200).json({
-            message: "Deletion request submitted. Admin will review it soon.",
-          });
+          res
+            .status(200)
+            .json({
+              message: "Deletion request submitted. Admin will review it soon.",
+            });
+
         }
       });
     } catch (error) {
@@ -664,7 +667,7 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
-
+  
   static async addWifiScanner(req, res) {
     try {
       const { userId } = req.params;
@@ -706,6 +709,7 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
+
 }
 
 module.exports = UserController;

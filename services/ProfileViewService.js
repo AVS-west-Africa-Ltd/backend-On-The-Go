@@ -42,7 +42,7 @@ class ProfileViewService {
         try {
             return await ProfileView.findAll({
                 where: { profileOwnerId },
-                include: [{ model: User, as: "Viewer", attributes: ["id", "firstName", "lastName", "username", "email", "picture", "gender", "location"] }],
+                include: [{ model: User, as: "Viewer", attributes: ["id", "firstName", "lastName", "username", "email", "picture", "gender", "location", "interests", "skills", "profession" ] }],
                 order: [["viewedAt", "DESC"]],
             });
         } catch (error) {

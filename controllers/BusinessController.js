@@ -164,9 +164,15 @@ const businessController = {
           message: "Business not found",
         });
       }
+      const formattedBusiness = {
+        ...business.toJSON(), // Convert Sequelize model instance to plain object
+        amenities: JSON.parse(business.amenities || "[]"),
+        hours: JSON.parse(business.hours || "{}"),
+        social: JSON.parse(business.social || "{}"),
+        wifi: JSON.parse(business.wifi || "[]"),
+      };
       return res.status(200).json({
-        message: "Business retrieved successfully",
-        data: business,
+        data: formattedBusiness,
       });
     } catch (error) {
       return res.status(500).json({

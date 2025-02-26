@@ -28,15 +28,15 @@ class UserService {
     }
   }
 
-    // Get user by email/username
-    static async getUserByEmailOrUsername(props) {
-        try {
-            return await User.findOne(props);
-        } catch (error) {
-            throw error;
-        }
+  // Get user by email/username
+  static async getUserByEmailOrUsername(props) {
+    try {
+      return await User.findOne(props);
+    } catch (error) {
+      throw error;
     }
-  
+  }
+
   // Get all users
   static async getUsers(props) {
     try {
@@ -144,12 +144,14 @@ class UserService {
     const transaction = await sequelize.transaction();
 
     try {
-      if (!["user", "business"].includes(followedType)) {
-        throw new Error("Invalid followedType. Must be 'user' or 'business'");
+      if (!["individual", "business"].includes(followedType)) {
+        throw new Error(
+          "Invalid followedType. Must be 'individual' or 'business'"
+        );
       }
 
       // Prevent users from following themselves (only for user-to-user follows)
-      if (followedType === "user" && followerId === followedId) {
+      if (followedType === "individual" && followerId === followedId) {
         throw new Error("Users cannot follow themselves");
       }
 
@@ -159,7 +161,7 @@ class UserService {
 
       // Check if followed entity exists (User or Business)
       let followedEntity;
-      if (followedType === "user") {
+      if (followedType === "individual") {
         followedEntity = await User.findByPk(followedId);
       } else if (followedType === "business") {
         followedEntity = await Business.findByPk(followedId);
@@ -187,7 +189,7 @@ class UserService {
       }
 
       // Update follower counts
-      if (followedType === "user") {
+      if (followedType === "individual") {
         await Promise.all([
           User.increment("followingCount", {
             where: { id: followerId },
@@ -213,7 +215,7 @@ class UserService {
 
       // Create notification (only for user follows, not business)
       let notification = null;
-      if (followedType === "user") {
+      if (followedType === "individual") {
         notification = await Notification.create(
           {
             recipientId: followedId,
@@ -241,8 +243,10 @@ class UserService {
     const transaction = await sequelize.transaction();
 
     try {
-      if (!["user", "business"].includes(followedType)) {
-        throw new Error("Invalid followedType. Must be 'user' or 'business'");
+      if (!["individual", "business"].includes(followedType)) {
+        throw new Error(
+          "Invalid followedType. Must be 'individual' or 'business'"
+        );
       }
 
       // Find follow record
@@ -258,7 +262,7 @@ class UserService {
       await follow.update({ status: "blocked" }, { transaction });
 
       // Decrement following and followers count for both users and businesses
-      if (followedType === "user") {
+      if (followedType === "individual") {
         await Promise.all([
           User.decrement("followingCount", {
             where: { id: followerId },
@@ -292,7 +296,7 @@ class UserService {
 
   static async getFollowers(userId, followedType) {
     // Determine the model based on the followedType
-    const entityModel = followedType === "user" ? User : Business;
+    const entityModel = followedType === "individual" ? User : Business;
 
     // Check if the followed entity (User or Business) exists
     const entity = await entityModel.findByPk(userId);

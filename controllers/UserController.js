@@ -6,12 +6,15 @@ const multer = require("multer");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const nodemailer = require("nodemailer");
-const {EMAIL_HOST, EMAIL_ADDRESS, EMAIL_PASSWORD} = require("../config/config");
+const {
+  EMAIL_HOST,
+  EMAIL_ADDRESS,
+  EMAIL_PASSWORD,
+} = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const UserModel = require('../models/User');
-const DeleteRequestModel = require('../models/DeleteRequest');
-
+const UserModel = require("../models/User");
+const DeleteRequestModel = require("../models/DeleteRequest");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -198,10 +201,10 @@ class UserController {
       const { userId, followedId } = req.params;
       const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!followedType || !["user", "business"].includes(followedType)) {
+      if (!followedType || !["individual", "business"].includes(followedType)) {
         return res.status(400).json({
           message:
-            "Invalid or missing followedType (must be 'user' or 'business')",
+            "Invalid or missing followedType (must be 'individual' or 'business')",
         });
       }
 
@@ -225,10 +228,10 @@ class UserController {
       const { userId, followedId } = req.params;
       const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!followedType || !["user", "business"].includes(followedType)) {
+      if (!followedType || !["individual", "business"].includes(followedType)) {
         return res.status(400).json({
           message:
-            "Invalid or missing followedType (must be 'user' or 'business')",
+            "Invalid or missing followedType (must be 'individual' or 'business')",
         });
       }
 
@@ -265,9 +268,9 @@ class UserController {
       const { userId } = req.params; // followedType can be 'user' or 'business'
       const { followedType } = req.body;
 
-      if (!["user", "business"].includes(followedType)) {
+      if (!["individual", "business"].includes(followedType)) {
         return res.status(400).json({
-          message: "Invalid followedType. Must be 'user' or 'business'",
+          message: "Invalid followedType. Must be 'individual' or 'business'",
         });
       }
 
@@ -471,8 +474,8 @@ class UserController {
           res.json({ message: "Email could not be sent" });
         } else {
           res
-              .status(200)
-              .json({ message: "Email sent with password reset instructions" });
+            .status(200)
+            .json({ message: "Email sent with password reset instructions" });
         }
       });
     } catch (error) {
@@ -483,12 +486,14 @@ class UserController {
   static async confirmPasswordOTP(req, res) {
     try {
       const { otp } = req.params;
-      let props = { where: {
+      let props = {
+        where: {
           [Op.and]: [
             { resetPasswordOTP: otp },
             { resetPasswordExpires: { [Op.gt]: Date.now() } },
           ],
-        } };
+        },
+      };
 
       const user = await userService.getUserByEmailOrUsername(props);
 
@@ -506,12 +511,14 @@ class UserController {
     try {
       const { otp } = req.params;
 
-      let props = { where: {
+      let props = {
+        where: {
           [Op.and]: [
             { resetPasswordOTP: otp },
             { resetPasswordExpires: { [Op.gt]: Date.now() } },
           ],
-        } };
+        },
+      };
       const user = await userService.getUserByEmailOrUsername(props);
 
       if (!user) {
@@ -520,8 +527,8 @@ class UserController {
         const { newPassword } = req.body;
 
         if (
-            user.resetPasswordOTP !== Number(otp) ||
-            user.resetPasswordExpires < Date.now()
+          user.resetPasswordOTP !== Number(otp) ||
+          user.resetPasswordExpires < Date.now()
         ) {
           return res.json({ message: "Invalid or expired token" });
         } else {
@@ -580,7 +587,7 @@ class UserController {
                 </p>
             </div>
         `;
-      console.log(user.email)
+      console.log(user.email);
       const transporter = nodemailer.createTransport({
         host: EMAIL_HOST,
         port: 587,
@@ -604,28 +611,28 @@ class UserController {
           res.json({ message: "Request could not be sent" });
         } else {
           res
-              .status(200)
-              .json({ message: "Deletion request submitted. Admin will review it soon." });
+            .status(200)
+            .json({
+              message: "Deletion request submitted. Admin will review it soon.",
+            });
         }
       });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: error.message });
-
     }
   }
 
   static async ApproveUserDeletionRequest(req, res) {
     try {
       const request = await DeleteRequestModel.findByPk(req.params.requestId);
-      if (!request) return res.status(404).json({ message: "Request not found" });
+      if (!request)
+        return res.status(404).json({ message: "Request not found" });
 
       await UserModel.destroy({ where: { id: request.userId } });
       await request.destroy();
 
       res.status(200).json({ message: "User account deleted successfully." });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
@@ -633,14 +640,14 @@ class UserController {
   static async DenyUserDeletionRequest(req, res) {
     try {
       const request = await DeleteRequestModel.findByPk(req.params.requestId);
-      if (!request) return res.status(404).json({ message: "Request not found" });
+      if (!request)
+        return res.status(404).json({ message: "Request not found" });
 
-      request.status = 'denied';
+      request.status = "denied";
       await request.save();
 
       res.status(200).json({ message: "Deletion request denied." });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
@@ -659,7 +666,6 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
-
 }
 
 module.exports = UserController;

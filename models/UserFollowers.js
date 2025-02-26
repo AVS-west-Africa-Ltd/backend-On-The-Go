@@ -22,7 +22,7 @@ const UserFollowers = sequelize.define(
       allowNull: false,
     },
     followedType: {
-      type: DataTypes.ENUM("user", "business"), // Distinguishes users from businesses
+      type: DataTypes.ENUM("individual", "business"), // Distinguishes users from businesses
       allowNull: false,
     },
     status: {

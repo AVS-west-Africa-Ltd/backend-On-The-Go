@@ -11,7 +11,7 @@ const businessPostsController = require("../controllers/BusinessPostsController"
 const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
 const { catchErrors } = require("../handlers/errorHandler");
-
+const ProfileViewController = require('../controllers/ProfleViewController')
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
 
@@ -58,14 +58,17 @@ router.put(
 );
 // router.get("/:userId/followers", catchErrors(UserController.getUserWithFollowers));
 router.post("/:userId/interests", catchErrors(UserController.addInterests));
-router.put(
-  "/:userId/interests/:index",
-  catchErrors(UserController.updateInterest)
-);
-router.delete(
-  "/:userId/interests/:index",
-  catchErrors(UserController.deleteInterest)
-);
+
+router.put("/:userId/interests/:index", catchErrors(UserController.updateInterest));
+router.delete("/:userId/interests/:index", catchErrors(UserController.deleteInterest));
+router.post("/forgot-password", catchErrors(UserController.ForgotPassword));
+router.get("/confirm-password-otp/:otp", catchErrors(UserController.confirmPasswordOTP));
+router.put("/reset-password/:otp", catchErrors(UserController.ResetPassword));
+router.post("/request-delete", catchErrors(UserController.UserAccountDeleteRequest));
+router.post("/approve-delete/:requestId", catchErrors(UserController.ApproveUserDeletionRequest));
+router.post("/deny-delete/:requestId", catchErrors(UserController.DenyUserDeletionRequest));
+router.get("/random-users", catchErrors(UserController.GetRandomUsers));
+
 
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));
@@ -97,6 +100,15 @@ router.delete(
   "/posts/:postId/comments/:commentId/:userId",
   catchErrors(CommentController.deleteComment)
 );
+
+// Track profile views
+router.get("/profile/:profileOwnerId/view/:viewerId",  catchErrors(ProfileViewController.viewProfile));
+
+// Get profile views count
+router.get("/profile/views/:profileOwnerId", catchErrors(ProfileViewController.getProfileViews));
+
+// Get profile viewers list
+router.get("/profile/viewers/:profileOwnerId", catchErrors(ProfileViewController.getProfileViewers));
 
 // Business Profile
 

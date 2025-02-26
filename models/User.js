@@ -49,6 +49,18 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     },
     skills: {
         type: DataTypes.STRING,
+    },
+    gender: {
+        type: DataTypes.STRING,
+    },
+    resetPasswordOTP: {
+        type: DataTypes.INTEGER,
+    },
+    resetPasswordExpires: {
+        type: DataTypes.TEXT
+    },
+    location: {
+        type: DataTypes.TEXT,
     }
 }, {
     tableName: 'users', // Explicitly set table name

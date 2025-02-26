@@ -615,6 +615,7 @@ class UserController {
             .json({
               message: "Deletion request submitted. Admin will review it soon.",
             });
+
         }
       });
     } catch (error) {
@@ -666,6 +667,49 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
+  
+  static async addWifiScanner(req, res) {
+    try {
+      const { userId } = req.params;
+      const { businessId, location } = req.body;
+      const user = await userService.addWifiScanner(
+        userId,
+        businessId,
+        location
+      );
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res
+        .status(201)
+        .json({ message: "Wifi Scanner added successfully", user });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getAllWifiScan(req, res) {
+    try {
+      const { userId } = req.params;
+      const wifiScanners = await userService.getAllWifiScanWith(userId);
+      if (!wifiScanners)
+        return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ wifiScanners });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getAllRepeatedCustomers(req, res) {
+    try {
+      const { userId } = req.params;
+      const wifiScanners = await userService.getAllRepeatedCustomers(userId);
+      if (!wifiScanners)
+        return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ wifiScanners });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
 }
 
 module.exports = UserController;

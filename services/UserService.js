@@ -6,6 +6,8 @@ const sequelize = require("../config/database");
 const NotificationService = require("./NotificationService");
 const Business = require("../models/Business");
 const UserFollowers = require("../models/UserFollowers");
+const WifiScan = require("../models/WifiScan");
+const RepeatedCustomer = require("../models/RepeatedCustomers");
 
 class UserService {
   // Create a new user
@@ -579,6 +581,97 @@ class UserService {
       return interests;
     } catch (error) {
       throw new Error(`Error deleting interest: ${error.message}`);
+    }
+  }
+
+  static async addWifiScanner(userId, businessId, location) {
+    try {
+      // Check if the user already exists in the WifiScan table
+      const existingUser = await WifiScan.findOne({ where: { userId } });
+
+      if (!existingUser) {
+        // If the user doesn't exist, save their info to the WifiScan table
+        return await WifiScan.create({ userId, businessId, location });
+      } else {
+        // If the user exists, move their info to the RepeatCustomers table
+        return await RepeatedCustomer.create({ userId, businessId, location });
+      }
+    } catch (error) {
+      throw new Error(`Error in addWifiScanner: ${error.message}`);
+    }
+  }
+
+  static async getAllWifiScanWith(businessId) {
+    try {
+      // Retrieve all Wi-Fi scans for the specific business
+      const wifiScans = await WifiScan.findAll({
+        where: { businessId },
+      });
+
+      // Extract unique userIds from the Wi-Fi scans
+      const userIds = [...new Set(wifiScans.map((scan) => scan.userId))];
+
+      // Fetch user details for the extracted userIds
+      const users = await User.findAll({ where: { id: userIds } });
+
+      // Combine Wi-Fi scan data with user details
+      const wifiScansWithUserInfo = wifiScans.map((scan) => {
+        const user = users.find((user) => user.id === scan.userId);
+
+        // Parse the location field if it's a string
+        const location =
+          typeof scan.location === "string"
+            ? JSON.parse(scan.location)
+            : scan.location;
+
+        return {
+          ...scan.toJSON(), // Include all Wi-Fi scan data
+          location, // Add the parsed location
+          user, // Add the corresponding user details
+        };
+      });
+
+      return wifiScansWithUserInfo;
+    } catch (error) {
+      throw new Error(
+        `Error retrieving WifiScan data with user info: ${error.message}`
+      );
+    }
+  }
+
+  static async getAllRepeatedCustomers(businessId) {
+    try {
+      const repeatedCustomers = await RepeatedCustomer.findAll({
+        where: { businessId },
+      });
+
+      const userIds = repeatedCustomers.map((customer) => customer.userId);
+
+      const users = await User.findAll({ where: { id: userIds } });
+
+      const repeatedCustomersWithUserInfo = repeatedCustomers.map(
+        (customer) => {
+          const user = users.find((user) => user.id === customer.userId);
+
+          // Parse the location field if it's a string
+          const location =
+            typeof customer.location === "string"
+              ? JSON.parse(customer.location)
+              : customer.location;
+
+          return {
+            ...customer.toJSON(),
+            location, // Add the parsed location
+            user,
+          };
+        }
+      );
+
+      return repeatedCustomersWithUserInfo;
+    } catch (error) {
+      throw new Error(
+        `Error retrieving RepeatedCustomer data with user info: ${error.message}`
+      );
     }
   }
 }

@@ -491,11 +491,11 @@ class UserController {
                     if no action is taken within <strong>7 days</strong>.
                 </p>
                 <p style="margin-top: 20px;">
-                    <a href="http://onthegoafrica.com/approve-delete/${userId}" 
+                    <a href="http://onthegoafrica.com/api/v1/approve-delete/${userId}" 
                         style="display: inline-block; padding: 10px 15px; background-color: #5cb85c; color: white; text-decoration: none; border-radius: 5px;">
                         Approve Request
                     </a>
-                    <a href="http://onthegoafrica.com/deny-delete/${userId}" 
+                    <a href="http://onthegoafrica.com/api/v1/deny-delete/${userId}" 
                         style="display: inline-block; padding: 10px 15px; background-color: #d9534f; color: white; text-decoration: none; border-radius: 5px; margin-left: 10px;">
                         Deny Request
                     </a>

@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const RepeatedCustomer = require("./RepeatedCustomers");
 
 const WifiScan = sequelize.define(
   "WifiScan",
@@ -14,9 +15,12 @@ const WifiScan = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    businessId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     location: {
       type: DataTypes.JSON,
-      allowNull: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -24,11 +28,11 @@ const WifiScan = sequelize.define(
     },
   },
   {
-    tableName: "wifiusers", // Explicitly set table name
+    tableName: "wifiscan", // Explicitly set table name
   }
 );
 
 // Define the relationship between User and RepeatedCustomer
-WifiScan.hasMany(RepeatedCustome, { foreignKey: "userId" });
+WifiScan.hasMany(RepeatedCustomer, { foreignKey: "userId" });
 
 module.exports = WifiScan;

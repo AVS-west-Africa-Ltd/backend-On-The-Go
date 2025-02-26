@@ -43,6 +43,8 @@ router.put("/reset-password/:otp", catchErrors(UserController.ResetPassword));
 router.post("/request-delete", catchErrors(UserController.UserAccountDeleteRequest));
 router.post("/approve-delete/:requestId", catchErrors(UserController.ApproveUserDeletionRequest));
 router.post("/deny-delete/:requestId", catchErrors(UserController.DenyUserDeletionRequest));
+router.get("/random-users", catchErrors(UserController.GetRandomUsers));
+
 
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));

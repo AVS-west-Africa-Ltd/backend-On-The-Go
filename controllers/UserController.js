@@ -566,6 +566,22 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
+
+  static async GetRandomUsers(req, res) {
+    try {
+      let users = await userService.getUsers();
+      if (!users || users.length === 0) {
+        return res.status(404).json({ message: "No record", info: [] });
+      }
+
+      users = users.sort(() => Math.random() - 0.5);
+
+      return res.status(200).json({ info: users.slice(0, 50) });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
 }
 
 module.exports = UserController;

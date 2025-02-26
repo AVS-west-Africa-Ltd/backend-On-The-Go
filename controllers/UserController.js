@@ -9,7 +9,8 @@ const nodemailer = require("nodemailer");
 const {EMAIL_HOST, EMAIL_ADDRESS, EMAIL_PASSWORD} = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-
+const UserModel = require('../models/User');
+const DeleteRequestModel = require('../models/DeleteRequest');
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -458,6 +459,110 @@ class UserController {
         }
       }
     } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async UserAccountDeleteRequest(req, res) {
+    try {
+      const { userId, reason } = req.body;
+
+      const user = await UserModel.findByPk(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      // Set auto-delete time (e.g., 7 days from request)
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+
+      // Create delete request
+      await DeleteRequestModel.create({ userId, reason, expiresAt });
+
+      // Send email to admin
+      const deletionEmailTemplate = `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2 style="color: #d9534f;">User Account Deletion Request</h2>
+                <p><strong>User:</strong> ${user.email}</p>
+                <p><strong>Reason for Deletion:</strong></p>
+                <blockquote style="border-left: 4px solid #d9534f; padding-left: 10px; margin: 10px 0; color: #555;">
+                    ${reason}
+                </blockquote>
+                <p>
+                    This request will be <strong style="color: #d9534f;">automatically approved</strong> 
+                    if no action is taken within <strong>7 days</strong>.
+                </p>
+                <p style="margin-top: 20px;">
+                    <a href="http://onthegoafrica.com/approve-delete/${userId}" 
+                        style="display: inline-block; padding: 10px 15px; background-color: #5cb85c; color: white; text-decoration: none; border-radius: 5px;">
+                        Approve Request
+                    </a>
+                    <a href="http://onthegoafrica.com/deny-delete/${userId}" 
+                        style="display: inline-block; padding: 10px 15px; background-color: #d9534f; color: white; text-decoration: none; border-radius: 5px; margin-left: 10px;">
+                        Deny Request
+                    </a>
+                </p>
+            </div>
+        `;
+      console.log(user.email)
+      const transporter = nodemailer.createTransport({
+        host: EMAIL_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+          user: EMAIL_ADDRESS,
+          pass: EMAIL_PASSWORD,
+        },
+      });
+
+      const mailOptions = {
+        to: EMAIL_ADDRESS,
+        from: user.email,
+        subject: "User Deletion Request",
+        html: deletionEmailTemplate,
+      };
+
+      transporter.sendMail(mailOptions, (err) => {
+        if (err) {
+          console.error(err);
+          res.json({ message: "Request could not be sent" });
+        } else {
+          res
+              .status(200)
+              .json({ message: "Deletion request submitted. Admin will review it soon." });
+        }
+      });
+    }
+    catch (error) {
+      return res.status(500).json({ error: error.message });
+
+    }
+  }
+
+  static async ApproveUserDeletionRequest(req, res) {
+    try {
+      const request = await DeleteRequestModel.findByPk(req.params.requestId);
+      if (!request) return res.status(404).json({ message: "Request not found" });
+
+      await UserModel.destroy({ where: { id: request.userId } });
+      await request.destroy();
+
+      res.status(200).json({ message: "User account deleted successfully." });
+    }
+    catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async DenyUserDeletionRequest(req, res) {
+    try {
+      const request = await DeleteRequestModel.findByPk(req.params.requestId);
+      if (!request) return res.status(404).json({ message: "Request not found" });
+
+      request.status = 'denied';
+      await request.save();
+
+      res.status(200).json({ message: "Deletion request denied." });
+    }
+    catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }

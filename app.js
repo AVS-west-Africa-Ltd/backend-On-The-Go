@@ -26,6 +26,9 @@ const Chat = require('./models/Chat');
 const Invitation = require('./models/Invitation');
 
 const validateApiKey = require("./middlewares/apiMiddleWare");
+require('./cron/DeleteUserCron');
+
+
 
 const PORT = process.env.PORT || 5000;
 const app = express();

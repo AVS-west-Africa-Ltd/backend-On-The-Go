@@ -38,9 +38,11 @@ router.post("/:userId/interests", catchErrors(UserController.addInterests));
 router.put("/:userId/interests/:index", catchErrors(UserController.updateInterest));
 router.delete("/:userId/interests/:index", catchErrors(UserController.deleteInterest));
 router.post("/forgot-password", catchErrors(UserController.ForgotPassword));
-router.get("/confirm-password-otp/:otp", catchErrors(UserController.confirmPasswordOTP))
+router.get("/confirm-password-otp/:otp", catchErrors(UserController.confirmPasswordOTP));
 router.put("/reset-password/:otp", catchErrors(UserController.ResetPassword));
-
+router.post("/request-delete", catchErrors(UserController.UserAccountDeleteRequest));
+router.post("/approve-delete/:requestId", catchErrors(UserController.ApproveUserDeletionRequest));
+router.post("/deny-delete/:requestId", catchErrors(UserController.DenyUserDeletionRequest));
 
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));

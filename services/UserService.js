@@ -47,7 +47,7 @@ class UserService {
         }
     }
 
-
+ 
     // Update user information
     static async updateUser(userId, data) {
         try {

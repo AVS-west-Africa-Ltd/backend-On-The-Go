@@ -11,7 +11,7 @@ const config = require("./config");
 //   port: process.env.DB_PORT || 3306,
 //   dialect: 'mysql',
 // });
-
+//
 // const sequelize = new Sequelize(
 //   config.development.database,
 //   config.development.username,

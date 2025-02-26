@@ -26,26 +26,6 @@ const upload = multer({
   }),
 });
 
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/");
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueName = Date.now() + "-" + file.originalname;
-//     cb(null, uniqueName);
-//   },
-// });
-
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "business_posts", // Cloudinary folder where files will be stored
-//     allowed_formats: ["jpg", "jpeg", "png", "gif"], // Allowed file types
-//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
-//   },
-// });
-//
-
 // const upload = multer({ storage: storage });
 
 const businessPostsController = {
@@ -70,10 +50,6 @@ const businessPostsController = {
           return res.status(404).json({ message: "Business not found" });
         }
 
-        // const mediaPaths = req.files.map(
-        //   (file) =>
-        //     `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
-        // );
         const mediaPaths = req.files.map((file) => file.location);
 
         // Create a new post associated with the business
@@ -105,13 +81,31 @@ const businessPostsController = {
           {
             model: Business,
             as: "Business",
+            attributes: ["id", "name", "logo", "type", "amenities"],
           },
         ],
         order: [["createdAt", "DESC"]],
       });
+
+      // Process the posts to parse JSON strings into objects
+      const processedPosts = posts.map((post) => {
+        return {
+          ...post.toJSON(), // Convert Sequelize instance to a plain object
+          media: JSON.parse(post.media),
+          likes: JSON.parse(post.likes),
+          Business: {
+            ...post.Business.toJSON(),
+            amenities: JSON.parse(post.Business.amenities),
+            // hours: JSON.parse(post.Business.hours),
+            // social: JSON.parse(post.Business.social),
+            // wifi: JSON.parse(post.Business.wifi),
+          },
+        };
+      });
+
       return res.status(200).json({
         message: "Posts retrieved successfully",
-        data: posts,
+        data: processedPosts,
       });
     } catch (error) {
       return res.status(500).json({
@@ -207,38 +201,40 @@ const businessPostsController = {
     const { businessId } = req.params; // Extract business ID from route parameters
 
     try {
-      // Find the business with its associated posts
-      const businessWithPosts = await BusinessPost.findByPk(businessId, {
-        include: {
-          model: Business,
-          as: "Business",
-          attributes: ["id", "media", "postText", "createdAt"],
-        },
+      // Find the business
+      const business = await Business.findByPk(businessId, {
         attributes: ["id", "name", "type"],
-        order: [["createdAt", "DESC"]],
       });
 
-      if (!businessWithPosts) {
+      if (!business) {
         return res.status(404).json({ message: "Business not found" });
       }
 
+      // Fetch all posts for the business
+      const posts = await BusinessPost.findAll({
+        where: { businessId }, // Filter by businessId
+        attributes: ["id", "media", "postText", "likes", "createdAt"],
+        order: [["createdAt", "DESC"]],
+      });
+
       res.status(200).json({
-        message: "Posts retrieved successfully",
-        business: {
-          id: businessWithPosts.id,
-          name: businessWithPosts.name,
-          type: businessWithPosts.type,
-        },
-        posts: businessWithPosts.posts,
+        // message: "Posts retrieved successfully",
+        // business: {
+        //   id: business.id,
+        //   name: business.name,
+        //   type: business.type,
+        // },
+        posts, // Return all posts
       });
     } catch (error) {
-      console.error("Error retrieving posts:", error);
+      // console.error("Error retrieving posts:", error);
       res.status(500).json({
         message: "Error retrieving posts",
         error: error.message,
       });
     }
   },
+
   toggleLike: async (req, res) => {
     const { id: postId } = req.params;
     const { userId } = req.body;

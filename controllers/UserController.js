@@ -6,11 +6,15 @@ const multer = require("multer");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const nodemailer = require("nodemailer");
-const {EMAIL_HOST, EMAIL_ADDRESS, EMAIL_PASSWORD} = require("../config/config");
+const {
+  EMAIL_HOST,
+  EMAIL_ADDRESS,
+  EMAIL_PASSWORD,
+} = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const UserModel = require('../models/User');
-const DeleteRequestModel = require('../models/DeleteRequest');
+const UserModel = require("../models/User");
+const DeleteRequestModel = require("../models/DeleteRequest");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -30,9 +34,8 @@ const upload = multer({
     key: function (req, file, cb) {
       cb(null, `profiles/${Date.now()}-${file.originalname}`);
     },
-  })
+  }),
 });
-
 
 class UserController {
   static async CreateUser(req, res) {
@@ -128,6 +131,32 @@ class UserController {
     }
   }
 
+  static async updateUserPassword(req, res) {
+    try {
+      const { userId } = req.params;
+      const { oldPassword, newPassword } = req.body;
+      if (!userId || !oldPassword || !newPassword)
+        return res.status(400).json({ message: "All fields are required" });
+      const user = await userService.getUserById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const isPasswordMatch = await bcrypt.compareSync(
+        oldPassword,
+        user.password
+      );
+      if (!isPasswordMatch)
+        return res.status(401).json({ message: "Invalid password" });
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      const updatedUser = await userService.updateUser(userId, {
+        password: hashedPassword,
+      });
+      return res
+        .status(200)
+        .json({ message: "Password updated successfully", info: updatedUser });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   static async getUserById(req, res) {
     try {
       const { userId } = req.params;
@@ -170,9 +199,24 @@ class UserController {
   static async addFollower(req, res) {
     try {
       const { userId, followedId } = req.params;
-      const user = await userService.followUser(userId, followedId);
+      const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (!followedType || !["individual", "business"].includes(followedType)) {
+        return res.status(400).json({
+          message:
+            "Invalid or missing followedType (must be 'individual' or 'business')",
+        });
+      }
+
+      const follow = await userService.followUser(
+        userId,
+        followedId,
+        followedType
+      );
+
+      if (!follow)
+        return res.status(404).json({ message: "User or Business not found" });
+
       return res.status(200).json({ message: "Follower added successfully" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -182,9 +226,23 @@ class UserController {
   static async removeFollower(req, res) {
     try {
       const { userId, followedId } = req.params;
-      const user = await userService.unfollowUser(userId, followedId);
+      const { followedType } = req.body; // Must specify "user" or "business"
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (!followedType || !["individual", "business"].includes(followedType)) {
+        return res.status(400).json({
+          message:
+            "Invalid or missing followedType (must be 'individual' or 'business')",
+        });
+      }
+
+      const follow = await userService.unfollowUser(
+        userId,
+        followedId,
+        followedType
+      );
+
+      if (!follow)
+        return res.status(404).json({ message: "User or Business not found" });
 
       return res.status(200).json({ message: "Follower removed successfully" });
     } catch (error) {
@@ -192,13 +250,37 @@ class UserController {
     }
   }
 
+  // static async getFollowers(req, res) {
+  //   try {
+  //     const { userId } = req.params;
+
+  //     const followers = await userService.getFollowers(userId);
+  //     if (!followers)
+  //       return res.status(404).json({ message: "User not found" });
+  //     return res.status(200).json({ followers: followers });
+  //   } catch (error) {
+  //     return res.status(500).json({ error: error.message });
+  //   }
+  // }
+
   static async getFollowers(req, res) {
     try {
-      const { userId } = req.params;
+      const { userId } = req.params; // followedType can be 'user' or 'business'
+      const { followedType } = req.body;
 
-      const followers = await userService.getFollowers(userId);
-      if (!followers) return res.status(404).json({ message: "User not found" });
-      return res.status(200).json({ followers: followers });
+      if (!["individual", "business"].includes(followedType)) {
+        return res.status(400).json({
+          message: "Invalid followedType. Must be 'individual' or 'business'",
+        });
+      }
+
+      const followers = await userService.getFollowers(userId, followedType);
+
+      if (!followers) {
+        return res.status(404).json({ message: `${followedType} not found` });
+      }
+
+      return res.status(200).json({ followers });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -209,7 +291,8 @@ class UserController {
       const { userId } = req.params;
 
       const following = await userService.getFollowing(userId);
-      if (!following) return res.status(404).json({ message: "User not found" });
+      if (!following)
+        return res.status(404).json({ message: "User not found" });
       return res.status(200).json({ following: following });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -233,9 +316,7 @@ class UserController {
     try {
       const { notificationId, userId } = req.params;
 
-      const notification = await userService.markAsRead(
-        notificationId, userId
-      );
+      const notification = await userService.markAsRead(notificationId, userId);
       if (!notification)
         return res.status(404).json({ message: "Notification not found" });
       return res
@@ -393,8 +474,8 @@ class UserController {
           res.json({ message: "Email could not be sent" });
         } else {
           res
-              .status(200)
-              .json({ message: "Email sent with password reset instructions" });
+            .status(200)
+            .json({ message: "Email sent with password reset instructions" });
         }
       });
     } catch (error) {
@@ -405,12 +486,14 @@ class UserController {
   static async confirmPasswordOTP(req, res) {
     try {
       const { otp } = req.params;
-      let props = { where: {
+      let props = {
+        where: {
           [Op.and]: [
             { resetPasswordOTP: otp },
             { resetPasswordExpires: { [Op.gt]: Date.now() } },
           ],
-        } };
+        },
+      };
 
       const user = await userService.getUserByEmailOrUsername(props);
 
@@ -428,12 +511,14 @@ class UserController {
     try {
       const { otp } = req.params;
 
-      let props = { where: {
+      let props = {
+        where: {
           [Op.and]: [
             { resetPasswordOTP: otp },
             { resetPasswordExpires: { [Op.gt]: Date.now() } },
           ],
-        } };
+        },
+      };
       const user = await userService.getUserByEmailOrUsername(props);
 
       if (!user) {
@@ -442,8 +527,8 @@ class UserController {
         const { newPassword } = req.body;
 
         if (
-            user.resetPasswordOTP !== Number(otp) ||
-            user.resetPasswordExpires < Date.now()
+          user.resetPasswordOTP !== Number(otp) ||
+          user.resetPasswordExpires < Date.now()
         ) {
           return res.json({ message: "Invalid or expired token" });
         } else {
@@ -502,7 +587,7 @@ class UserController {
                 </p>
             </div>
         `;
-      console.log(user.email)
+      console.log(user.email);
       const transporter = nodemailer.createTransport({
         host: EMAIL_HOST,
         port: 587,
@@ -526,28 +611,29 @@ class UserController {
           res.json({ message: "Request could not be sent" });
         } else {
           res
-              .status(200)
-              .json({ message: "Deletion request submitted. Admin will review it soon." });
+            .status(200)
+            .json({
+              message: "Deletion request submitted. Admin will review it soon.",
+            });
+
         }
       });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: error.message });
-
     }
   }
 
   static async ApproveUserDeletionRequest(req, res) {
     try {
       const request = await DeleteRequestModel.findByPk(req.params.requestId);
-      if (!request) return res.status(404).json({ message: "Request not found" });
+      if (!request)
+        return res.status(404).json({ message: "Request not found" });
 
       await UserModel.destroy({ where: { id: request.userId } });
       await request.destroy();
 
       res.status(200).json({ message: "User account deleted successfully." });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
@@ -555,14 +641,14 @@ class UserController {
   static async DenyUserDeletionRequest(req, res) {
     try {
       const request = await DeleteRequestModel.findByPk(req.params.requestId);
-      if (!request) return res.status(404).json({ message: "Request not found" });
+      if (!request)
+        return res.status(404).json({ message: "Request not found" });
 
-      request.status = 'denied';
+      request.status = "denied";
       await request.save();
 
       res.status(200).json({ message: "Deletion request denied." });
-    }
-    catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
@@ -577,6 +663,48 @@ class UserController {
       users = users.sort(() => Math.random() - 0.5);
 
       return res.status(200).json({ info: users.slice(0, 50) });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
+  static async addWifiScanner(req, res) {
+    try {
+      const { userId } = req.params;
+      const { businessId, location } = req.body;
+      const user = await userService.addWifiScanner(
+        userId,
+        businessId,
+        location
+      );
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res
+        .status(201)
+        .json({ message: "Wifi Scanner added successfully", user });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getAllWifiScan(req, res) {
+    try {
+      const { userId } = req.params;
+      const wifiScanners = await userService.getAllWifiScanWith(userId);
+      if (!wifiScanners)
+        return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ wifiScanners });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getAllRepeatedCustomers(req, res) {
+    try {
+      const { userId } = req.params;
+      const wifiScanners = await userService.getAllRepeatedCustomers(userId);
+      if (!wifiScanners)
+        return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ wifiScanners });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

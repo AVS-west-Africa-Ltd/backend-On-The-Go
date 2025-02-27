@@ -54,6 +54,22 @@ class PostService {
     }
   }
 
+  static async getPostsByUserId(userId, postType) {
+    try {
+      return await Post.findAll({
+        where: {
+          [Op.and]: [
+            { userId: userId },
+            { postType: postType },
+          ],
+        },
+      })
+    }
+    catch (e) {
+      throw e;
+    }
+  }
+
   static async getPosts() {
     try {
       return await Post.findAll({

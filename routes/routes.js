@@ -97,6 +97,7 @@ router.get(
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));
 router.get("/user/post/:postId", catchErrors(PostController.getPostById));
+router.get("/posts/user/:userId/:postType", catchErrors(PostController.GetPostsByUserId));
 router.get("/posts/user", catchErrors(PostController.getPosts));
 router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
@@ -142,6 +143,7 @@ router.get(
   "/profile/viewers/:profileOwnerId",
   catchErrors(ProfileViewController.getProfileViewers)
 );
+
 
 // Business Profile
 

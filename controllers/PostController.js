@@ -78,7 +78,7 @@ const upload = multer({
 class PostController {
   static async createPost(req, res) {
     const uploadHandler = upload.array("media", 10);
-
+    console.log("hit")
     uploadHandler(req, res, async (err) => {
       if (err) {
         console.error("Error uploading files:", err);
@@ -132,6 +132,22 @@ class PostController {
         info: post,
       });
     } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async GetPostsByUserId(req, res) {
+    try {
+      const { userId, postType } = req.params;
+
+      const posts = await PostService.getPostsByUserId(userId, postType);
+      if(!posts) return res.status(404).json({ message: "Post not found" });
+
+      return res.status(200).json({
+        info: posts,
+      });
+    }
+    catch (error) {
       res.status(500).json({ error: error.message });
     }
   }

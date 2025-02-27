@@ -257,30 +257,6 @@ const businessController = {
     });
   },
 
-  // Delete a Business
-  // deleteBusiness: async (req, res) => {
-  //   try {
-  //     const { id } = req.params;
-  //     const business = await Business.findByPk(id);
-
-  //     if (!business) {
-  //       return res.status(404).json({
-  //         message: "Business not found",
-  //       });
-  //     }
-
-  //     await business.destroy();
-  //     return res.status(200).json({
-  //       message: "Business deleted successfully",
-  //     });
-  //   } catch (error) {
-  //     return res.status(500).json({
-  //       message: "Failed to delete business",
-  //       error: error.message,
-  //     });
-  //   }
-  // },
-
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;
 

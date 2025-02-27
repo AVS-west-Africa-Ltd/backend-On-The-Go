@@ -87,16 +87,23 @@ class PostController {
           .json({ message: "Error uploading files", error: err.message });
       }
 
-      const { userId, businessId, description, rating } = req.body;
+      const { userId, businessId, description, rating, postType } = req.body;
 
-      if (!description || !rating || !businessId || !userId)
+      if (!description || !userId)
         return res.status(400).json({ message: "All fields are required" });
 
       try {
         // Get the S3 URLs from the uploaded files
         const media = req.files.map((file) => file.location).toString();
 
-        let payload = { userId, description, rating, businessId, media };
+        let payload = {
+          userId,
+          description,
+          rating,
+          businessId,
+          media,
+          postType,
+        };
 
         const post = await PostService.createPost(payload);
 

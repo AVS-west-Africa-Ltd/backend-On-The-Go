@@ -97,7 +97,10 @@ router.get(
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));
 router.get("/user/post/:postId", catchErrors(PostController.getPostById));
-router.get("/posts/user/:userId/:postType", catchErrors(PostController.GetPostsByUserId));
+router.get(
+  "/posts/user/:userId/:postType",
+  catchErrors(PostController.GetPostsByUserId)
+);
 router.get("/posts/user", catchErrors(PostController.getPosts));
 router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
@@ -144,13 +147,13 @@ router.get(
   catchErrors(ProfileViewController.getProfileViewers)
 );
 
-
 // Business Profile
 
 router.post("/register-business", businessController.createBusiness);
 // router.post("/business/toggle-follow", businessController.toggleFollow);
 router.get("/businesses/:userId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
+router.get("/business", businessController.getAllBusiness);
 // router.get("/business/:userId/user", businessController.getUserBusinesses);
 // router.get("/business/:businessId/following", businessController.getFollowing);
 router.put("/businesses/:id", businessController.updateBusiness);

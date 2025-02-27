@@ -117,6 +117,23 @@ const businessController = {
     }
   },
 
+  // Get all Businesses
+  getAllBusiness: async (req, res) => {
+    try {
+      const businesses = await BusinessService.getAllBusiness();
+
+      return res.status(200).json({
+        message: "Businesses retrieved successfully",
+        businesses,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to retrieve businesses",
+        error: error.message,
+      });
+    }
+  },
+
   // Get a user business
 
   getBusinessById: async (req, res) => {

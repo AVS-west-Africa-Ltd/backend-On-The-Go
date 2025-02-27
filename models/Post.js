@@ -19,6 +19,11 @@ const PostSchema = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    postType: {
+      type: DataTypes.ENUM,
+      values: ["individual", "business"],
+      allowNull: false,
+    },
     likes: {
       type: DataTypes.JSON,
       allowNull: true,

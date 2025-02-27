@@ -6,6 +6,7 @@ const multerS3 = require("multer-s3");
 
 const Business = require("../models/Business");
 const { BusinessPosts, BusinessFollowers } = require("../models/index");
+const BusinessService = require("../services/BusinessService");
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -102,20 +103,11 @@ const businessController = {
   // Get all Businesses
   getAllBusinesses: async (req, res) => {
     try {
-      const businesses = await Business.findAll();
-
-      // Parse JSON strings into objects
-      const parsedBusinesses = businesses.map((business) => ({
-        ...business.toJSON(),
-        amenities: JSON.parse(business.amenities),
-        hours: JSON.parse(business.hours),
-        social: JSON.parse(business.social),
-        wifi: JSON.parse(business.wifi),
-      }));
+      const businesses = await BusinessService.getAllBusinesses();
 
       return res.status(200).json({
         message: "Businesses retrieved successfully",
-        data: parsedBusinesses,
+        businesses,
       });
     } catch (error) {
       return res.status(500).json({
@@ -127,12 +119,10 @@ const businessController = {
 
   // Get a user business
 
-  getUserBusinesses: async (req, res) => {
+  getBusinessById: async (req, res) => {
     try {
       const { userId } = req.params;
-      const business = await Business.findOne({
-        where: { userId: userId },
-      });
+      const business = await BusinessService.getBusinessById(userId);
 
       if (!business) {
         return res.status(404).json({
@@ -140,43 +130,34 @@ const businessController = {
         });
       }
 
-      // Parse stringified JSON fields
-      const formattedBusiness = {
-        ...business.toJSON(), // Convert Sequelize model instance to plain object
-        amenities: JSON.parse(business.amenities || "[]"),
-        hours: JSON.parse(business.hours || "{}"),
-        social: JSON.parse(business.social || "{}"),
-        wifi: JSON.parse(business.wifi || "[]"),
-      };
-
-      return res.status(200).json(formattedBusiness);
+      return res.status(200).json(business);
     } catch (error) {
-      console.error("Error fetching user's businesses:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+      // console.error("Error fetching user's businesses:", error);
+      res.status(500).json(error.message);
     }
   },
 
   // Get a single Business by ID
-  getBusinessById: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const business = await Business.findByPk(id);
-      if (!business) {
-        return res.status(404).json({
-          message: "Business not found",
-        });
-      }
-      return res.status(200).json({
-        message: "Business retrieved successfully",
-        data: business,
-      });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Failed to retrieve business",
-        error: error.message,
-      });
-    }
-  },
+  // getBusinessById: async (req, res) => {
+  //   try {
+  //     const { id } = req.params;
+  //     const business = await Business.findByPk(id);
+  //     if (!business) {
+  //       return res.status(404).json({
+  //         message: "Business not found",
+  //       });
+  //     }
+  //     return res.status(200).json({
+  //       message: "Business retrieved successfully",
+  //       data: business,
+  //     });
+  //   } catch (error) {
+  //     return res.status(500).json({
+  //       message: "Failed to retrieve business",
+  //       error: error.message,
+  //     });
+  //   }
+  // },
 
   // Update a Business
   updateBusiness: async (req, res) => {
@@ -277,28 +258,28 @@ const businessController = {
   },
 
   // Delete a Business
-  deleteBusiness: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const business = await Business.findByPk(id);
+  // deleteBusiness: async (req, res) => {
+  //   try {
+  //     const { id } = req.params;
+  //     const business = await Business.findByPk(id);
 
-      if (!business) {
-        return res.status(404).json({
-          message: "Business not found",
-        });
-      }
+  //     if (!business) {
+  //       return res.status(404).json({
+  //         message: "Business not found",
+  //       });
+  //     }
 
-      await business.destroy();
-      return res.status(200).json({
-        message: "Business deleted successfully",
-      });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Failed to delete business",
-        error: error.message,
-      });
-    }
-  },
+  //     await business.destroy();
+  //     return res.status(200).json({
+  //       message: "Business deleted successfully",
+  //     });
+  //   } catch (error) {
+  //     return res.status(500).json({
+  //       message: "Failed to delete business",
+  //       error: error.message,
+  //     });
+  //   }
+  // },
 
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;
@@ -331,76 +312,76 @@ const businessController = {
     }
   },
 
-  toggleFollow: async (req, res) => {
-    try {
-      const { followerId, followedId } = req.body;
+  // toggleFollow: async (req, res) => {
+  //   try {
+  //     const { followerId, followedId } = req.body;
 
-      // Validate inputs
-      if (!followerId || !followedId) {
-        return res.status(400).json({
-          message: "Follower ID and Followed ID are required",
-        });
-      }
+  //     // Validate inputs
+  //     if (!followerId || !followedId) {
+  //       return res.status(400).json({
+  //         message: "Follower ID and Followed ID are required",
+  //       });
+  //     }
 
-      // Check if both businesses exist
-      const follower = await Business.findByPk(followerId);
-      const followed = await Business.findByPk(followedId);
+  //     // Check if both businesses exist
+  //     const follower = await Business.findByPk(followerId);
+  //     const followed = await Business.findByPk(followedId);
 
-      if (!follower || !followed) {
-        return res.status(404).json({
-          message: "Invalid follower or followed business ID",
-        });
-      }
+  //     if (!follower || !followed) {
+  //       return res.status(404).json({
+  //         message: "Invalid follower or followed business ID",
+  //       });
+  //     }
 
-      // Check for existing follow relationship
-      const existingFollow = await BusinessFollowers.findOne({
-        where: { followerId, followedId },
-      });
+  //     // Check for existing follow relationship
+  //     const existingFollow = await BusinessFollowers.findOne({
+  //       where: { followerId, followedId },
+  //     });
 
-      if (existingFollow) {
-        // Unfollow
-        await existingFollow.destroy();
-        return res.status(200).json({
-          message: "Unfollowed successfully",
-        });
-      } else {
-        // Follow
-        await BusinessFollowers.create({ followerId, followedId });
-        return res.status(200).json({
-          message: "Followed successfully",
-        });
-      }
-    } catch (error) {
-      return res.status(500).json({
-        message: "An error occurred while toggling follow",
-        error: error.message,
-      });
-    }
-  },
+  //     if (existingFollow) {
+  //       // Unfollow
+  //       await existingFollow.destroy();
+  //       return res.status(200).json({
+  //         message: "Unfollowed successfully",
+  //       });
+  //     } else {
+  //       // Follow
+  //       await BusinessFollowers.create({ followerId, followedId });
+  //       return res.status(200).json({
+  //         message: "Followed successfully",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     return res.status(500).json({
+  //       message: "An error occurred while toggling follow",
+  //       error: error.message,
+  //     });
+  //   }
+  // },
 
-  getFollowing: async (req, res) => {
-    try {
-      const { businessId } = req.params;
+  // getFollowing: async (req, res) => {
+  //   try {
+  //     const { businessId } = req.params;
 
-      // Validate the business ID
-      const business = await Business.findByPk(businessId);
-      if (!business) {
-        return res.status(404).json({ message: "Business not found" });
-      }
+  //     // Validate the business ID
+  //     const business = await Business.findByPk(businessId);
+  //     if (!business) {
+  //       return res.status(404).json({ message: "Business not found" });
+  //     }
 
-      // Fetch all businesses that this business is following
-      const following = await business.getFollowing({
-        attributes: ["id", "name", "type", "logo"], // Fetch desired attributes
-      });
+  //     // Fetch all businesses that this business is following
+  //     const following = await business.getFollowing({
+  //       attributes: ["id", "name", "type", "logo"], // Fetch desired attributes
+  //     });
 
-      return res.status(200).json({ following });
-    } catch (error) {
-      return res.status(500).json({
-        message: "An error occurred while fetching following businesses",
-        error: error.message,
-      });
-    }
-  },
+  //     return res.status(200).json({ following });
+  //   } catch (error) {
+  //     return res.status(500).json({
+  //       message: "An error occurred while fetching following businesses",
+  //       error: error.message,
+  //     });
+  //   }
+  // },
 };
 
 module.exports = businessController;

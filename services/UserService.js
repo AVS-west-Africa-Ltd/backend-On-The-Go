@@ -4,6 +4,8 @@ const { Op } = require("sequelize");
 const Notification = require("../models/Notification");
 const sequelize = require("../config/database");
 const NotificationService = require("./NotificationService");
+const RepeatedCustomer = require("../models/RepeatedCustomers");
+const WifiScan = require("../models/WifiScan");
 
 class UserService {
   // Create a new user

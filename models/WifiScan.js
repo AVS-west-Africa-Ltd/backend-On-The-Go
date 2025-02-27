@@ -32,7 +32,11 @@ const WifiScan = sequelize.define(
   }
 );
 
-// Define the relationship between User and RepeatedCustomer
-WifiScan.hasMany(RepeatedCustomer, { foreignKey: "userId" });
+WifiScan.associate = (models) => {
+  WifiScan.belongsTo(models.RepeatedCustomer, {
+    foreignKey: "userId",
+    as: "wifiScans",
+  });
+};
 
 module.exports = WifiScan;

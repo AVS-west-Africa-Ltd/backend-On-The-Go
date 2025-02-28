@@ -61,6 +61,9 @@ const User = sequelize.define('User', {  // Change from 'Users' to 'User'
     },
     location: {
         type: DataTypes.TEXT,
+    },
+    placesVisited: {
+        type: DataTypes.JSON,
     }
 }, {
     tableName: 'users', // Explicitly set table name

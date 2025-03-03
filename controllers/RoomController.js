@@ -8,6 +8,8 @@ const { sequelize } = require("../models/Room");
 const Chat = require('../models/Chat');
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
+const crypto = require('crypto');
+
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -29,6 +31,31 @@ const upload = multer({
     },
   })
 });
+
+// Encryption configuration
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY 
+  ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex').slice(0, 32) // Convert hex to buffer and ensure 32 bytes
+  : crypto.randomBytes(32); // Generate random 32 bytes if no key provided
+const IV_LENGTH = 16;
+const ALGORITHM = 'aes-256-cbc';
+
+// Decryption function directly in RoomController.js
+const decrypt = (text) => {
+  if (!text) return text;
+  const [ivHex, encryptedHex] = text.split(':');
+  if (!ivHex || !encryptedHex) return text;
+  try {
+    const iv = Buffer.from(ivHex, 'hex');
+    const encryptedText = Buffer.from(encryptedHex, 'hex');
+    const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (error) {
+    console.error("Decryption error:", error);
+    return "(Decryption failed)"; // Fallback message if decryption fails
+  }
+};
 
 // Ensure the uploads directory exists
 const uploadDir = "uploads";
@@ -176,7 +203,7 @@ exports.getUserRooms = async (req, res) => {
         },
         {
           model: Chat,
-          as: "Chats", // Changed to match the model association
+          as: "Chats",
           attributes: ['content', 'timestamp', 'sender_id'],
           order: [['timestamp', 'DESC']],
           limit: 1,
@@ -194,10 +221,24 @@ exports.getUserRooms = async (req, res) => {
       ],
     });
 
-    const formattedRooms = rooms.map(room => ({
-      ...room.toJSON(),
-      last_message: room.Chats?.[0] || null, // Updated to match the new alias
-    }));
+    const formattedRooms = rooms.map(room => {
+      const roomData = room.toJSON();
+      
+      // Check if there's a last message and decrypt it
+      if (roomData.Chats && roomData.Chats.length > 0) {
+        roomData.last_message = {
+          ...roomData.Chats[0],
+          content: decrypt(roomData.Chats[0].content) // Using local decrypt function
+        };
+      } else {
+        roomData.last_message = null;
+      }
+      
+      // Remove the Chats array to clean up the response
+      delete roomData.Chats;
+      
+      return roomData;
+    });
 
     res.status(200).json({
       success: true,

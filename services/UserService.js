@@ -513,24 +513,34 @@ class UserService {
     }
   }
 
-  static async addWifiScanner(userId, businessId, location) {
+  static async addWifiScanner(userId, businessId, location, wifiName) {
     try {
       // Check if the user already exists in the WifiScan table
       const existingUser = await WifiScan.findOne({ where: { userId } });
 
       if (!existingUser) {
         // If the user doesn't exist, save their info to the WifiScan table
-        return await WifiScan.create({ userId, businessId, location });
+        return await WifiScan.create({
+          userId,
+          businessId,
+          location,
+          wifiName,
+        });
       } else {
         // If the user exists, move their info to the RepeatCustomers table
-        return await RepeatedCustomer.create({ userId, businessId, location });
+        return await RepeatedCustomer.create({
+          userId,
+          businessId,
+          location,
+          wifiName,
+        });
       }
     } catch (error) {
       throw new Error(`Error in addWifiScanner: ${error.message}`);
     }
   }
 
-  static async getAllWifiScanWith(businessId) {
+  static async getAllWifiScan(businessId) {
     try {
       // Retrieve all Wi-Fi scans for the specific business
       const wifiScans = await WifiScan.findAll({

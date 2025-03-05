@@ -22,6 +22,9 @@ const WifiScan = sequelize.define(
     location: {
       type: DataTypes.JSON,
     },
+    wifiName: {
+      type: DataTypes.STRING,
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

@@ -23,6 +23,9 @@ const RepeatedCustomer = sequelize.define(
     location: {
       type: DataTypes.JSON,
     },
+    wifiName: {
+      type: DataTypes.STRING,
+    },
     scannedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

@@ -589,12 +589,13 @@ class UserController {
 
   static async addWifiScanner(req, res) {
     try {
-      const { userId } = req.params;
-      const { businessId, location } = req.body;
+      const { businessId } = req.params;
+      const { userId, location, wifiName } = req.body;
       const user = await userService.addWifiScanner(
         userId,
         businessId,
-        location
+        location,
+        wifiName
       );
       if (!user) return res.status(404).json({ message: "User not found" });
       return res
@@ -607,8 +608,8 @@ class UserController {
 
   static async getAllWifiScan(req, res) {
     try {
-      const { userId } = req.params;
-      const wifiScanners = await userService.getAllWifiScanWith(userId);
+      const { businessId } = req.params;
+      const wifiScanners = await userService.getAllWifiScan(businessId);
       if (!wifiScanners)
         return res.status(404).json({ message: "No record found" });
       return res.status(200).json({ wifiScanners });
@@ -619,8 +620,10 @@ class UserController {
 
   static async getAllRepeatedCustomers(req, res) {
     try {
-      const { userId } = req.params;
-      const wifiScanners = await userService.getAllRepeatedCustomers(userId);
+      const { businessId } = req.params;
+      const wifiScanners = await userService.getAllRepeatedCustomers(
+        businessId
+      );
       if (!wifiScanners)
         return res.status(404).json({ message: "No record found" });
       return res.status(200).json({ wifiScanners });

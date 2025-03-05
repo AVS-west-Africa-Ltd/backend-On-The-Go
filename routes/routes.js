@@ -81,12 +81,13 @@ router.post(
 );
 router.get("/random-users", catchErrors(UserController.GetRandomUsers));
 
+// Wifi Scanner routes
 router.post(
-  "/add-wifi-scanner/:userId",
+  "/add-wifi-scanner/:businessId",
   catchErrors(UserController.addWifiScanner)
 );
 router.get(
-  "/get-all-wifi-scan/:userId",
+  "/get-all-wifi-scan/:businessId",
   catchErrors(UserController.getAllWifiScan)
 );
 router.get(

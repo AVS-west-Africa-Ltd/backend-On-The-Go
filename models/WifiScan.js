@@ -11,6 +11,7 @@ const WifiScan = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
+    // This is your actual user identifier from the application
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -18,6 +19,9 @@ const WifiScan = sequelize.define(
     businessId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    wifiName: {
+      type: DataTypes.STRING,
     },
     location: {
       type: DataTypes.JSON,
@@ -28,14 +32,14 @@ const WifiScan = sequelize.define(
     },
   },
   {
-    tableName: "wifiscan", // Explicitly set table name
+    tableName: "wifiscan",
   }
 );
 
 WifiScan.associate = (models) => {
-  WifiScan.belongsTo(models.RepeatedCustomer, {
-    foreignKey: "userId",
-    as: "wifiScans",
+  WifiScan.hasMany(models.RepeatedCustomer, {
+    foreignKey: "wifiScanId",
+    as: "repeatedScans",
   });
 };
 

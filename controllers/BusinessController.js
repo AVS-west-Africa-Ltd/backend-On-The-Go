@@ -305,76 +305,50 @@ const businessController = {
     }
   },
 
-  // toggleFollow: async (req, res) => {
-  //   try {
-  //     const { followerId, followedId } = req.body;
+  addWifiScanner: async (req, res) => {
+    try {
+      const { businessId } = req.params;
+      const { userId, location, wifiName } = req.body;
+      const user = await BusinessService.addWifiScanner(
+        userId,
+        businessId,
+        location,
+        wifiName
+      );
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res
+        .status(201)
+        .json({ message: "Wifi Scanner added successfully", user });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
 
-  //     // Validate inputs
-  //     if (!followerId || !followedId) {
-  //       return res.status(400).json({
-  //         message: "Follower ID and Followed ID are required",
-  //       });
-  //     }
+  getAllWifiScan: async (req, res) => {
+    try {
+      const { businessId } = req.params;
+      const wifiScanners = await BusinessService.getAllWifiScan(businessId);
+      if (!wifiScanners)
+        return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ wifiScanners });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
 
-  //     // Check if both businesses exist
-  //     const follower = await Business.findByPk(followerId);
-  //     const followed = await Business.findByPk(followedId);
-
-  //     if (!follower || !followed) {
-  //       return res.status(404).json({
-  //         message: "Invalid follower or followed business ID",
-  //       });
-  //     }
-
-  //     // Check for existing follow relationship
-  //     const existingFollow = await BusinessFollowers.findOne({
-  //       where: { followerId, followedId },
-  //     });
-
-  //     if (existingFollow) {
-  //       // Unfollow
-  //       await existingFollow.destroy();
-  //       return res.status(200).json({
-  //         message: "Unfollowed successfully",
-  //       });
-  //     } else {
-  //       // Follow
-  //       await BusinessFollowers.create({ followerId, followedId });
-  //       return res.status(200).json({
-  //         message: "Followed successfully",
-  //       });
-  //     }
-  //   } catch (error) {
-  //     return res.status(500).json({
-  //       message: "An error occurred while toggling follow",
-  //       error: error.message,
-  //     });
-  //   }
-  // },
-
-  // getFollowing: async (req, res) => {
-  //   try {
-  //     const { businessId } = req.params;
-
-  //     // Validate the business ID
-  //     const business = await Business.findByPk(businessId);
-  //     if (!business) {
-  //       return res.status(404).json({ message: "Business not found" });
-  //     }
-
-  //     // Fetch all businesses that this business is following
-  //     const following = await business.getFollowing({
-  //       attributes: ["id", "name", "type", "logo"], // Fetch desired attributes
-  //     });
-
-  //     return res.status(200).json({ following });
-  //   } catch (error) {
-  //     return res.status(500).json({
-  //       message: "An error occurred while fetching following businesses",
-  //       error: error.message,
-  //     });
-  //   }
-  // },
+  getAllRepeatedCustomers: async (req, res) => {
+    try {
+      const { businessId } = req.params;
+      const wifiScanners = await BusinessService.getAllRepeatedCustomers(
+        businessId
+      );
+      if (!wifiScanners)
+        return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ wifiScanners });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
 };
 
 module.exports = businessController;

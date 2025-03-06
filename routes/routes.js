@@ -81,17 +81,18 @@ router.post(
 );
 router.get("/random-users", catchErrors(UserController.GetRandomUsers));
 
+// Wifi Scanner routes
 router.post(
-  "/add-wifi-scanner/:userId",
-  catchErrors(UserController.addWifiScanner)
+  "/add-wifi-scanner/:businessId",
+  catchErrors(businessController.addWifiScanner)
 );
 router.get(
-  "/get-all-wifi-scan/:userId",
-  catchErrors(UserController.getAllWifiScan)
+  "/get-all-wifi-scan/:businessId",
+  catchErrors(businessController.getAllWifiScan)
 );
 router.get(
   "/get-repeated-customers/:userId",
-  catchErrors(UserController.getAllRepeatedCustomers)
+  catchErrors(businessController.getAllRepeatedCustomers)
 );
 
 // Post routes

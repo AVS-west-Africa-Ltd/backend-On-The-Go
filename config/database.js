@@ -3,7 +3,7 @@ const { Sequelize } = require("sequelize");
 const path = require("path");
 const log = require('../utils/logger'); 
 
-const env = process.env.NODE_ENV || "development";
+const env = process.env.NODE_ENV || "production";
 // const config = require(path.join(__dirname, '../config/config.js'))[env];
 const config = require("./config");
 
@@ -14,24 +14,24 @@ const config = require("./config");
 // });
 //
 // const sequelize = new Sequelize(
-//   config.development.database,
-//   config.development.username,
-//   config.development.password,
+//   config.production.database,
+//   config.production.username,
+//   config.production.password,
 //   {
-//     host: config.development.host,
-//     port: config.development.port,
+//     host: config.production.host,
+//     port: config.production.port,
 //     dialect: "mysql",
 //     logging: (msg) => log(`Sequelize: ${msg}`),
 //   }
 // );
 
 const sequelize = new Sequelize(
-  config.development.database,
-  config.development.username,
-  config.development.password,
+  config.production.database,
+  config.production.username,
+  config.production.password,
   {
-    host: config.development.host,
-    port: config.development.port,
+    host: config.production.host,
+    port: config.production.port,
     dialect: "mysql",
     logging: (msg) => log(`Sequelize: ${msg}`),
   }

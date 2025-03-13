@@ -13,6 +13,10 @@ router.get("/room/:roomId/messages", chatController.getRoomMessages);
 
 router.patch('/:room_id/toggle-broadcast', chatController.toggleBroadcast);
 router.get('/:room_id/broadcast-status', chatController.getBroadcastStatus);
+router.post('/room/accept-join-request', roomController.acceptJoinRequest);
+
+router.post("/room/request-to-join", roomController.requestToJoinRoom);
+router.get("/room/:roomId/join-requests", roomController.getJoinRequests);
 
 // Room operations
 router.post("/room/create", roomController.createRoom);

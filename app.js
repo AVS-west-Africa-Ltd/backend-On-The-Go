@@ -5,6 +5,7 @@ const http = require('http');
 const bodyParser = require("body-parser");
 const sequelize = require("./config/database");
 const router = require("./routes/routes");
+const zoneRouter = require("./routes/zone"); // Import the zone route file
 const path = require('path');
 const setupSocketIO = require('./services/socketSetup');
 const setupAssociations = require('./models/associations');
@@ -28,25 +29,34 @@ const Invitation = require('./models/Invitation');
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require('./cron/DeleteUserCron');
 
-
-
 const PORT = process.env.PORT || 5000;
 const app = express();
+
+// CORS Configuration
+const corsOptions = {
+  origin: 'http://localhost:3001', // Allow frontend origin
+  methods: 'GET,POST,PUT,DELETE,OPTIONS', // Allowed HTTP methods
+  allowedHeaders: 'Content-Type,Authorization,x-api-key', // Add x-api-key
+  credentials: true, // Allow credentials
+};
+
+app.use(cors(corsOptions));
+
 
 // Security Middleware
 // app.use(helmet());
 
-// CORS Headers
+// CORS Headers (Fallback, though CORS middleware should handle this)
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Credentials", "true"); // Allow credentials
   next();
 });
 
 // Apply middleware
 app.use(validateApiKey);
-app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, './uploads')));
@@ -66,7 +76,8 @@ app.get('/', (req, res) => {
 });
 
 // Route setup
-app.use("/api/v1", router);
+app.use("/api/v1", router); // Existing routes
+app.use("/zone", zoneRouter); // Use the zone routes
 
 // Setup associations **before** syncing database
 setupAssociations();

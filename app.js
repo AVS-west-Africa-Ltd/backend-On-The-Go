@@ -32,15 +32,15 @@ require('./cron/DeleteUserCron');
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-// CORS Configuration
-const corsOptions = {
-  origin: 'http://localhost:3001', // Allow frontend origin
-  methods: 'GET,POST,PUT,DELETE,OPTIONS', // Allowed HTTP methods
-  allowedHeaders: 'Content-Type,Authorization,x-api-key', // Add x-api-key
-  credentials: true, // Allow credentials
-};
+// // CORS Configuration
+// const corsOptions = {
+//   origin: 'http://localhost:3001', // Allow frontend origin
+//   methods: 'GET,POST,PUT,DELETE,OPTIONS', // Allowed HTTP methods
+//   allowedHeaders: 'Content-Type,Authorization,x-api-key', // Add x-api-key
+//   credentials: true, // Allow credentials
+// };
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 
 // Security Middleware
@@ -48,7 +48,7 @@ app.use(cors(corsOptions));
 
 // CORS Headers (Fallback, though CORS middleware should handle this)
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Credentials", "true"); // Allow credentials

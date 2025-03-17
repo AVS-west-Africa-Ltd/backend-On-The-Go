@@ -91,7 +91,7 @@ router.get(
   catchErrors(businessController.getAllWifiScan)
 );
 router.get(
-  "/get-repeated-customers/:userId",
+  "/get-repeated-customers/:businessId",
   catchErrors(businessController.getAllRepeatedCustomers)
 );
 

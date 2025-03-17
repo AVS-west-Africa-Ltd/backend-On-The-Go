@@ -166,6 +166,7 @@ class BusinessService {
           wifiScanId: existingScan.id, // Linking to the first scan record
           businessId,
           location: parsedLocation,
+          wifiName
         });
         return {
           message: "Repeated scan recorded successfully",

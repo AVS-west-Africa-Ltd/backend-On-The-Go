@@ -29,7 +29,7 @@ const Invitation = require('./models/Invitation');
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require('./cron/DeleteUserCron');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const app = express();
 
 // // CORS Configuration

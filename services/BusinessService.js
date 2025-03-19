@@ -133,8 +133,7 @@ class BusinessService {
 
   static async addWifiScanner(userId, businessId, location, wifiName) {
     try {
-      console.log("Received userId:", userId);
-      console.log("Received location:", location);
+    
   
       if (!userId) {
         throw new Error("userId is missing or null");
@@ -145,7 +144,7 @@ class BusinessService {
   
       // Look for an existing first-time scan for the user
       const existingScan = await WifiScan.findOne({
-        where: { businessId },
+        where: { userId },
       });
   
       if (!existingScan) {

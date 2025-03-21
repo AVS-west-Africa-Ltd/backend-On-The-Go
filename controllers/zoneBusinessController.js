@@ -38,21 +38,27 @@ const uploadFiles = async (req, res) => {
   }
 
   const newBusinesses = [];
+
   files.forEach((file) => {
     const workbook = XLSX.readFile(file.path);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-    const parsedData = jsonData.map((item) => ({
-      name: item.name,
-      address: item.address,
-      latitude: parseFloat(item.latitude),
-      longitude: parseFloat(item.longitude),
-      category: item.category,
-      zone: item.zone,
-      registered: false,
-    }));
+    const parsedData = jsonData.map((item) => {
+      const latitude = parseFloat(item.latitude);
+      const longitude = parseFloat(item.longitude);
+
+      return {
+        name: item.name,
+        address: item.address,
+        latitude: isNaN(latitude) ? null : latitude, // Ensure valid latitude
+        longitude: isNaN(longitude) ? null : longitude, // Ensure valid longitude
+        category: item.category,
+        zone: item.zone,
+        registered: false,
+      };
+    });
 
     newBusinesses.push(...parsedData);
   });
@@ -62,20 +68,21 @@ const uploadFiles = async (req, res) => {
   try {
     const existingBusinesses = await ZoneBusiness.findAll();
     const uniqueBusinesses = newBusinesses.filter(newBusiness => {
-      return !existingBusinesses.some(existingBusiness =>
-        existingBusiness.name === newBusiness.name &&
-        existingBusiness.address === newBusiness.address
-      );
+      return newBusiness.latitude !== null && newBusiness.longitude !== null && // Filter invalid coordinates
+        !existingBusinesses.some(existingBusiness =>
+          existingBusiness.name === newBusiness.name &&
+          existingBusiness.address === newBusiness.address
+        );
     });
 
-    log(`Filtered out duplicates. ${uniqueBusinesses.length} unique businesses to insert.`);
+    log(`Filtered out duplicates and invalid entries. ${uniqueBusinesses.length} unique businesses to insert.`);
 
     let createdBusinesses = [];
     if (uniqueBusinesses.length > 0) {
       createdBusinesses = await ZoneBusiness.bulkCreate(uniqueBusinesses);
       log(`Successfully inserted ${createdBusinesses.length} businesses into the database`);
     } else {
-      log('No new businesses to insert after filtering duplicates');
+      log('No new businesses to insert after filtering.');
     }
 
     res.json({ message: 'Files uploaded successfully', businesses: createdBusinesses });

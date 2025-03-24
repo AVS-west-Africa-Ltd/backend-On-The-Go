@@ -1,6 +1,7 @@
 const fs = require("fs");
 const Room = require("../models/Room");
 const RoomMember = require("../models/RoomMember");
+const User = require('../models/User'); 
 const path = require("path");
 const multer = require("multer");
 const InvitationController = require("./InvitationController");
@@ -8,6 +9,8 @@ const { sequelize } = require("../models/Room");
 const Chat = require('../models/Chat');
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
+const crypto = require('crypto');
+
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -29,6 +32,31 @@ const upload = multer({
     },
   })
 });
+
+// Encryption configuration
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY 
+  ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex').slice(0, 32) // Convert hex to buffer and ensure 32 bytes
+  : crypto.randomBytes(32); // Generate random 32 bytes if no key provided
+const IV_LENGTH = 16;
+const ALGORITHM = 'aes-256-cbc';
+
+// Decryption function directly in RoomController.js
+const decrypt = (text) => {
+  if (!text) return text;
+  const [ivHex, encryptedHex] = text.split(':');
+  if (!ivHex || !encryptedHex) return text;
+  try {
+    const iv = Buffer.from(ivHex, 'hex');
+    const encryptedText = Buffer.from(encryptedHex, 'hex');
+    const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
+  } catch (error) {
+    console.error("Decryption error:", error);
+    return "(Decryption failed)"; // Fallback message if decryption fails
+  }
+};
 
 // Ensure the uploads directory exists
 const uploadDir = "uploads";
@@ -70,7 +98,7 @@ exports.createRoom = async (req, res) => {
 
     console.log("Uploaded file:", req.file);
 
-    const { name, type, description, status, created_by, member_ids } = req.body;
+    const { name, type, description, status, created_by, member_ids, is_private_displayed } = req.body;
 
     let memberIdsArray = [];
     try {
@@ -80,7 +108,7 @@ exports.createRoom = async (req, res) => {
     }
 
     try {
-      let media = null
+      let media = null;
 
       if (req.file) {
         media = req.file.location.toString();
@@ -94,6 +122,8 @@ exports.createRoom = async (req, res) => {
         status,
         created_by,
         total_members: memberIdsArray.length,
+        is_private_displayed: is_private_displayed || true, // Default to true if not provided
+        join_requests: [], // Initialize join_requests as an empty array
         created_date: new Date() // Explicitly set the creation date
       });
 
@@ -135,7 +165,6 @@ exports.createRoom = async (req, res) => {
     }
   });
 };
-
 // Get all rooms
 exports.getAllRooms = async (req, res) => {
   try {
@@ -146,6 +175,18 @@ exports.getAllRooms = async (req, res) => {
           as: "members", // Use 'members' alias from associations.js
           attributes: ["user_id"],
         },
+      ],
+      attributes: [
+        "id",
+        "name",
+        "type",
+        "description",
+        "image_url",
+        "status",
+        "total_members",
+        "created_by",
+        "is_private_displayed",
+        "join_requests",
       ],
     });
 
@@ -176,7 +217,7 @@ exports.getUserRooms = async (req, res) => {
         },
         {
           model: Chat,
-          as: "Chats", // Changed to match the model association
+          as: "Chats",
           attributes: ['content', 'timestamp', 'sender_id'],
           order: [['timestamp', 'DESC']],
           limit: 1,
@@ -191,13 +232,29 @@ exports.getUserRooms = async (req, res) => {
         "status",
         "total_members",
         "created_by",
+        "is_private_displayed",
+        "join_requests",
       ],
     });
 
-    const formattedRooms = rooms.map(room => ({
-      ...room.toJSON(),
-      last_message: room.Chats?.[0] || null, // Updated to match the new alias
-    }));
+    const formattedRooms = rooms.map(room => {
+      const roomData = room.toJSON();
+      
+      // Check if there's a last message and decrypt it
+      if (roomData.Chats && roomData.Chats.length > 0) {
+        roomData.last_message = {
+          ...roomData.Chats[0],
+          content: decrypt(roomData.Chats[0].content) // Using local decrypt function
+        };
+      } else {
+        roomData.last_message = null;
+      }
+      
+      // Remove the Chats array to clean up the response
+      delete roomData.Chats;
+      
+      return roomData;
+    });
 
     res.status(200).json({
       success: true,
@@ -225,6 +282,8 @@ exports.getRoomById = async (req, res) => {
         "status",
         "description",
         "created_by",
+        "is_private_displayed",
+        "join_requests",
       ],
       include: [
         {
@@ -294,6 +353,11 @@ exports.addMember = async (req, res) => {
         await InvitationController.removeUserFromInvitation(room_id, user_id);
       }
 
+      // Remove user from join_requests if they were in the list
+      const joinRequests = Array.isArray(room.join_requests) ? room.join_requests : [];
+      const updatedRequests = joinRequests.filter(id => id !== user_id);
+      await room.update({ join_requests: updatedRequests }, { transaction: t });
+
       return member;
     });
 
@@ -324,6 +388,169 @@ exports.addMember = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+exports.acceptJoinRequest = async (req, res) => {
+  const { room_id, user_id } = req.body;
+
+  try {
+    const room = await Room.findByPk(room_id);
+
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Room not found" });
+    }
+
+    // Ensure join_requests is an array
+    const joinRequests = Array.isArray(room.join_requests)
+      ? room.join_requests
+      : JSON.parse(room.join_requests || '[]');
+
+    if (!joinRequests.includes(user_id)) {
+      return res.status(400).json({ success: false, message: "No join request found for this user" });
+    }
+
+    // Remove user from join requests
+    const updatedRequests = joinRequests.filter(id => id !== user_id);
+    await room.update({ join_requests: JSON.stringify(updatedRequests) });  // Save as JSON string
+
+    // Add user to room members
+    await RoomMember.create({ room_id, user_id });
+
+    res.status(200).json({ success: true, message: "User added to room successfully" });
+  } catch (error) {
+    console.error("Error in acceptJoinRequest:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.requestToJoinRoom = async (req, res) => {
+  const { room_id, user_id } = req.body;
+
+  try {
+    const room = await Room.findByPk(room_id);
+
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Room not found" });
+    }
+
+    // If the room is public, directly add the user to the room
+    if (room.status === 'Public') {
+      // Check if the user is already a member
+      const existingMember = await RoomMember.findOne({
+        where: { room_id, user_id },
+      });
+
+      if (existingMember) {
+        return res.status(400).json({
+          success: false,
+          message: "User is already a member of the room",
+        });
+      }
+
+      // Add the user to the room
+      await RoomMember.create({ room_id, user_id });
+      await room.increment("total_members", { by: 1 });
+
+      return res.status(200).json({
+        success: true,
+        message: "User successfully joined the public room",
+      });
+    }
+
+    // If the room is private, handle join requests
+    if (room.status !== 'Private' || !room.is_private_displayed) {
+      return res.status(400).json({ success: false, message: "Invalid room type" });
+    }
+
+    // Ensure join_requests is always an array
+    const joinRequests = Array.isArray(room.join_requests) ? room.join_requests : [];
+
+    // Check if the user has already requested to join
+    if (!joinRequests.includes(user_id)) {
+      joinRequests.push(user_id);
+      await room.update({ join_requests: joinRequests });
+    }
+
+    res.status(200).json({ success: true, message: "Join request sent successfully" });
+  } catch (error) {
+    console.error("Error in requestToJoinRoom:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+exports.getJoinRequests = async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    console.log(`[getJoinRequests] Fetching join requests for roomId: ${roomId}`);
+
+    const room = await Room.findByPk(roomId, {
+      attributes: ['id', 'join_requests']
+    });
+
+    if (!room) {
+      console.warn(`[getJoinRequests] Room not found for roomId: ${roomId}`);
+      return res.status(404).json({ success: false, message: "Room not found" });
+    }
+
+    // Handle join_requests as a string or an array
+    let joinRequests = [];
+    if (room.join_requests) {
+      if (typeof room.join_requests === 'string') {
+        if (room.join_requests.trim() === '[]') {
+          joinRequests = [];  // If it's the string "[]", use an empty array
+        } else {
+          joinRequests = JSON.parse(room.join_requests);  // Parse if it's a JSON string
+        }
+      } else if (Array.isArray(room.join_requests)) {
+        joinRequests = room.join_requests;
+      }
+    }
+
+    console.log(`[getJoinRequests] Parsed joinRequests:`, joinRequests);
+
+    // If no join requests, return an empty array directly
+    if (joinRequests.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+      });
+    }
+
+    // Fetch user details for each join request
+    const userRequests = await Promise.all(
+      joinRequests.map(async (userId) => {
+        const user = await User.findByPk(userId, {
+          attributes: ['id', 'username', 'email', 'firstName', 'lastName', 'picture']
+        });
+        if (user) {
+          return {
+            user_id: user.id,
+            username: user.username || `${user.firstName} ${user.lastName}`.trim() || user.email,
+            email: user.email,
+            picture: user.picture
+          };
+        } else {
+          console.warn(`[getJoinRequests] User not found for userId: ${userId}`);
+          return null;
+        }
+      })
+    );
+
+    // Filter out null values if some users are not found
+    const filteredRequests = userRequests.filter((user) => user !== null);
+
+    console.log(`[getJoinRequests] Detailed join requests:`, filteredRequests);
+
+    res.status(200).json({
+      success: true,
+      data: filteredRequests,
+    });
+  } catch (error) {
+    console.error(`[getJoinRequests] Error fetching join requests for roomId: ${roomId}`, error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
 // Remove member with socket emission
 exports.removeMember = async (req, res) => {
   const { room_id, user_id } = req.body;
@@ -444,6 +671,7 @@ exports.getRoomUsers = async (req, res) => {
         room_id: roomId,
         room_name: room.name,
         total_members: room.total_members,
+        join_requests: room.join_requests,
         users: userDetails
       }
     });

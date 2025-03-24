@@ -309,6 +309,11 @@ const businessController = {
     try {
       const { businessId } = req.params;
       const { userId, location, wifiName } = req.body;
+
+        // Validate inputs
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
       const user = await BusinessService.addWifiScanner(
         userId,
         businessId,
@@ -318,7 +323,7 @@ const businessController = {
       if (!user) return res.status(404).json({ message: "User not found" });
       return res
         .status(201)
-        .json({ message: "Wifi Scanner added successfully", user });
+        .json({ message: user.message, user: user.data });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

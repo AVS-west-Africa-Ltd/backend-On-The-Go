@@ -108,26 +108,68 @@ class BusinessService {
     }
   }
 
-  static async addWifiScanner(userId, businessId, location) {
+  // static async addWifiScanner(userId, businessId, location,wifiName) {
+  //   try {
+  //     // Look for an existing first-time scan for the user
+  //     const existingScan = await WifiScan.findOne({
+  //       where: { businessId },
+  //     });
+
+  //     if (!existingScan) {
+  //       // First time scan: create a record in WifiScan
+  //       return await WifiScan.create({ userId, businessId, location,wifiName });
+  //     } else {
+  //       return await RepeatedCustomer.create({
+  //         wifiScanId: existingScan.id, // Linking to the first scan record
+  //         businessId,
+  //         location,
+  //       });
+  //     }
+  //   } catch (error) {
+  //     throw new Error(`Error in addWifiScanner: ${error.message}`);
+  //   }
+  // }
+
+  static async addWifiScanner(userId, businessId, location, wifiName) {
     try {
-      if (typeof location !== "object" || location === null) {
-        throw new Error(
-          "Invalid location format. Expected a valid JSON object."
-        );
+      if (!userId) {
+        throw new Error("userId is missing or null");
       }
 
+      // Ensure location is a proper JSON object
+      const parsedLocation =
+        typeof location === "string" ? JSON.parse(location) : location;
+
+      // Look for an existing first-time scan for the user
       const existingScan = await WifiScan.findOne({
-        where: { businessId },
+        where: { userId },
       });
 
       if (!existingScan) {
-        return await WifiScan.create({ userId, businessId, location });
-      } else {
-        return await RepeatedCustomer.create({
-          wifiScanId: existingScan.id,
+        // First-time scan: create a record in WifiScan
+        const newWifiScan = await WifiScan.create({
+          userId,
           businessId,
-          location,
+          location: parsedLocation,
+          wifiName,
         });
+        return {
+          message: "WiFi scan added successfully",
+          data: newWifiScan,
+        };
+      } else {
+        // User already scanned before, add to RepeatedCustomer
+        const repeatedScan = await RepeatedCustomer.create({
+          wifiScanId: existingScan.id, // Linking to the first scan record
+          businessId,
+          location: parsedLocation,
+          wifiName,
+          userId,
+        });
+        return {
+          message: "Repeated scan recorded successfully",
+          data: repeatedScan,
+        };
       }
     } catch (error) {
       throw new Error(`Error in addWifiScanner: ${error.message}`);

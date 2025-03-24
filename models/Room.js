@@ -42,6 +42,15 @@ const Room = sequelize.define('Room', {
     defaultValue: false, // Default to false (broadcast feature is off)
     allowNull: false
   },
+  is_private_displayed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true, // Default to true for backward compatibility
+  },
+  join_requests: {
+    type: DataTypes.JSON,
+    defaultValue: [], // Ensure this is always an array
+    allowNull: false, // Prevent null values
+  },
   created_date: {
     type: DataTypes.DATE,
     allowNull: false,

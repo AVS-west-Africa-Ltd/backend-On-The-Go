@@ -32,10 +32,14 @@ const RepeatedCustomer = sequelize.define(
     wifiName: {
       type: DataTypes.STRING,
     },
-    scannedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
+    // scannedAt: {
+    //   type: DataTypes.DATE,
+    //   defaultValue: DataTypes.NOW,
+    // },
   },
   {
     tableName: "repeatedcustomers",

@@ -110,17 +110,21 @@ class BusinessService {
 
   static async addWifiScanner(userId, businessId, location) {
     try {
-      // Look for an existing first-time scan for the user
+      if (typeof location !== "object" || location === null) {
+        throw new Error(
+          "Invalid location format. Expected a valid JSON object."
+        );
+      }
+
       const existingScan = await WifiScan.findOne({
         where: { businessId },
       });
 
       if (!existingScan) {
-        // First time scan: create a record in WifiScan
         return await WifiScan.create({ userId, businessId, location });
       } else {
         return await RepeatedCustomer.create({
-          wifiScanId: existingScan.id, // Linking to the first scan record
+          wifiScanId: existingScan.id,
           businessId,
           location,
         });

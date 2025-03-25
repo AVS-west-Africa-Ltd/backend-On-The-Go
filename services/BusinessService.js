@@ -2,6 +2,7 @@ const { Business } = require("../models");
 const RepeatedCustomer = require("../models/RepeatedCustomers");
 const User = require("../models/User");
 const WifiScan = require("../models/WifiScan");
+const { Op } = require("sequelize");
 
 class BusinessService {
   // Get user by ID
@@ -246,6 +247,93 @@ class BusinessService {
       throw new Error(
         `Error retrieving RepeatedCustomer data with user info: ${error.message}`
       );
+    }
+  }
+
+  // Alternative for databases without JSON contains support
+  static async filterBusinessesAlt(filters = {}) {
+    const allBusinesses = await Business.findAll();
+
+    // Parse and filter businesses
+    const filteredBusinesses = allBusinesses.filter((business) => {
+      let amenities = [];
+      try {
+        amenities = JSON.parse(business.amenities || "[]");
+      } catch (e) {
+        console.error("Invalid amenities JSON:", business.amenities);
+        return false;
+      }
+
+      const normalizedAmenities = amenities.map((amenity) =>
+        amenity.toString().toLowerCase().trim()
+      );
+
+      if (filters.wifi && !normalizedAmenities.includes("wifi")) return false;
+      if (
+        filters.parkingSpace &&
+        !normalizedAmenities.includes("parking space")
+      )
+        return false;
+      if (
+        filters.airConditioning &&
+        !normalizedAmenities.includes("air conditioning")
+      )
+        return false;
+      if (filters.petFriendly && !normalizedAmenities.includes("pet friendly"))
+        return false;
+
+      return true;
+    });
+
+    // 4. Remove escape characters from the response
+    const cleanBusinesses = filteredBusinesses.map((business) => ({
+      ...business.get({ plain: true }),
+      amenities: JSON.parse(business.amenities), // Properly parsed array
+      hours: JSON.parse(business.hours),
+      social: JSON.parse(business.social),
+      wifi: JSON.parse(business.wifi),
+    }));
+
+    return {
+      count: cleanBusinesses.length,
+      businesses: cleanBusinesses,
+    };
+  }
+
+  static async searchBusinessesByName(searchTerm, limit = 10) {
+    try {
+      const businesses = await Business.findAll({
+        where: {
+          name: {
+            [Op.like]: `%${searchTerm}%`, // Using LIKE with case-sensitive collation
+          },
+        },
+        limit: parseInt(limit),
+        order: [["name", "ASC"]],
+      });
+
+      // Parse all JSON string fields
+      return businesses.map((business) => {
+        const parsedBusiness = business.get({ plain: true });
+
+        // Parse all stringified JSON fields
+        const jsonFields = ["amenities", "hours", "social", "wifi"];
+        jsonFields.forEach((field) => {
+          try {
+            parsedBusiness[field] = parsedBusiness[field]
+              ? JSON.parse(parsedBusiness[field])
+              : null;
+          } catch (e) {
+            console.error(`Error parsing ${field}:`, e);
+            parsedBusiness[field] = null;
+          }
+        });
+
+        return parsedBusiness;
+      });
+    } catch (error) {
+      console.error("Search error:", error);
+      throw new Error("Business search failed");
     }
   }
 }

@@ -20,7 +20,7 @@ const processBusinessController = {
               firstName: business.name,
               username: business.username || generateUsername(business.name),
               email: business.email || generateEmail(business.name),
-              password: "otgAfrica",
+              password: "otgafrica",
             });
 
             await createBusiness({
@@ -90,8 +90,6 @@ async function createUser(userData) {
 
     // Create user with all required fields
     const user = await UserService.createUser(userPayload);
-
-    console.log("User created successfully", user);
     return user.id;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -118,31 +116,112 @@ async function createBusiness(businessData) {
 }
 
 function generateUsername(businessName) {
-  if (!businessName)
-    return `user${Math.floor(1000 + Math.random() * 9000)}@otgafrica.com`;
+  if (!businessName || typeof businessName !== "string") {
+    return `user${Math.floor(1000 + Math.random() * 9000)}`;
+  }
 
-  return (
-    businessName
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]/g, "")
-      .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .substring(0, 30) + Math.floor(1000 + Math.random() * 9000)
-  );
+  // Remove all non-alphabetic characters and keep only letters and spaces
+  const cleanedName = businessName.replace(/[^a-zA-Z\s]/g, "").trim();
+
+  // Extract words with at least 2 letters
+  const words = cleanedName
+    .split(/\s+/)
+    .filter((word) => word.length >= 2)
+    .map((word) => word.toLowerCase());
+
+  let prefix = "";
+
+  if (words.length >= 2) {
+    // Take first 2 letters from first two words
+    prefix = words[0].slice(0, 2) + words[1].slice(0, 2);
+  } else if (words.length === 1) {
+    // Take first 4 letters if only one word exists
+    prefix = words[0].slice(0, 4);
+  } else {
+    // Fallback if no valid words
+    return `biz${Math.floor(1000 + Math.random() * 9000)}`;
+  }
+
+  // Pad with 'a' if shorter than 4 characters
+  const paddedPrefix = prefix.padEnd(4, "a").slice(0, 4);
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+
+  return `@${paddedPrefix}${randomSuffix}`;
 }
 
-function generateEmail(businessName) {
-  if (!businessName)
-    return `user${Math.floor(1000 + Math.random() * 9000)}@otgafrica.com`;
+function generateEmail(businessName, existingEmails = new Set()) {
+  if (!businessName || typeof businessName !== "string") {
+    return generateFallbackEmail(existingEmails);
+  }
 
-  return (
+  // Enhanced cleaning - keep letters and remove all other characters
+  const cleanLetters = businessName
+    .replace(/[^a-zA-Z]/g, "")
+    .toLowerCase()
+    .split("");
+
+  if (cleanLetters.length === 0) {
+    return generateFallbackEmail(existingEmails);
+  }
+
+  // Generate multiple 6-letter variants with improved strategies
+  const variants = [
+    // Strategy 1: First 6 letters
+    cleanLetters.slice(0, 6).join(""),
+
+    // Strategy 2: First 3 + last 3 letters
+    cleanLetters.slice(0, 3).join("") + cleanLetters.slice(-3).join(""),
+
+    // Strategy 3: First 2 + middle 2 + last 2 letters
+    cleanLetters.slice(0, 2).join("") +
+      cleanLetters
+        .slice(
+          Math.floor(cleanLetters.length / 2) - 1,
+          Math.floor(cleanLetters.length / 2) + 1
+        )
+        .join("") +
+      cleanLetters.slice(-2).join("").padEnd(2, "a"),
+
+    // Strategy 4: First letter of each word (minimum 6 letters)
     businessName
+      .split(/\s+/)
+      .map((word) => word.replace(/[^a-zA-Z]/g, "")[0] || "a")
+      .join("")
       .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]/g, "")
-      .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "")
-      .substring(0, 30) + "@otgafrica.com"
-  );
+      .padEnd(6, "a")
+      .slice(0, 6),
+
+    // Strategy 5: First letter + vowels in order
+    [cleanLetters[0]]
+      .concat(cleanLetters.filter((c) => "aeiou".includes(c)))
+      .join("")
+      .padEnd(6, "a")
+      .slice(0, 6),
+  ]
+    .filter((v) => v.length === 6)
+    .map((v) => v + "@otgafrica.com");
+
+  // Try each variant until we find an unused one
+  for (const variant of variants) {
+    if (!existingEmails.has(variant)) {
+      return variant;
+    }
+  }
+
+  // Final fallback
+  return generateFallbackEmail(existingEmails);
+}
+
+function generateFallbackEmail(existingEmails) {
+  let email;
+  do {
+    const randomChars = Math.random()
+      .toString(36)
+      .replace(/[^a-z]/g, "")
+      .slice(0, 6)
+      .padEnd(6, "a");
+    email = `${randomChars}@otgafrica.com`;
+  } while (existingEmails.has(email));
+
+  return email;
 }

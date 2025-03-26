@@ -28,7 +28,9 @@ const processBusinessController = {
               name: business.name,
               address: business.address,
               type: business.type,
-              location: business.location,
+              longitude: business.longitude,
+              latitude: business.latitude,
+              zone: business.zone,
             });
 
             console.log(`Created business: ${business.name}`);
@@ -97,7 +99,8 @@ async function createUser(userData) {
 }
 
 async function createBusiness(businessData) {
-  const { userId, name, type, address, location } = businessData;
+  const { userId, name, type, address, longitude, latitude, zone } =
+    businessData;
 
   try {
     const business = await Business.create({
@@ -105,7 +108,9 @@ async function createBusiness(businessData) {
       name,
       type,
       address,
-      location,
+      longitude,
+      latitude,
+      zone,
     });
   } catch (error) {
     console.error("Error creating business:", error);

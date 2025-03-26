@@ -1,199 +1,843 @@
-name,location,address,type
-Cranium One,Eti-Osa,"1 Towry Close, Off Idejo Street, Victoria Island, Lagos",Co- Working Spaces
-WorkStation,Eti-Osa,"7 Ibiyinka Olorunbe Close, Victoria Island, Lagos",Co- Working Spaces
-Seedspace Lagos,Ikoyi,"23 Agodogba Avenue, Parkview Estate, Lagos",Co- Working Spaces
-V8 Valley,Eti-Osa,"7b Dr S Ezekuse Close, Lekki Phase 1, Lagos",Co- Working Spaces
-ReDahlia Workspaces,Ikeja,"43B Emina Crescent, Off Toyin Street, Ikeja, Lagos",Co- Working Spaces
-Wennovation Hub,Ikeja,"11a Rev Ogunbiyi Street, Off Oba Akinjobi Street, Ikeja GRA, Lagos",Co- Working Spaces
-Vibranium Valley,Ikeja,"42 Local Airport Road, Ikeja, Lagos",Co- Working Spaces
-Workbay,Ikeja,"3-9 Olu Koleosho Street, Off Simbiat Abiola Way, Ikeja, Lagos",Co- Working Spaces
-eeSpace,Ikeja,"Cardinal Building, 3 Ijaiye Road, Ogba, Ikeja, Lagos",Co- Working Spaces
-Hub30 Coworking Space,Amuwo-Odofin,"41 Road, G Close, No 3 Festac Town, Lagos",Co- Working Spaces
-The Lighthouse,Lagos Island,"35 Moloney Street, Obalende, Lagos Island, Lagos",Co- Working Spaces
-A1 Spaces,Lagos Island,"Suite 203E, City Hall, Catholic Mission Street, Lagos Island, Lagos",Co- Working Spaces
-Smart X Business Hub,Ikeja,"16B Mobolaji Bank Anthony Way, Behind Keystone Bank, Maryland, Lagos",Co- Working Spaces
-Venia Business Hub,Eti-Osa,"8 The Providence Street, Lekki Phase I, Lagos",Co- Working Spaces
-Workquarters,Ikorodu,"Blue House, Jumofak Bus Stop, 134 Lagos Ikorodu Express Road, Ikorodu, Lagos, Nigeria",Co- Working Spaces
-Vatebra Tech Hub,Along Lekki-Epe,"Royal Office Building, 4th floor, KM 25 Lekki Epe Expressway, Ajiwe-Ajah, Opposite Fidelity Bank",Co- Working Spaces
-Boluwatife Food Canteen,Agege,"7 College Road, Iju Road, Agege, Lagos",Resturants and Cafes
-Ubok-Abasi Restaurant,Agege,"83 Dopemu Road, Dopemu, Agege, Lagos",Resturants and Cafes
-Vintage Africana,Agege,"6 William Elliot North Street, Oko-Oba, Agege, Lagos",Resturants and Cafes
-Yenji Restaurant,Agege,"37 George Street, Agege, Lagos",Resturants and Cafes
-Firstview Luxury Apartment And Hotel,"Amuwo Odofin, Lagos","1 Adeniran Bamishile Street, First Estate, Off Raji Rasaki Road, Amuwo Odofin, Lagos",Resturants and Cafes
-Promise Land Hotels Limited,"Amuwo Odofin, Lagos","1B Badagry Expressway, Maza Maza Bus-Stop, Amuwo-Odofin, Lagos",Resturants and Cafes
-Sunfit International Limited,"Amuwo Odofin, Lagos","327/329 Rafiu Babatunde Tinubu Road, Amuwo Odofin, Lagos",Resturants and Cafes
-Big Fish Restaurant And Bar,"Amuwo Odofin, Lagos","Plot 270, 4th Avenue, Festac Town, Amuwo Odofin, Lagos",Resturants and Cafes
-Cafe Maison,Eti-Osa,"25 Adelowo Adedeji Street, Lekki Phase 1, Eti-Osa, Lagos",Resturants and Cafes
-Jevinik Restaurant,Eti-Osa,"14B Agoro Odiyan Street, Victoria Island, Eti-Osa, Lagos",Resturants and Cafes
-Mama Cass Restaurant,Eti-Osa,"Plot 271B Ajose Adeogun Street, Eti-Osa, Lagos",Resturants and Cafes
-Orchid Bistro Cafe,Ikeja,"58a Isaac John Street, G.R.A, Ikeja, Lagos",Resturants and Cafes
-New China Restaurant,Ikeja,"Opic Plaza, 26 Mobolaji Bank Anthony Way, Ikeja, Lagos",Resturants and Cafes
-Domino's Pizza,Ikeja,"22 Lateef Jakande Road, Agidingbi, Ikeja, Lagos",Resturants and Cafes
-Jevinik Place,Ikeja,"21 Isaac John Street, G.R.A, Ikeja, Lagos",Resturants and Cafes
-Yellow Chilli Restaurant & Bar,Ikeja,"35 Joel Ogunnaike Street, G.R.A, Ikeja, Lagos",Resturants and Cafes
-ZEN Garden,Ikeja,"60 Isaac John Street, G.R.A, Ikeja, Lagos",Resturants and Cafes
-Bungalow Restaurant,Ikeja,"1296 Akin Adesola Street, Victoria Island, Ikeja, Lagos",Resturants and Cafes
-The Pub Restaurant & Bar,Apapa,"68 Marine Road, Apapa, Lagos",Resturants and Cafes
-Palace Chinese Restaurant,Apapa,"1 Kofo Abayomi Street, Apapa, Lagos",Resturants and Cafes
-Bayroot Bar and Lounge,Apapa,"23 Warehouse Road, Apapa, Lagos",Resturants and Cafes
-TM Restaurant,Apapa,"5 Point Road, Apapa, Lagos",Resturants and Cafes
-Tarragon,Ikoyi,[Address not specified],Resturants and Cafes
-Danfo Bistro,Ikoyi,[Address not specified],Resturants and Cafes
-Oh La La Cafe Lagos,Ikoyi,[Address not specified],Resturants and Cafes
-Jay's Diner,Ikoyi,[Address not specified],Resturants and Cafes
-7Spices Restaurant & Bar,Ikoyi,[Address not specified],Resturants and Cafes
-Blackbell,Lekki,"Block 2, Plot 69, Admiralty Way, Lekki, Lagos",Resturants and Cafes
-Blackbell,Victoria Island,"No 57 Adeola Odeku Street, off Akin Adesola, Victoria Island, Lagos",Resturants and Cafes
-Chicken Republic,Victoria Island,"Plot 3 Block III, Yesuf Abiodun Way, (beside Four Points Hotels), Victoria Island, Lagos",Resturants and Cafes
-The Place Restaurant,Lekki,[Address not specified],Resturants and Cafes
-Chicken Republic,Sangotedo,"KM 46 Lekki - Epe Expressway, Farm Bus-Stop, Sangotedo, Eti-Osa, Lagos",Resturants and Cafes
-Chicken Republic,Ikeja,"37A Opebi Road, Opposite Adebola House, Ikeja, Lagos",Resturants and Cafes
-Yellow Chilli Restaurant,Victoria Island,"27 Oju Olobun Close, Victoria Island, Lagos",Resturants and Cafes
-Yellow Chilli Restaurant,Ikeja,[Address not specified],Resturants and Cafes
-Lalaba,Ikeja,[Address not specified],Resturants and Cafes
-Bogobiri House,Ikoyi,"9 Maitama Sule Street, Off Awolowo Road, Ikoyi, Lagos",Resturants and Cafes
-Sherlaton Restaurant,Ikoyi,"108 Awolowo Road, Ikoyi, Lagos",Resturants and Cafes
-Santa Fe Restaurant,Ikoyi,"144 Awolowo Road, Ikoyi, Lagos",Resturants and Cafes
-Saipan Restaurant & Bar,Victoria Island,"3rd & 4th Floor, Dream Plaza, 7 Bishop Aboyade Cole Street, Victoria Island, Lagos",Resturants and Cafes
-The Restaurant,Victoria Island,"29 Karimu Kotun Street, Victoria Island, Lagos",Resturants and Cafes
-Windows,Victoria Island,"Shop 4, Food Court, Mega Plaza, 14 Idowu Martins Street, Victoria Island, Lagos",Resturants and Cafes
-Café Neo,Victoria Island,[Specific address not availabl,Resturants and Cafes
-Tarzan Tourist Restaurant & Bar,Lekki,"Plot 6A, Lekki-Epe Expressway, Opp. Maroko Police Station, Lekki, Lagos",Resturants and Cafes
-Vista Guest House & Restaurant,Gbagada,"Plot 175, Gbagada Estate, Phase I, Oworonsoki Expressway, Gbagada, Lagos",Resturants and Cafes
-Gbagada,,,Resturants and Cafes
-Tee-Kay Restaurant,Ikeja,"170 Obafemi Awolowo Way, Ikeja, Lagos",Resturants and Cafes
-U.J. Restaurant,Ikeja,"3 Mokuolu Street, Ogba, Ikeja, Lagos",Resturants and Cafes
-Yellow Chilli Restaurant,Ikeja,[Specific address not available],Resturants and Cafes
-Palatable Food And Event Place,Badagry,"G422+6FG, 103101, Agbara, Nigeria",Resturants and Cafes
-Symplinatural,Badagry,"Plot 4, Block E, Amuwo Odofin Ind. Layout, Orile, Expressway, Badagry Nigeria, 103101",Resturants and Cafes
-Ar-Rahkab Beach and Holiday Resort,Badagry,"9QMG+RH7, 103211, Badagry, Nigeria",Resturants and Cafes
-Winnys Eatery,Badagry,"F2MJ+3WC, Lagos - Badagry Expy, 103101, Badagry, Nigeria",Resturants and Cafes
-Boiling Pot,Badagry,"Joseph Dosu Way, 103101, Badagry, Nigeria",Resturants and Cafes
-Jembe Dine&Wine,Badagry,"Ajara Topa Junction, Off Badagry Seme Expressway, Badagry Local Government, 103101, Lagos",Resturants and Cafes
-De Rolas Hotel Limited,Ikorodu,"1/3, Twins Avenue, Off Bola Hameed Tinubu Road, Oreyo Igbogbo, Ikorodu, Lagos",Hotels and Guest Houses
-Mambillah Hotel,Ikorodu,"6-10 Omodisu Street, Off Isawo Road, Beside Oando Filling Station, Agric, Ikorodu, Lagos",Hotels and Guest Houses
-Ikorodu Highland Hotel,Ikorodu,"Itokun Road, Kasholori, Ikorodu, Lagos",Hotels and Guest Houses
-Sheriffyt Royale Hotel And Suites,Ikorodu,"95/97, Shagamu Road, Ikorodu, Lagos",Hotels and Guest Houses
-Abvic Executive Hotel,Ikorodu,"50, Igbodu Road, Imowonla Agura Gberigbe, Ikorodu, Lagos",Hotels and Guest Houses
-Norman Hotel,Ikorodu,"11A Olakunle Shoga Street, Off Aruna Bus Stop, Ikorodu, Lagos",Hotels and Guest Houses
-Keblat Resort Hotel,Ikorodu,"Isawo Road, Opposite U.P.E School, Agric, Ikorodu, Lagos",Hotels and Guest Houses
-Paradise Suite,Ikorodu,"Beside Mama Nurse House, Omoleye Bus Stop, Off Debolu Road, Ikorodu-Shagamu Road, Ogijo, Lagos",Hotels and Guest Houses
-Harmony Castle,Ikorodu,"70/72, Gbasemo Street, Aga, Ikorodu, Lagos",Hotels and Guest Houses
-Sisano Guest House,Ikorodu,"25 Chief Ibrahim Street, Behind Benson Estate, Benson Bus Stop, Ikorodu, Lagos",Hotels and Guest Houses
-Famade Guest House,Ikorodu,"1 Famade Dede Street, Off Oba Sekumade Road, Opposite Omologede Estate, Ogolonto, Ikorodu, Lagos",Hotels and Guest Houses
-Dam Jay Hotel,Ikorodu,"27, Alhaji Yusuf Street, Off Igbe Road, Igbogbo, Ikorodu, Lagos",Hotels and Guest Houses
-Jyrox Royal Hotel,Ikorodu,"1, Jyrox Royal Street, Behind Total Filling Station, Odogunyan, Ikorodu, Lagos",Hotels and Guest Houses
-Giant Star Hotel Limited,Ikorodu,"4 Ipara Street, Off Akintola Haruna Street, Opposite Diamond Bank, Haruna Bus Stop, Ikorodu, Lagos",Hotels and Guest Houses
-Al Peace Suites,Ikorodu,"20, Razak Taiwo Street, Off Igbe Road, Igbogbo, Ikorodu, Lagos",Hotels and Guest Houses
-Kenth Royal Hotel,Ikorodu,"Gberigbe Agura Road, Ikorodu, Lagos",Hotels and Guest Houses
-Samelot Hotels,Ikorodu,"Samelot Street, Ikorodu, Lagos",Hotels and Guest Houses
-Sheraton Lagos Hotel,Ikeja,"30, Mobolaji Bank Anthony Way, Ikeja, Lagos",Hotels and Guest Houses
-Protea Hotel by Marriott Ikeja Select,Ikeja,"Plot 2, Assibifi Road, Ikeja, Lagos",Hotels and Guest Houses
-"Radisson Hotel, Lagos Ikeja",Ikeja,"42/44, Isaac John Street, GRA Ikeja, Lagos",Hotels and Guest Houses
-Welcome Centre Hotels,Ikeja,"70, International Airport Road, Ikeja, Lagos",Hotels and Guest Houses
-De Rembrandt Hotels & Suites,Gbagada,"23, Emmanuel Keshi Street, Magodo Phase II, Gbagada, Lagos",Hotels and Guest Houses
-Watercress Hotels,Gbagada,"48, Oritshe Street, Off Obafemi Awolowo Way, Gbagada, Lagos",Hotels and Guest Houses
-Presken Hotel @ Maryland,Gbagada,"131, Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-Posh Apartments Metro,Gbagada,"71, Aba Johnson Crescent, Off Adeniyi Jones Avenue, Ikeja, Lagos",Hotels and Guest Houses
-The Lilygate Hotel,Lekki,"2, Olubunmi Owa Street, Lekki Phase 1, Lagos",Hotels and Guest Houses
-Lekki Heights Hotel,Lekki,"10B, Admiralty Way, Lekki Phase 1, Lagos",Hotels and Guest Houses
-Citilodge Hotel,Lekki,"No.1 Goshen Estate Road, by Elf Bus Stop, Lekki, Lagos",Hotels and Guest Houses
-Pelican Hotel Lekki,Lekki,"Chevy View Estate, Lekki, Lagos",Hotels and Guest Houses
-Eko Hotels & Suites,Victoria Island,"Plot 1415, Adetokunbo Ademola Street, Victoria Island",Hotels and Guest Houses
-Radisson Blu Anchorage Hotel,Victoria Island,"1A, Ozumba Mbadiwe Avenue, Victoria Island, Lagos",Hotels and Guest Houses
-The Federal Palace Hotel,Victoria Island,"6-8, Ahmadu Bello Way, Victoria Island, Lagos",Hotels and Guest Houses
-Victoria Crown Plaza Hotel,Victoria Island,"292B, Ajose Adeogun Street, Victoria Island, Lagos",Hotels and Guest Houses
-The Guest House,Ikoyi,"3A, Ojora Road, Ikoyi, Lagos",Hotels and Guest Houses
-Parkview Astoria Hotel,Ikoyi,"7B, Etim Inyang Crescent, Parkview Estate, Ikoyi",Hotels and Guest Houses
-The Wheatbaker,Ikoyi,"4, Onitolo Road (Lawrence Road), Ikoyi, Lagos",Hotels and Guest Houses
-Movenpick Hotel Ikoyi,Ikoyi,"47, Alfred Rewane Road, Ikoyi, Lagos",Hotels and Guest Houses
-De Santos Hotel,Agege,"7 Shasha Road, Akowonjo Roundabout, Agege, Lagos",Hotels and Guest Houses
-Posh Apartments,Agege,"477A, Omotunde Akinsola Crescent, Omole Phase 1, Ikeja, Lagos",Hotels and Guest Houses
-Watercress Hotels,Agege,"48 Oritshe Street, Off Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-Presken Hotel @ Maryland,Agege,"131 Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-God's Touch Apartments,Alimosho,"3, Olaribigbe Street, Off Governor's Road, Ikotun, Lagos",Hotels and Guest Houses
-Ivy Hotel Emerald,Alimosho,"6, Akinola Street, Off Akinyele Bus Stop, Egbeda, Lagos",Hotels and Guest Houses
-Joygate Hotel & Suites,Alimosho,"1-5, Joygate Street, Off LASU-Isheri Expressway, Alimosho, Lagos",Hotels and Guest Houses
-De Maria Inn,Alimosho,"12, Olusoji Street, Off Council Bus Stop, Idimu, Lagos",Hotels and Guest Houses
-Festival Hotel Festac Lagos,Amuwo Odofin,"Amuwo Odofin, Lagos",Hotels and Guest Houses
-Chelsea Suites Limited,Amuwo Odofin,"Amuwo Odofin, Lagos",Hotels and Guest Houses
-Brighams Suites Limited,Amuwo Odofin,"Amuwo Odofin, Lagos",Hotels and Guest Houses
-Popbeachclub Suites Ilashe,Amuwo Odofin,"Amuwo Odofin, Lagos",Hotels and Guest Houses
-De Santos Hotel,Ifako-Ijaiye,"7 Shasha Road, Akowonjo Roundabout, Agege, Lagos",Hotels and Guest Houses
-Posh Apartments,Ifako-Ijaiye,"477A, Omotunde Akinsola Crescent, Omole Phase 1, Ikeja, Lagos",Hotels and Guest Houses
-Watercress Hotels,Ifako-Ijaiye,"48 Oritshe Street, Off Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-Presken Hotel @ Maryland,Ifako-Ijaiye,"131 Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-De Rembrandt Hotels,Kosofe,"23 Emmanuel Keshi Street, Magodo Phase II, Lagos",Hotels and Guest Houses
-Posh Apartments,Kosofe,"477A, Omotunde Akinsola Crescent, Omole Phase 1, Ikeja, Lagos",Hotels and Guest Houses
-Watercress Hotels,Kosofe,"48 Oritshe Street, Off Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-Presken Hotel @ Maryland,Kosofe,"131 Obafemi Awolowo Way, Ikeja, Lagos",Hotels and Guest Houses
-De Rigg Place,Lagos Mainland,"6 Rafiu Shittu Street, Surulere, Lagos",Hotels and Guest Houses
-God's Touch Apartments,Lagos Mainland,"3 Olaribigbe Street, Off Governor's Road, Ikotun, Lagos",Hotels and Guest Houses
-Ivy Hotel Emerald,Lagos Mainland,"6 Akinola Street, Off Akinyele Bus Stop, Egbeda, Lagos",Hotels and Guest Houses
-Joygate Hotel & Suites,Lagos Mainland,"1-5 Joygate Street, Off LASU-Isheri Expressway, Alimosho, Lagos",Hotels and Guest Houses
-De Rigg Place,Mushin,"6 Rafiu Shittu Street, Surulere, Lagos",Hotels and Guest Houses
-God's Touch Apartments,Mushin,"3 Olaribigbe Street, Off Governor's Road, Ikotun, Lagos",Hotels and Guest Houses
-Ivy Hotel Emerald,Mushin,"6 Akinola Street, Off Akinyele Bus Stop, Egbeda, Lagos",Hotels and Guest Houses
-Joygate Hotel & Suites,Mushin,"1-5 Joygate Street, Off LASU-Isheri Expressway, Alimosho, Lagos",Hotels and Guest Houses
-De Rigg Place,Oshodi/Isolo,"6 Rafiu Shittu Street, Surulere, Lagos",Hotels and Guest Houses
-God's Touch Apartments,Oshodi/Isolo,"3 Olaribigbe Street, Off Governor's Road, Ikotun, Lagos",Hotels and Guest Houses
-Ivy Hotel Emerald,Oshodi/Isolo,"6 Akinola Street, Off Akinyele Bus Stop, Egbeda, Lagos",Hotels and Guest Houses
-Joygate Hotel & Suites,Oshodi/Isolo,"1-5 Joygate Street, Off LASU-Isheri Expressway, Alimosho, Lagos",Hotels and Guest Houses
-BANA Hotel & Suites,Ajeromi-Ifelodun,"176 Idewu Street, Olodi Apapa, beside White House",Hotels and Guest Houses
-Harvesters Hotel,Ajeromi-Ifelodun,"No 85 Ojo Road, Ajegunle",Hotels and Guest Houses
-J27 Lounge and Suites,Ajeromi-Ifelodun,"2 Idowu Akindele Crescent, beside Oba Ojoras Palace",Hotels and Guest Houses
-Jolad Hotel and Suite,Ajeromi-Ifelodun,"56 Muri Ojora Street, Amukoko",Hotels and Guest Houses
-Jonesville Hotel,Ajeromi-Ifelodun,"234 Ladipo Street, Adekunle",Hotels and Guest Houses
-Naowa Shopping Complex,Ajeromi-Ifelodun,"Ojo Road, Ajeromi-Ifelodun 102103, Lagos, Nigeria",Shopping malls
-Naowa Shopping Complex,Agege,"Ojo Road, Agege, Lagos",Shopping malls
-Palms Shopping Mall,Eti-Osa,"1 Bisway Street, Maroko, Lekki, Lagos",Shopping malls
-Cinnamon Garden Outlet Mall,Eti-Osa,"Eti-Osa, Lagos",Shopping malls
-City Mall,Lagos Island,"Onikan, Lagos Island, Lagos",Shopping malls
-Ikeja City Mall,Ikeja,"Obafemi Awolowo Way, Alausa, Ikeja, Lagos",Shopping malls
-Novare Lekki Mall,Lekki,"Sangotedo, Lekki, Lagos",Shopping malls
-Mega Plaza Century 21 Mall,Victoria Island,"14 Idowu Martins Street, Victoria Island, Lagos",Shopping malls
-Fourteen36 Mall,Victoria Island,"1436 Sanusi Fafunwa Street, Victoria Island, Lagos",Shopping malls
-Bijoux Mall,Victoria Island,"12 Anifowoshe Street, Victoria Island, Lagos",Shopping malls
-Ikoyi Mall,Ikoyi,"Awolowo Road, Ikoyi, Lagos",Shopping malls
-Novare Lekki Mall,Sangotedo,"Sangotedo, Lekki, Lagos",Shopping malls
-Lagos Business School,Eti-Osa,"Km 22, Lekki-Epe Expressway, Ajah, Lagos",Educational Institutions
-Pan-Atlantic University,Eti-Osa,"Km 52, Lekki-Epe Expressway, Ibeju-Lekki, Lagos",Educational Institutions
-American International School,Eti-Osa,"1004 Estate, Victoria Island, Lagos",Educational Institutions
-Nigerian Law School,Lagos Island,"Ozumba Mbadiwe Avenue, Victoria Island, Lagos",Educational Institutions
-Federal College of Fisheries and Marine Technology,Lagos Island,"Wilmot Point Road, Victoria Island, Lagos",Educational Institutions
-Nigerian Institute of Journalism,Ikeja,"8-14, Ijaiye Road, Ogba, Ikeja, Lagos",Educational Institutions
-Victory Institute of Catering and Hotel Management,Ikeja,"1, Olaniyan Close, Off Aina Street, Ojodu, Ikeja, Lagos",Educational Institutions
-Nigerian Army School of Signals,Apapa,"Mobil Road, Apapa, Lagos",Educational Institutions
-Nigerian Institute of Shipping,Apapa,"2, Bombay Crescent, Apapa, Lagos",Educational Institutions
-Crumbies Chef Academy,Lekki,"14, Fola Osibo Street, Lekki Phase 1, Lagos",Educational Institutions
-Culinary Academy,Lekki,"50a, Glover Court Road, Ikoyi, Lagos",Educational Institutions
-Metropolitan School of Business and Management,Victoria Island,"1, Adeola Odeku Street, Victoria Island, Lagos",Educational Institutions
-International School of Management,Victoria Island,"5, Yesufu Abiodun Street, Oniru Estate, Victoria Island, Lagos",Educational Institutions
-Lagos City Computer College,Ikoyi,"3, Obalende Road, Ikoyi, Lagos",Educational Institutions
-Wavecrest College of Hospitality,Ikoyi,"75, Adisa Bashua Street, Surulere, Lagos",Educational Institutions
-National Open University of Nigeria,Victoria island,"14/16 Ahmadu Bello Way, Victoria Island, Lagos",Educational Institutions
-Pan-Atlantic University,Ibeju Lekki,"Km 52, Lekki-Epe Expressway, Ibeju-Lekki, Lagos",Educational Institutions
-University of Lagos (UNILAG),Lagos Mainland,"Akoka, Yaba, Lagos",Educational Institutions
-Eric Kayser,Victoria Island,864A Bishop Aboyade Cole Street,Carteens and Cafes
-Art Café,Victoria Island,282 Akin Olugbade Street,Carteens and Cafes
-Café One,Lekki,"Lennox Mall, Admiralty Way",Carteens and Cafes
-My Coffee Lagos,Victoria Island,21C Akin Ogunlewe Street,Carteens and Cafes
-Vestar Coffee,Victoria Island,26 Oju Olobun Close,Carteens and Cafes
-Café Neo,Victoria Island,6A Eletu Ogabi Street,Carteens and Cafes
-Godaïf Village,Ikoyi,26B Turnbull Road,Carteens and Cafes
-Maison Kayser,Ikoyi,9 Osborne Road,Carteens and Cafes
-Ohlala Café,Ikoyi,3 Thompson Avenue,Carteens and Cafes
-Café One,Yaba,"E-Center, 1-11 Commercial Avenue",Carteens and Cafes
-Choco Latte,Ikeja,40 Isaac John Street,Carteens and Cafes
-Krispy Kreme,Ikeja,"Ikeja City Mall, 174/194 Obafemi Awolowo Way",Carteens and Cafes
-Ouida Café,Ikeja,3c Oba Dosumu Street,Carteens and Cafes
-Bourbon House Café,Victoria Island,26A Oju Olobun Close,Carteens and Cafes
-Pause Café,Lekki,"The Palms Shopping Centre, 1 Bisway Street",Carteens and Cafes
-Moonshine Café,Lekki,7A Admiralty Road,Carteens and Cafes
-MyYa’s Café,Lekki,"Plot 1, Block 4 Admiralty Road",Carteens and Cafes
-Freshforte,Lekki,12E Admiralty Way,Carteens and Cafes
-Dulce Café & Bakery,Ikoyi,"Behind Slashpoint Supermarket, 15 Glover Road",Carteens and Cafes
-The Kofe Club,Lekki,"Shop 11, Trocadero Square, The Rock Drive",Carteens and Cafes
-Breadline Café,Ogudu,38a Ogudu Road,Carteens and Cafes
-ART Café,Victoria Island,282 Akin Olugbade Street,Carteens and Cafes
-The Studio - Coffee Roasters & Café,Lagos Mainland,R. Soeiro da Costa 20,Carteens and Cafes
+name,address,latitude,longitude,type,zone
+AfricaWorks Lagos @ Victoria Island (VI),"16 Idowu Martins St, Eti-Osa, Victoria Island 124774, Lagos",6.4339977,3.4205686,coworking_space,A
+EridanSpace Ikeja Lagos,"The Philippi Centre, Oluwalogbon House, Plot A Obafemi Awolowo Wy, Alausa, Ikeja",6.6132921,3.3545898,coworking_space,A
+Agos Executive Business Lounge,"54b Adeniyi Jones, Oba Akran, Ikeja 101233, Lagos",6.6125652,3.3458567,coworking_space,A
+989 Workspaces Ikeja,"43 Sobo Arobiodu Street Ikeja, Lagos 100212",6.5772527,3.3561108,coworking_space,A
+Cranium One,"Plot 1 Towry Cl, Eti-Osa, Lagos 106104, Lagos",6.426286,3.412068,coworking_space,A
+Lagos Innovates Center,"H8P4+32J, Rafiu Jafojo Park, Shasha Road, Ajako Bustop Alimosho, Lagos 100272",6.5852015,3.3050178,coworking_space,A
+Coworkstyle Limited,"15 Ihuntayi Road, Oniru, Eti Osa 101241, Lagos",6.4295545,3.4448275,coworking_space,A
+SpaceUnlimited Workspace,"76, Mobolaji Bank Anthony Way (Anthony Agbodji Office Complex, 1st floor left wing Ikeja, Lagos 100211, Lagos",6.5939715,3.3437175,coworking_space,A
+SpaceUnlimited GRA,"14 Ayo Rosiji Cres, off Oduduwa Way, Ikeja, Lagos 100271, Lagos",6.5725574,3.3502632,coworking_space,A
+989 Workspaces - Landmark Boulevard,"Landmark Village, Water Corporation Road, Oniru, VI, Lagos 106104, Lagos",6.4232533,3.4457543,coworking_space,A
+Workcentral Alaka Estate Hub | Surulere | Lagos,"5 Alh. Tokan St, Alaka, Lagos 101283, Lagos",6.4925704,3.3636549,coworking_space,A
+iCreative Writers Hub,"3 Emmanuel Onoji Cres, off Olokonla Road, Eti-Osa, Lagos 106104, Lagos",6.4732231,3.6101021,coworking_space,A
+theBUNKer Yaba,"279 Herbert Macaulay Wy, Yaba, Lagos 101245, Lagos",6.5007182,3.377628,coworking_space,A
+HUB30 Coworking Space,"29, 204 Road, 2nd Ave, Festac Town, Lagos 102312",6.4628383,3.2934209,coworking_space,A
+Workcity Africa,"Workcity, Plot 1, Maruwa Bus Stop, 128 Remi Olowude St, Lekki Phase 1, Lagos 105102, Lagos",6.4298268,3.4689061,coworking_space,A
+Hot-Desking by Cr8tive Workspace,"Shopping Mall, D22 Adeniran Ogunsanya St, Surulere, Lagos 000234, Lagos",6.4911014,3.3566864,coworking_space,A
+The Nest Innovation Technology Park,"1A Hughes Ave, Yaba, Lagos 101212, Lagos",6.4992962,3.3766976,coworking_space,A
+Workstation,"Lagos NG, 350 - 360 Ikorodu Rd, Maryland, Ikeja 100211",6.5666447,3.3670074,coworking_space,A
+MusterPoint CoWorking Space,"Plot 49 Wemco Rd, Ogba, Ikeja 101233, Lagos",6.6316296,3.348881,coworking_space,A
+Ajegunle Co-Working Hub,"101 Kirikiri Road, Opp Mobil Filling Station, Wilmer Bus stop, Apapa, Lagos 100211",6.4483597,3.3345696,coworking_space,A
+989 Workspaces Standard Chartered Building Ahmadu Bello Way,"142 Ahmadu Bello Wy, Victoria Island, Lagos 101222, Lagos",6.4278921,3.4092542,coworking_space,A
+TyWorkSpace,"17 Ibikunle St, Yaba, Lagos 100001, Lagos",6.5140461,3.3769924,coworking_space,A
+OFFICE 33,"12D Wole Ariyo St, Lekki Phase 1, Lagos 105102, Lagos",6.4427536,3.4587236,coworking_space,A
+The Workshop Arcade,"Plot 1, Banex Mall, Akiogun Rd, Oniru, Lekki 101243, Lagos",6.4329562,3.4570212,coworking_space,A
+V8 Valley - Workspace,"7b Dr. S. Ezekuse Cl, Lekki Phase 1, Lagos 106104, Lagos",6.4508274,3.4722096,coworking_space,A
+Glendale Workspaces,"4 Babatope Bejide Cres, Lekki Phase I, Lagos 106104, Lagos",6.4432793,3.4740538,coworking_space,A
+EMERGEHub,"4 Ayanboye Street, Off Faramobi Ajike St, Anthony, Lagos",6.5622372,3.3697469,coworking_space,A
+The Space Hq,"1 Bunmi Olowude Street Eti osa, Maruwa, Lekki Phase 1, Lagos",6.4289387,3.4674752,coworking_space,A
+Cr8tivebox Co-Working Space,"Shopping Mall, E10 Adeniran Ogunsanya St, Surulere, Surelere 000234, Lagos",6.4910725,3.3566868,coworking_space,A
+989 Workspaces Oniru,"Plot 120 Bosun Adekoya, New Market Road, Eti-Osa, Lagos 101222",6.4261252,3.4594119,coworking_space,A
+TOPAS Hub,"2 Alh. Tokan St, Alaka, Lagos 101241, Lagos",6.4930448,3.3639719,coworking_space,A
+TCS Business Hub,"Suite C213 and C214 Akord Shopping Mall, Bogije, Elemoro, Lagos 101283, Lagos",6.4761199,3.7569158,coworking_space,A
+Venia Business Hub,"Plot 8 The Providence St, Lekki Phase I, Lekki 106104, Lagos",6.4311824,3.4629115,coworking_space,A
+Ican-BOI Tech Hub,"82 Murtala Muhammed Way, Yaba, Lagos 100001, Lagos",6.4836251,3.3828691,coworking_space,A
+ThinkSpace Coworking Space by Four Points Lagos,"Plot 9/10, Chieftaincy Estate, Block 2 Oniru Rd, Victoria Island, Lagos 106104, Lagos",6.4481273,3.433023,coworking_space,A
+Workbay Onikan Lagos,"F1 Lagos City Mall Onikan, Island, Lagos 101231",6.4462669,3.4020748,coworking_space,A
+Hub One,"10 Hughes Ave, Alagomeji-Yaba, Lagos 101011, Lagos",6.4993322,3.3772959,coworking_space,A
+Smart X Business Hub - Co-working space in Ikeja,"16B Mobolaji Bank Anthony Way, Maryland, Lagos 101233, Lagos",6.5728769,3.3629495,coworking_space,A
+"CubeHub - Coworking, Virtual and Serviced Offices - Adebola Centre, Lagos","38 Opebi road Adebola House (Suite 100, Rear Car Park Wing Ikeja, Lagos 100281",6.5911546,3.359383,coworking_space,A
+33B Flexible Offices,"1B ALH. HUSSEIN SUNMONU STR, OFF Onikepo Akande St, Lekki Phase I, Lagos",6.4429294,3.4620846,coworking_space,A
+Zahari Workspace,"Lagos, Plot 15 Orchid Rd, off Chevron Toll Gate, Eti-Osa, Lekki 105102, Lagos",6.4417842,3.5423305,coworking_space,A
+ReDahlia,"43b Emina Cres, Allen, Ikeja 101233, Lagos",6.5962213,3.3543383,coworking_space,A
+Wakeman Heights,"294 Borno Way, Alagomeji-Yaba, Lagos 101245, Lagos",6.4962824,3.3783278,coworking_space,A
+Truspace Coworking,"6 Prince Bode Oluwo St, Mende, Lagos 100211, Lagos",6.5708443,3.3723934,coworking_space,A
+Spacepad | Co Working Space And Serviced Private Office Space Lekki,"Km 18, Lekki Penninsula II, Lekki",6.4379857,3.5137467,coworking_space,A
+989 Workspaces,"Block 12E, Admiralty Way Opposite Ascon Petrol Station Eti Osa, Lekki Phase 1, Lagos",6.447404,3.4808941,coworking_space,A
+Ally Hub,"15 Ramat Cres, Ogudu, Lagos 105102, Lagos",6.5730386,3.3910247,coworking_space,A
+Avalanche Spaces,"33 Saji Ayangade St, Anthony, Lagos 105102, Lagos",6.5639512,3.3725247,coworking_space,A
+The White Workshop,"7 Ajagbe Compound, Sari-Iganmu Rd, Iganmu, Lagos 102232",6.476195,3.3463614,coworking_space,A
+MyWorkSpace,"BADEJO AKINYEMI HOUSE 17/19 Badejo / Akinyemi Crescent Off Fatai Atere Way Matori Industrial Estate, Ladipo St, Matori, Lagos 023401",6.5395658,3.3502163,coworking_space,A
+OfficePhase -Serviced Offices Nigeria,"60/64 Allen Avenue, by Adeboye Solanke Avenue, First Bank Bus Stop First Building (Right) on Adeboye Solanke Ikeja, Allen, Lagos 100281",6.6025314,3.3519584,coworking_space,A
+Innovation Centre Lekki,"29 Awudu Ekpekha Blvd St, Lekki Phase 1, Lagos 106104, Lagos",6.4453336,3.4783081,coworking_space,A
+The Stage Cowork Space,"21 Ngyesi Ibrahim Tella Street, Oral Esate, Lekki , Lagos, Lekki - Epe Expy",6.4413774,3.5465945,coworking_space,A
+THE RESOURCE SPACE,"12A Mabinuori Dawodu St, Gbagada, Lagos 102216, Lagos",6.54873,3.376688,coworking_space,A
+The Professional Place,"12b Olumoroti Jaiyesimi Street, Gbagada Phase 2 Estate, Gbagada Expy, Gbagada, Lagos",6.5462296,3.3839461,coworking_space,A
+Moore House,"151 Herbert Macaulay Wy, Adekunle, Lagos 101245, Lagos",6.4916122,3.3820001,coworking_space,A
+Battens Hub,"Local Government, 44 Ogunlana Dr, Surulere, Lagos 101283, Lagos",6.5092554,3.3526639,coworking_space,A
+47WORKSPACES,"G, R.A, Ikeja Lagos NG, 47 Isaac John St, +2348033079003, Ikeja 100271",6.5846639,3.3568731,coworking_space,A
+Desk at The Bulb,"39, Ikorodu road, Jibowu, Yaba, Lagos 100252",6.5187145,3.3678912,coworking_space,A
+Metro Workplace,"Plot 1392 Tiamiyu Savage St, Victoria Island, Lagos 106104, Lagos",6.4237408,3.4267132,coworking_space,A
+The Incubator,"7/8 Chief Yusuf, Abiodun Akinyemi Way, Eti-Osa, Lagos",6.428889,3.44451,tech_hub OR incubator,A
+"Vatebra Tech Hub, Ajah","Royal Office Building KM 25 Lekki - Epe Expressway Ajiwe Eti-osa Ajiwe, Ajah, Ajiwe, Lagos 101245",6.4694244,3.5823763,tech_hub OR incubator,A
+Techub Connect Nigeria,"Connak Place 19 Akinremi St, Off Obafemi Awolowo Wy, Ikeja, Lagos",6.5985782,3.3377303,tech_hub OR incubator,A
+Technology Incubation Centre,"1 Oba Ogunji Rd, Ijaiye, Lagos 102212, Lagos",6.6285435,3.3259949,tech_hub OR incubator,A
+Tech-hub telecom,"Iyana Aboru Bus Stop, 2 Ige Street, Ipaja Rd, Alimosho, Iyana ipaja 300001",6.6172297,3.2973337,tech_hub OR incubator,A
+Impact Hub Lagos,"22 Glover Rd, Ikoyi, Lagos 106104, Lagos",6.4553064,3.4303431,tech_hub OR incubator,A
+InstinctHub,"1 Apapa Lane, Dolphin Estate, Ikoyi, Lagos 101233",6.4575294,3.4114863,tech_hub OR incubator,A
+Ican-BOI Tech Hub,"82 Murtala Muhammed Way, Yaba, Lagos 100001, Lagos",6.4836251,3.3828691,tech_hub OR incubator,A
+Enterprise Hubs,"16a Trinity Ave, Eti-Osa, Lagos 106104, Lagos",6.4240557,3.4512232,tech_hub OR incubator,A
+Tech Hub,"2 Francis Oremeji street computer village Ikeja, Ikeja, Lagos",6.5935591,3.3391045,tech_hub OR incubator,A
+Adjacent Tech Hub & Coworking,"139 Idiroko Rd, Ota 112233, Ogun State",6.6895358,3.2270212,tech_hub OR incubator,A
+TechSteam Hub,"27Shonola Street, Ojodu, Lagos 100218, Lagos",6.6469876,3.3650792,tech_hub OR incubator,A
+Ehizua Hub,"6, Hon Fatai Eletu Street, Container Bus Stop, Awoyaya, Lekki, Lagos 105101",6.4709507,3.6973583,tech_hub OR incubator,A
+Outhub Technology Limited,"15b Onibeju St, shangisha, Ikeja 100001, Lagos",6.6165981,3.3749777,tech_hub OR incubator,A
+ITECH HUB,"2nd Floor, Jesan House , Oko ado bus stop beside leawood hot, Ajah, Lekki Lagos Etiosa3 Lagos Lagos NG, Lekki 101001",6.469842,3.585172,tech_hub OR incubator,A
+Tech-Hub Naija,"3 Enyi Arinze St, Ilasamaja, Lagos 102214, Lagos",6.5145243,3.3025918,tech_hub OR incubator,A
+DDTECH HUB,"DDTECH HUB, 16B Akintan Street, Dideolu Estate, Lagos 100001, Lagos",6.6303535,3.3374106,tech_hub OR incubator,A
+Placement Hub Tech Institute,"8 Adelabu St, off Masha Bus-Stop, Surulere, Lagos 101241, Lagos",6.5009538,3.3501258,tech_hub OR incubator,A
+TEHUB ENTERPRISES,"A19 Phone Village, Alaba International, Lagos Nigeria ojo local Government, Lagos 102003, Lagos",6.4581481,3.2019768,tech_hub OR incubator,A
+HUB30 Coworking Space,"29, 204 Road, 2nd Ave, Festac Town, Lagos 102312",6.4628383,3.2934209,tech_hub OR incubator,A
+NITDA IT HUB,"6 Commercial Rd, University Of Lagos, Lagos 101245, Lagos",6.5164389,3.391422,tech_hub OR incubator,A
+CcHUB,"294 Herbert Macaulay Wy, Sabo yaba, Lagos 101245, Lagos",6.5042937,3.3779848,tech_hub OR incubator,A
+The Incubator (Tech Innovation Hub),"125 New Lagos Rd, Uselu, Benin City 300103, Edo",6.3707606,5.6161565,tech_hub OR incubator,A
+RENOVATIO TECH HUB,"No 21 Mabogunje Estate, Lekki phase 1 NO 12, Odunlami Street Marina lagos Eti Osa Local Government, Lagos 105102",6.4503075,3.390767,tech_hub OR incubator,A
+I Tech Hub,"Lekki - Epe Expy, Oko Ado, Lagos 106104, Lagos",6.475898,3.6144,tech_hub OR incubator,A
+Techhub NG Solutions,"Block B1, South Drift Court of, Mobil Estate Rd, Aja, Lekki 106104, Lagos",6.4567074,3.5631098,tech_hub OR incubator,A
+Techxity hub,"Igbe Rd, Igbogbo, Ikorodu 104101, Lagos",6.5941343,3.5335554,tech_hub OR incubator,A
+Premier Hub Innovation Center,"1B Birrel Avenue, Yaba, Onike, Lagos 101245",6.5091721,3.3791713,tech_hub OR incubator,A
+Lagos Technology Business Incubator Centre,"6 Balogun St, Pen Cinema, Agege 102212, Lagos",6.6325453,3.3098221,tech_hub OR incubator,A
+Print and Tech Hub,"81/90 Abraham Adesanya Complex, Onipanu, Lagos Lagos, Somolu",6.5329688,3.3682176,tech_hub OR incubator,A
+Innovation Hub,"35 Adebisi Ogunniyi Cres, Lekki Phase I, Lekki/Ikate And Environs 106104, Lagos",6.4332783,3.4789061,tech_hub OR incubator,A
+E-Business Hub Nigeria,"3A Ahmad Tijani Ottun Street, Off Victoria Arobieke St, Eti-Osa, Lagos",6.5244,3.3792,tech_hub OR incubator,A
+Techie Base,"Shop B35/36, Platinum Plaza, 7 Adepele St, Ikeja, 100282, Lagos",6.5956671,3.339264,tech_hub OR incubator,A
+Space Universe - Tech Hub,"2B Montgomery Rd, Yaba, Lagos 101245, Lagos",6.5082696,3.3727668,tech_hub OR incubator,A
+Ogun TechHub,"Kobape Rd, beside PMB Estate, Kobape 110118, Ogun State",7.0943011,3.3963629,tech_hub OR incubator,A
+NG HUB,"8 Montgomery Rd, Yaba, Lagos 101245, Lagos",6.5085397,3.3735285,tech_hub OR incubator,A
+Techinnover - Software Development Company,"18 Forolagba St, Gbagada, Lagos 100241, Lagos",6.5655492,3.3907036,tech_hub OR incubator,A
+TEKHUB NIGERIA LTD,"2nd floor Grace and Faith Tower, beside UBA, Onitsha - Enugu Expy, Awka 420212",6.2279026,7.0772899,tech_hub OR incubator,A
+Packaging IT Hub,"9, 1 Ola Ayeni St, Otigba St, computer village, Ikeja 100271, Lagos",6.5962106,3.3400032,tech_hub OR incubator,A
+HiiT Plc,"27 Obafemi Awolowo Wy, beside Obafemi Awolowo House, Ikeja, 101233, Lagos",6.5967647,3.3398563,tech_hub OR incubator,A
+Hub360,"Shop EU2 9&10 Army Shopping Arena, Oshodi-Isolo, Lagos",6.5648879,3.350417,tech_hub OR incubator,A
+TECHHUB DIGITAL SOLUTIONS,"110 Awolowo Rd, Ikoyi, Lagos 100001, Lagos",6.4418367,3.4179163,tech_hub OR incubator,A
+Tech hub,"10 Olusesan Ogunro St, Egbeda, Lagos 102213, Lagos",6.5987009,3.2885107,tech_hub OR incubator,A
+Immaculate Technology Hub,"Ijeh Police Barracks, behind Line C, Block 8, Ikoyi, Obalende 101232, Lagos",6.4443268,3.4285659,tech_hub OR incubator,A
+ByteHub Embedded,"315 Borno Way, Alagomeji-Yaba, Lagos 100001, Lagos",6.4964808,3.377838,tech_hub OR incubator,A
+Jishu Tech Hub (OOF),"23b Olumoroti Jaiyesimi St, Bariga, Lagos 102216, Lagos",6.5465043,3.3838764,tech_hub OR incubator,A
+Crona Enterprise,"Pen cinema, Agege, Agege, Lagos",6.617214,3.3200546,tech_hub OR incubator,A
+PiotecHub,"2 Oseni Agoro St, Ilasamaja, Lagos 100263, Lagos",6.5117583,3.3256086,tech_hub OR incubator,A
+Tech Innovation hub,"26 Emma Emeagwai St, Abijor, Lagos 441117, Lagos",6.4618169,3.6621457,tech_hub OR incubator,A
+EkoLag Hub,"Binitie plaza, 4 Otigba St, Ikeja, 101233, Lagos",6.5961561,3.3401843,tech_hub OR incubator,A
+Trade hub ventures limited,"04 anifat onisemo street, Sanya St, Surulere",6.4807072,3.3269636,tech_hub OR incubator,A
+The Roothub Lagos,"117 T. F. Kuboye Rd, street, Lekki 106104, Lagos",6.4287846,3.4589438,tech_hub OR incubator,A
+Technospace Innovations and Digital Hub,"10 Francis Oremeji St, Ikeja, Lagos 101233, Lagos",6.5933574,3.3394563,tech_hub OR incubator,A
+Innovation Hub,"15 Ayinde Giwa St, Masha, Lagos 101241, Lagos",6.5024563,3.3519218,tech_hub OR incubator,A
+ARIGOHUB,"20-14 Hammed Kasumu Street Chevy View Estate, Lekki Penninsula II, Lagos",6.4469729,3.5285427,tech_hub OR incubator,A
+TECH UNITE AFRICA,"3rd Floor, Polystar Building, Marwa, Lekki 105102, Lagos",6.4317483,3.4744927,tech_hub OR incubator,A
+Hub 9ice Tech,"Shop A1, Prowa Plaza, opposite Kirikiri Police Station, off mile2/berger, Kirikiri, Lagos 102102, Lagos",6.4432219,3.308224,tech_hub OR incubator,A
+Easy Hub Nigeria Limited,"2 Pepple St, Ikeja, Lagos 101233, Lagos",6.5942491,3.3412794,tech_hub OR incubator,A
+TeeHub Innovative Technology,"7,Francis Oremeji Street, off medical road, computer village Ikeda, Ikeja, Lagos",6.5939129,3.3397162,tech_hub OR incubator,A
+Hot Fun Cafe,"32 Calcutta Cres, Apapa Quays, Lagos 102272, Lagos",6.4406404,3.3656087,cafe,A
+TOP BEANS. Coffee & More,"17 A Ozumba Mbadiwe Ave, WINGS, Lagos 106104, Lagos",6.4376132,3.4120346,cafe,A
+GEEKAS,"4 Calcutta Cres, Apapa Quays, Lagos 102272, Lagos",6.4411706,3.3674009,cafe,A
+ART CAFE,"282 Akin Olugbade St, Victoria Island, Lagos 106104, Lagos",6.4313976,3.4203483,cafe,A
+Eleba Restaurant & lounge,"18 Ware House Rd, Apapa, Lagos 102272, Lagos",6.4399322,3.3695681,cafe,A
+The Galley Restaurant,"Harbour Road, Apapa Quays, Lagos 102272, Lagos",6.4601177,3.3685004,cafe,A
+Shop for all cafe,"78 Marine Rd, Apapa, Lagos 100001, Lagos",6.4488601,3.3527754,cafe,A
+Cafe Neo,"57 Marina Rd, Lagos Island, Lagos 100221, Lagos",6.4555836,3.3831686,cafe,A
+ST. CHRISTOPHER CYBER CAFE,"57, cementery road, amukoko lagos, Cementry Rd, Ajeromi-Ifelodun, Lagos",6.4663423,3.3432727,cafe,A
+Cafeteria Nigeria,"16 Akin Adesola St, Victoria Island, Lagos 106104, Lagos",6.4283012,3.4241438,cafe,A
+ENNY'S WINE CAFE,"Okoya St, Malu, Lagos 102103, Lagos",6.4594534,3.3434111,cafe,A
+Angelos On the Go Centre,"17 Odunlami St, Lagos Island, Lagos 102273, Lagos",6.4519158,3.3908992,cafe,A
+Underground Bakery And Fast Food,"3 Kofo Abayomi Ave, Apapa Quays, Lagos 102272, Lagos",6.4467918,3.3702777,cafe,A
+Tea and Coffee Spot Cafe,"10 Adeniran Ogunsanya St, Surulere, Lagos 101241, Lagos",6.4981485,3.3579266,cafe,A
+Regin Cafe,"Iyalode St, Ajegunle, Lagos 102103, Lagos",6.4562747,3.344544,cafe,A
+Avondale Restaurant,"33 Marine Rd, Apapa, Lagos 102272, Lagos",6.4409726,3.3562691,cafe,A
+"J&J One for All Restaurant, Bar, Carwash, Barbing and Hairdressing Saloon","18 A Point Rd, Apapa, Lagos 102272, Lagos",6.4505735,3.3634985,cafe,A
+The Freshly Ground Coffee Co.,"17b Awolowo Rd, Ikoyi, Lagos 106104, Lagos",6.4434859,3.4114244,cafe,A
+MyYa's Cafe,"Myya's Cafe, Plot 6 Muiz Banire St, Lekki Phase I, Lagos 100001, Lagos",6.4380552,3.4708626,cafe,A
+Ifeoma kitchen,"4 Ado Ave, off Zeek Avenue, Apapa, Lagos 101251, Lagos",6.4427858,3.3728545,cafe,A
+Tantalizers - Apapa,"62 Kofo Abayomi Ave, Apapa Quays, Lagos 100246, Lagos",6.4429543,3.3700216,cafe,A
+Nigerian Kitchen,"1B Point Rd, Apapa Quays, Lagos 102272, Lagos",6.4484178,3.3673762,cafe,A
+Extra Care Beeswax Enterprise Services (Extra Care Gourmet),"Apapa Rd, Ijora, Lagos 101245, Lagos",6.4655906,3.3640696,cafe,A
+Deola Canteen,"Shop No. 41, Aratumi Market, Imam Raji St, Amukoko, Lagos 102272, Lagos",6.4773441,3.3442062,cafe,A
+PAUSE | Café & Espresso Bar,"1 Bisway St, Maroko, Lekki 106104, Lagos",6.4363008,3.4510382,cafe,A
+God time restaurant,"23 Yaya Cres, Apapa, Lagos 102103, Lagos",6.449072,3.3363703,cafe,A
+The Terrace by Delina,"4 Custom St, Lagos Island, Lagos 101231, Lagos",6.4527251,3.3879935,cafe,A
+JR Coffee Shop,"Union Bank Headquarters Building, 36 Marina Rd, Lagos Island, Lagos 102273, Lagos",6.4513474,3.3875238,cafe,A
+Arewa African Cuisine,"11 Randle Rd, Apapa Quays, Lagos 102272, Lagos",6.4432018,3.3689199,cafe,A
+Pleasant cakes and treats limited,"2 Peter Ayansi Cl, off Ladipo Labinjo Crescent, off Bode Thomas Street, Surulere, Lagos 101271, Lagos",6.4858712,3.3593323,cafe,A
+Eminent Tech World,"C9Q2+749, Ajegunle, Lagos 102272, Lagos",6.4381542,3.3503614,cafe,A
+All in one Restaurant and Bar,"C9V9+MJC, Randle Cres, Apapa, Lagos 102272, Lagos",6.4441965,3.3690095,cafe,A
+Ki Bar and Kitchen,"31a Oju Olobun Cl, Victoria Island, Lagos 106104, Lagos",6.4243554,3.4154174,cafe,A
+Sweet Kitchen,"6 Orodu St, Ajegunle, Lagos 102103, Lagos",6.4537387,3.3503369,cafe,A
+Café bonjour,"46 Awolowo Rd, Ikoyi, Lagos 106104, Lagos",6.4420806,3.415471,cafe,A
+Psiphone Small Chops,"Block 52, Dolphin Estate, Phase III, Adeniji Adele Rd, Lagos Island, Lagos",6.4580751,3.3980761,cafe,A
+Godsend Spaghetti and Foods,"Kilo Bus Stop, 13 Oduduwa Rd, Surulere, Lagos",6.4468152,3.3583411,cafe,A
+Omojesu Foods,"Sapara St, Badia, Lagos 102272, Lagos",6.4566395,3.362037,cafe,A
+Da vic's food city,"13 ojodu street, off Amore St, Apapa, Lagos 102241",6.4507571,3.3498232,cafe,A
+Taste Best,"F984+HP3, Gaskiya Rd, Badia, Lagos 102272, Lagos",6.4663774,3.3568075,cafe,A
+J5 Lounge & Bar,"26-38 Oba Abdulfatai Aremu Aromire St, Apapa, Lagos 102103, Lagos",6.4506931,3.3464233,cafe,A
+Karma Restaurant,"17 Burma Rd, Apapa, Lagos 102272, Lagos",6.4379151,3.369569,cafe,A
+Smile Cuisine,"Ground floor, Leo block, Eleganza Building, 1 Commercial Rd, Apapa, Lagos 100001, Lagos",6.4424861,3.3732205,cafe,A
+De Tastee Fried Chicken,"50 Ware House Rd, Apapa Quays, Lagos 100000, Lagos",6.4384789,3.3649672,cafe,A
+宮廷酒店 Palace chinese Restaurant,"3-15 Ede St, Apapa, Lagos 102272, Lagos",6.443828,3.3707059,cafe,A
+Mummy Fatimo,"7 Tolu Rd, Ajegunle, Lagos 102103, Lagos",6.4519275,3.3498019,cafe,A
+TOP BEANS. Coffee & more,"1436 Sanusi Fafunwa St, Victoria Island, Lagos 106104, Lagos",6.4312706,3.4265114,cafe,A
+Payless Afrique De Kitchen Limited,"2, Polysonic Mall, Mall, 1B Point Rd, Apapa, Lagos",6.4484707,3.3673713,cafe,A
+Rockhouse Lagos Cafe,"8 Akpoguma St, Ikate, Lagos 100001, Lagos",6.5008358,3.3448307,cafe,A
+onikoyi,"38/40 Thomas Animashaun Street, Ebute Metta, Lagos 101245, Lagos",6.484763,3.3765466,cafe,A
+Madam B Restaurant,"Boundary, Apapa, 4 Tolu Rd, Lagos",6.4554019,3.3506307,cafe,A
+Double Zero Chinese Restaurant,"3-15 Ede Street, Apapa, Lagos 102272, Lagos",6.444193,3.3699083,cafe,A
+Codelia Store,"21 Nosamu St, Apapa, Lagos 102103, Lagos",6.4542662,3.3499215,cafe,A
+Hard Rock Cafe,"Landmark Village, Water Corporation Road, Oniru, VI, Lagos 550104",6.4230529,3.4444831,cafe,A
+Boslat Catering Service,"1 Harbour Road, Naval Base NNS QuorraLagos,, Lagos",6.4586038,3.3697434,cafe,A
+myk ebi's international services,"local government, 2 Caulcrick Road, Apapa, Lagos 100001, Lagos",6.4460543,3.3713791,cafe,A
+Ojis Chicken,"F944+4JJ, Mobil Rd, Apapa, Lagos 102272, Lagos",6.4553289,3.356519,cafe,A
+Haven foods,"8,wosilat street ,off baruwa, Surulere, Lagos",6.483248,3.341752,cafe,A
+Liberty Foods,"Apapa, Lagos 102272, Lagos",6.4552545,3.3640589,cafe,A
+Hot Crust Cafe,"Alpha Mall, 117 Ogudu Rd, Ogudu, Lagos 100242, Lagos",6.5769284,3.3894864,cafe,A
+Eleba Restaurant & lounge,"18 Ware House Rd, Apapa, Lagos 102272, Lagos",6.4399322,3.3695681,restaurant,A
+The Galley Restaurant,"Harbour Road, Apapa Quays, Lagos 102272, Lagos",6.4601177,3.3685004,restaurant,A
+SABOR LAGOS,"134 Ahmadu Bello Wy, beside Silverbird Cinema, Victoria Island, Lagos 106104, Lagos",6.4287815,3.4085995,restaurant,A
+Hearth Restaurant and Bar,"141 Ahmadu Bello Wy, opposite Silverbird, Victoria Island, Lagos 106104, Lagos",6.4283462,3.4091606,restaurant,A
+Z Kitchen,"19 Saka Tinubu St, Victoria Island, Lagos 106104, Lagos",6.4271402,3.4192513,restaurant,A
+LUKROT AFRICAN FOODS,"local government, 12 Wharf, Road, off Itapeju St, Apapa, Lagos",6.4453756,3.3726095,restaurant,A
+GEEKAS,"4 Calcutta Cres, Apapa Quays, Lagos 102272, Lagos",6.4411706,3.3674009,restaurant,A
+Yellow Chilli Victoria Island Lagos,"Bishop Oluwole Street, 27 Oju Olobun Cl, Victoria Island, Lagos",6.4249806,3.4152556,restaurant,A
+Gaby Lagos,"6a Agoro Odiyan St, Victoria Island, Lagos 101241, Lagos",6.4281609,3.4188722,restaurant,A
+Orchid House Thai Restaurant - Apapa,"15a Marine Rd, Apapa, Lagos 102272, Lagos",6.4408947,3.3577917,restaurant,A
+Karma Restaurant,"17 Burma Rd, Apapa, Lagos 102272, Lagos",6.4379151,3.369569,restaurant,A
+Smile Cuisine,"Ground floor, Leo block, Eleganza Building, 1 Commercial Rd, Apapa, Lagos 100001, Lagos",6.4424861,3.3732205,restaurant,A
+Shiro Lagos,"Block XVI 3 & 4 Victoria Island Oniru Estate, Eti-Osa, Lagos 101241",6.4235889,3.4442837,restaurant,A
+Cactus Restaurant,"20/24 Ozumba Mbadiwe Ave, Victoria Island, Lagos 106104, Lagos",6.4390122,3.4378511,restaurant,A
+Arewa African Cuisine,"11 Randle Rd, Apapa Quays, Lagos 102272, Lagos",6.4432018,3.3689199,restaurant,A
+"The Place Restaurant, Victoria island","4-1 Adeola Odeku St, Victoria Island, Lagos 106104, Lagos",6.4297159,3.4099267,restaurant,A
+Nigerian Kitchen,"1B Point Rd, Apapa Quays, Lagos 102272, Lagos",6.4484178,3.3673762,restaurant,A
+Avondale Restaurant,"33 Marine Rd, Apapa, Lagos 102272, Lagos",6.4409726,3.3562691,restaurant,A
+Ifeoma kitchen,"4 Ado Ave, off Zeek Avenue, Apapa, Lagos 101251, Lagos",6.4427858,3.3728545,restaurant,A
+Kaly Restaurant & Bar Lounge,"Building, 7th Floor, 1 Akin Adesola Street off Ahmadu Bello way Number One, Victoria Island, Lagos 106104",6.42282,3.4237291,restaurant,A
+La megga restaurant,"61 Kofo Abayomi Ave, Apapa Quays, Lagos 102272, Lagos",6.4427543,3.3702254,restaurant,A
+Crust & Cream,"11 Musa Yar' Adua St, Victoria Island, Lagos 106104, Lagos",6.4326206,3.4167943,restaurant,A
+The Rhythm Restaurant,"1 Kofo Abayomi St, Victoria Island, Lagos 106104, Lagos",6.436529,3.4110752,restaurant,A
+"Shades Social - Bar, Restaurant, Club, Lounge, Lagos","1 Anifowoshe St, Eti-Osa, Lagos 106104, Lagos",6.4348225,3.4153776,restaurant,A
+The Ona Lagos Restaurant Lounge Victoria Island Lagos,"1701 Violet Yough Cl, Victoria Island, 106104, Lagos",6.4302069,3.4293053,restaurant,A
+The A Steakhouse,"1 Karimu Kotun St, Victoria Island, Lagos 106104, Lagos",6.4250097,3.4245078,restaurant,A
+"J&J One for All Restaurant, Bar, Carwash, Barbing and Hairdressing Saloon","18 A Point Rd, Apapa, Lagos 102272, Lagos",6.4505735,3.3634985,restaurant,A
+Omojesu Foods,"Sapara St, Badia, Lagos 102272, Lagos",6.4566395,3.362037,restaurant,A
+J5 Lounge & Bar,"26-38 Oba Abdulfatai Aremu Aromire St, Apapa, Lagos 102103, Lagos",6.4506931,3.3464233,restaurant,A
+All Spice Foods Buka,"37 Marina Rd, Lagos Island, Lagos 102273, Lagos",6.452252,3.3872116,restaurant,A
+Izanagi Japanese Cuisine,"19B Idejo St, Victoria Island, Lagos 101241, Lagos",6.4265446,3.4141058,restaurant,A
+Unusual Cuisine,"CCM4+8H8, Bonny Camp St, Eti-Osa, Lagos 106104, Lagos",6.4333302,3.4065753,restaurant,A
+RSVP restaurant,"9 Eletu Ogabi St, Victoria Island, Lagos 101001, Lagos",6.4283965,3.4214651,restaurant,A
+Da vic's food city,"13 ojodu street, off Amore St, Apapa, Lagos 102241",6.4507571,3.3498232,restaurant,A
+Sherlaton Restaurant,"1230E Ahmadu Bello Wy, Victoria Island, Lagos 106104, Lagos",6.4294319,3.4095208,restaurant,A
+宮廷酒店 Palace chinese Restaurant,"3-15 Ede St, Apapa, Lagos 102272, Lagos",6.443828,3.3707059,restaurant,A
+La Veranda Italian Cuisine,"17 Oju Olobun Cl, Victoria Island, Lagos 106104, Lagos",6.4263873,3.4154382,restaurant,A
+Destiny Stomach Care,"5 Ado Ave, Apapa Quays, Lagos 102272, Lagos",6.4429719,3.3715218,restaurant,A
+Alo Alo Restaurant,"Victoria Crown Plaza Hotel, 292b Ajose Adeogun St, Victoria Island, Lagos 101241",6.430671,3.4391175,restaurant,A
+Tetrazzini Food,"182 Oba Olu-Iwa Rd, Apapa, Lagos 100001, Lagos",6.4481394,3.3263734,restaurant,A
+Taste Best,"F984+HP3, Gaskiya Rd, Badia, Lagos 102272, Lagos",6.4663774,3.3568075,restaurant,A
+Madam B Restaurant,"Boundary, Apapa, 4 Tolu Rd, Lagos",6.4554019,3.3506307,restaurant,A
+Tantalizers - Apapa,"62 Kofo Abayomi Ave, Apapa Quays, Lagos 100246, Lagos",6.4429543,3.3700216,restaurant,A
+100 Hours,"100 Awolowo Rd, Ikoyi, Lagos 106104, Lagos",6.4417482,3.4171757,restaurant,A
+"Any man,s canteen","C8MR+FVR, Tincan Island Round About, Tincan island, Lagos 102272, Lagos",6.4337363,3.3421478,restaurant,A
+Godsend Spaghetti and Foods,"Kilo Bus Stop, 13 Oduduwa Rd, Surulere, Lagos",6.4468152,3.3583411,restaurant,A
+De Tastee Fried Chicken,"50 Ware House Rd, Apapa Quays, Lagos 100000, Lagos",6.4384789,3.3649672,restaurant,A
+Amala Place Coca-Cola Lagos Island,"35 Marina Rd, Lagos Island, Lagos 102273, Lagos",6.4516976,3.3877885,restaurant,A
+Lagos Kitchen,"37 Marina Rd, Lagos Island, Lagos 102273, Lagos",6.4521665,3.3871242,restaurant,A
+All in one Restaurant and Bar,"C9V9+MJC, Randle Cres, Apapa, Lagos 102272, Lagos",6.4441965,3.3690095,restaurant,A
+Apapa Road,"90 Apapa Rd, Ebute Metta, Lagos 101245, Lagos",6.4819453,3.373738,restaurant,A
+Ekaabo Restaurant and Terrace,"52b Kofo Abayomi St, Eti-Osa, Lagos 001111, Lagos",6.4347783,3.4228639,restaurant,A
+Ajegunle Apapa Lagos,"F85M+85M, Ajegunle, Lagos 102103, Lagos",6.4583444,3.3329151,restaurant,A
+Talindo Steak House,"7B Karimu Kotun St, Victoria Island, Lagos 101241, Lagos",6.4262888,3.4255033,restaurant,A
+Wakame Asian Kitchen & Lounge,"Marriott Hotel Ikeja, 122 Joel Ogunnaike St, Ikeja GRA, Lagos 100271, Lagos",6.5846619,3.3492714,restaurant,A
+Kilimanjaro Restaurant,"1 Ajiwe Close, Abraham Adesanya Rd, Lagos",6.4407887,3.3688847,restaurant,A
+God time restaurant,"23 Yaya Cres, Apapa, Lagos 102103, Lagos",6.449072,3.3363703,restaurant,A
+Pizze-Riah restaurant,"13 Musa Yar' Adua St, Victoria Island, Lagos 106104, Lagos",6.43247,3.417012,restaurant,A
+Sweet Kitchen,"6 Orodu St, Ajegunle, Lagos 102103, Lagos",6.4537387,3.3503369,restaurant,A
+Iya Yakubu (Yoruba native food),"F977+VCQ, Badia, Lagos 102272, Lagos",6.4647243,3.3636064,restaurant,A
+Nigerian University of Technology and Management (NUTM),"6 Free Town Rd, Apapa, Lagos 102272, Lagos",6.4494364,3.3541131,school OR university,A
+University of Lagos,"University of Lagos, University Road Lagos Mainland Akoka, Yaba, Lagos",6.515759,3.3898447,school OR university,A
+Sacred Heart College Apapa,"12 - 18 Child Ave, GRA, Lagos 102272, Lagos",6.4489533,3.3636045,school OR university,A
+Ekum College,"1-5 Iganmu Rd, Amukoko, Lagos 102103, Lagos",6.4675463,3.3507347,school OR university,A
+"International School, University Of Lagos.","G96R+9J2, DLI Rd, University Of Lagos, Lagos 101245, Lagos",6.510883,3.3915266,school OR university,A
+Foundation College,"F982+49M, Adetuyi St, Malu, Lagos 102103, Lagos",6.4653377,3.3509281,school OR university,A
+Federal College of Education (Technical) Akoka,"Federal College of Education Akoka, Yaba, Lagos 100001",6.5225871,3.3840965,school OR university,A
+Citizenship and Leadership Training School,"Tincan island, Lagos 102272, Lagos",6.429895,3.3502866,school OR university,A
+American International School of Lagos,"CCQM+2XG Federal Estates, Victoria Island, Lagos 106104, Lagos",6.4375697,3.4349462,school OR university,A
+Jossy Schools,"63 Church St, Ijora, Lagos 102272, Lagos",6.4718681,3.359157,school OR university,A
+Greenview Business School,"N 0, Youth Empowerment Centre, 27 Point Rd, Apapa Quays, Lagos 102272, Lagos",6.4516392,3.3599599,school OR university,A
+Roseborn International College,"1 Lisabi Rd, Apapa Quays, Ikeja 102272, Lagos",6.4439571,3.3607121,school OR university,A
+Baksy Royal College,"C9R8+P95, Bombay Cres, Apapa, Lagos 102272, Lagos",6.4417865,3.3659903,school OR university,A
+Scholastica,"No. 4 Park Ln, Apapa, Lagos 102272, Lagos",6.4469299,3.3651176,school OR university,A
+National Commission For Colleges of Eduction,"829Warehouse Road, Apapa Quays, Lagos 102272, Lagos",6.4400999,3.3709128,school OR university,A
+St Augustine's College Of Education,"2 Moronfolu St, Akoka, Lagos 100213, Lagos",6.5239462,3.3869249,school OR university,A
+Lagos State University,"Lasu Main Rd, Ojo, Lagos 102101, Lagos",6.4663553,3.2003007,school OR university,A
+Julewubi Foundation Schools,"16/18 &20, 16/18 &20 Olubuade Street, Amukoko, Lagos 102103, Lagos",6.4653527,3.3508033,school OR university,A
+Lagos,"12 aro Street ijora Kingdom, Apapa, Lagos",6.465901,3.3662843,school OR university,A
+Mandavo Computer Learning Center,"42, Ojora Street Off Boundary Road, Bale Aiyetoro, Ajegunle Apapa Cemetery Market Opposite Banana Section Off Bolaji Street Ajegunle Apapa Lagos , Lagos, Nigeria 01234 Ajeromi Ifelodun, Ajegunle, Apapa 102211, Lagos",6.4555852,3.3481954,school OR university,A
+Northfield College,"44 MAKANJUOLA STREET, Sari-Iganmu Rd, Lagos",6.4704901,3.3516448,school OR university,A
+NIGERIAN INSTITUTION OF MARINE ENGINEERS AND NAVAL ARCHITECTS,"8 Liverpool Rd, Apapa Quays, Lagos 101251, Lagos",6.4442123,3.36324,school OR university,A
+Pretty Class Hotel,"1 Navy Road By Press Bus Stop, Ajegunle, Apapa, Badia, Lagos 102103, Lagos",6.4556813,3.3542744,school OR university,A
+RMAC Training School,"F96C+FG3, Naval Base Rd, Apapa, Lagos 102272, Lagos",6.4612107,3.3713317,school OR university,A
+Nigerian Army Intelligence School (NAIS),"Tego Barracks, Bonny St, Apapa, Lagos 102272, Lagos",6.4585743,3.3612663,school OR university,A
+LASAA,"32 Burma Rd, Apapa, Lagos 102272, Lagos",6.4382024,3.3681635,school OR university,A
+The City Mall Lagos Island Lagos,"The City Mall, Lagos Island, 102273, Lagos",6.4445275,3.4026472,shopping_mall,A
+Mega Plaza,"14 Idowu Martins St, Victoria Island, Lagos 106104, Lagos",6.4333023,3.4205211,shopping_mall,A
+Apapa Mall,"14b Park Ln, Apapa Quays, Lagos 102272, Lagos",6.4478366,3.3630556,shopping_mall,A
+Oluwole Urban Mall,"39/41 Martin St, Lagos Island, Lagos 102273, Lagos",6.4568431,3.3861645,shopping_mall,A
+Leisure Mall,"Street, Lagos 101241, Lagos",6.4900546,3.3574459,shopping_mall,A
+The Palms Shopping Mall,"1 Bisway St, Maroko, Lekki 106104, Lagos",6.4357545,3.4516297,shopping_mall,A
+Divine Fountain Hotel Apapa,"3 Lisabi Rd off Liverpool Rd, Lagos 200132",6.444806,3.359417,lodging,A
+Beni Hotels,"11/13 Wiwo Ona Tere St, Lagos Mainland, Lagos 100001, Lagos",6.4576342,3.3812691,lodging,A
+Cynergy Suites Apapa,"2 Liverpool Rd, Apapa Quays, Lagos 200132, Lagos",6.4453178,3.3656243,lodging,A
+Karma Hotel,"17 Burma Rd, Apapa, Lagos 101251, Lagos",6.4381257,3.3695076,lodging,A
+Becfom Hotel,"F947+4JG, Apapa, Lagos 102272, Lagos",6.4553166,3.3640852,lodging,A
+Winchester Suites,"F947+4JG, Apapa, Lagos 102272, Lagos",6.4553166,3.3640852,lodging,A
+Rock View Hotel,"17b Park Ln, Apapa, Lagos 102272, Lagos",6.4479277,3.3609008,lodging,A
+Beni Hotel Surulere,"Doyin Bus Stop, 27 Jimoh Odutola St, Surulere, Lagos 101241, Lagos",6.4805665,3.3534703,lodging,A
+Beni Gold Apapa,"19 Liverpool Rd, Apapa Quays, Lagos 102272, Lagos",6.4436969,3.3627796,lodging,A
+Aquatic Suites & Lounge,"Osca Abu Cr / Yomi Oshikoya Cl, Lagos 123456",6.4850069,3.3480325,lodging,A
+White Castle Hotel,"18 Wharf Road, Apapa Quays, Lagos 102272, Lagos",6.4443335,3.3730008,lodging,A
+Lamia Inn,"19a Idejo St, Victoria Island, Lagos 106104, Lagos",6.4264232,3.4138093,lodging,A
+Saheeto's Place,"Obalende, 130 Lewis St, Lagos Island, Lagos",6.4500571,3.4064224,lodging,A
+Carliza Hotel Limited,"3C Marine Rd, Apapa, Lagos 102272, Lagos",6.4394451,3.3601376,lodging,A
+"Command Guest House | Bronx Int'l Hotel, Lagos","26 Child Ave, Island, Lagos 234100, Lagos",6.4497972,3.3604028,lodging,A
+MITOS LUXURY SUITES (BODE THOMAS),"28 Johnson St, Surulere, Lagos 101241, Lagos",6.4865818,3.3492389,lodging,A
+Victoria Continental Hotel,"1-15 Ede St, off Kofo Abayomi Street, Apapa, Lagos 102241, Lagos",6.444199,3.3699585,lodging,A
+Lekki Waterside Hotel,"Plot 2B Wole Olateju Cres, Lekki Phase 1, Lekki 23401, Lagos",6.4491979,3.4557248,lodging,A
+I-MAX GUEST HOUSE & SUITE,"2 Oranyan Road, Off Oduduwa Rd, Apapa, Lagos",6.4452651,3.3575897,lodging,A
+"Ocean Park Hotel Lagos, Lekki Phase 1, Nigeria","Plot 13B, WhiteSand Avenue, Close to White Sand School, Lekki Phase 1, Lekki",6.4296097,3.4805091,lodging,A
+Morning Side Suites and Spa Victoria Island Lagos,"200c Etim Inyang Cres, Victoria Island, Lagos 106104, Lagos",6.4328741,3.4340966,lodging,A
+De Heavens Hotels & Suites,"124 Nnamdi Azikwe St, Lagos Island, Lagos 102273, Lagos",6.4606804,3.3875368,lodging,A
+Light House Hotel Lekki phase 1,"20 Alh. Hussein Sunmonu St, Lekki Phase 1, Lagos 101010, Lagos",6.4432966,3.4615989,lodging,A
+Primal HOTEL,"7B,POINT, Point Rd, Apapa, Lagos",6.4489899,3.3658695,lodging,A
+Ray's Inn,"1b Lander Cl, Apapa Quays, Lagos 102272, Lagos",6.445363,3.3661029,lodging,A
+Cumberland Hotel Lagos,"2, 4 Adeola Odeku St, Victoria Island, Lagos 100242, Lagos",6.4297744,3.4095598,lodging,A
+Blue Moon Beach Hotel and Resort Lekki Lagos,"Okunde Blue Water Scheme, 2nd Roundabout, 3/5, off Remi Olowude Street, Eti-Osa, Lekki 101241, Lagos",6.4241347,3.4615579,lodging,A
+De Clove Residence,"21, Imam Dauda St, Off Eric Moore Rd, Surulere, Lagos",6.4841852,3.3521462,lodging,A
+Happy Day Hotel,"87Iganmu Road, Amukoko, Lagos 102272, Lagos",6.477175,3.3465718,lodging,A
+CARITAS INN LEKKI,"3 Ibiyinka Salvador St, off Africa Lane, Lekki Phase I, Lekki 100001, Lagos",6.4566623,3.4711403,lodging,A
+City Point Hotel,"Round About Street, Lagos",6.4666836,3.3537125,lodging,A
+Panbel Hotel,"35 Payne Cres, Apapa, Lagos 102272, Lagos",6.4422577,3.3717155,lodging,A
+Presken Kuramo Waters,"322a Akin Ogunlewe Rd, Victoria Island, Lagos 106104, Lagos",6.4256903,3.4359253,lodging,A
+Castle Lodge Serviced Apartments,"19A Badagry Road, GRA, Apapa, Lagos",6.436,3.366,lodging,A
+Folade Hotels,"Lisabi Rd, Apapa Quays, Lagos 102272, Lagos",6.4441195,3.3607105,lodging,A
+Elliotnass Hotel,"33c Marine Rd, Apapa, Lagos 102272, Lagos",6.4408536,3.35386,lodging,A
+Island Heights Hotel,"11 Sir Samuel Manuwa St, Eti-Osa, Lagos 101241, Lagos",6.4370162,3.4357241,lodging,A
+House 2 Elders Club,"2 Oniru St, Apapa, Lagos 102272, Lagos",6.4422065,3.3710817,lodging,A
+Villa Maria Hotel,"3, John Chuks Nnadi Drive, Off African Lane, Off, Admiralty Way, Lekki Phase 1, Lagos",6.463077,3.3844159,lodging,A
+Bristol Hotel,"8Martins Street, Lagos Island, Lagos 102273, Lagos",6.4558775,3.3859983,lodging,A
+The Borough Lagos,"Lagos NG, 2 Kola Adeyina Cl, Phase 1, Lekki 100001",6.4498536,3.4735446,lodging,A
+First Rolland Hotel,"27Payne Crescent, Apapa Quays, Lagos 102272, Lagos",6.4424548,3.3711722,lodging,A
+Mariners Suites Lagos,"7 Wilmot Point Rd, opposite Harbour Point Event Centre, Victoria Island, Lagos 106104, Lagos",6.4223549,3.4084788,lodging,A
+Motun International Hotel,"F92W+WPX, Lagos Island, Lagos 102273, Lagos",6.4523699,3.3968485,lodging,A
+Tesso Hotel,"29 Calcutta Cres, Apapa Quays, Lagos 102272, Lagos",6.4402708,3.3652803,lodging,A
+Ndokwa Entertainment Centre Annex,"37/33 Cementary Road, Amukoko Ifelodun, Apapa, Lagos",6.46646,3.3450735,lodging,A
+DE PRINCE GUEST HOUSE LTD,"48 Norman Williams St, Ikoyi, Lagos 106104, Lagos",6.4425807,3.4179621,lodging,A
+Tabitha Suites,"Obanta Rd, Apapa Quays, Lagos 102272, Lagos",6.4462384,3.3592625,lodging,A
+Easy Homes Hotels,"33 Eric Moore Close, off Eric Moore Rd, Surulere, Lagos 100211",6.4843603,3.3540959,lodging,A
+Mansion hotel,"C9X2+3VX, Marine Rd, Apapa, Lagos 102272, Lagos",6.4477316,3.3522304,lodging,A
+Shakky Motel 1,"F93W+8CJ, Lagos Island, Lagos 102273, Lagos",6.4533269,3.3959693,lodging,A
+Apapa Resort,"No 12 Oniru St, Apapa, Lagos 102272, Lagos",6.441616,3.3708221,lodging,A
+Dat Place Hotel,"23 Akindele Street, Amukoko, Apapa, Apapa, Lagos",6.4645756,3.3459054,lodging,A
+Marriott Executive Apartments Lagos Ikoyi,"2 Alexander Ave, Ikoyi, Lagos 101233, Lagos",6.4565238,3.4453592,lodging,A
+Embassy International Hotel,"5 Adeponle St, Amukoko, Lagos 102103, Lagos",6.4670531,3.34848,lodging,A
+Richtrust Global Investment Company Ltd,"41 Caulcrick Road, Apapa, Lagos 102272, Lagos",6.4455435,3.3721563,lodging,A
+Quincy International Hotel,"9Borno Crescent, Apapa Quays, Lagos 102272, Lagos",6.4400552,3.3668099,lodging,A
+Bridge Apartments Lagos,"Block 26, plot 10 Admiralty Wy, Lekki Phase 1, Lagos 105102, Lagos",6.4481414,3.4801974,lodging,A
+Harmony Hotel,"F8HV+8G3 opposite Orile Bus Stop, Apapa, Lagos",6.4782533,3.3437921,lodging,A
+J27 Lounge and Suites,"2 Idowu Akindele Crescent beside Oba ojora's palace, Ijora 7up, Lagos",6.4641659,3.3474454,lodging,A
+Impact Hub Lagos,"22 Glover Rd, Ikoyi, Lagos 106104, Lagos",6.4553064,3.4303431,coworking_space,B
+Lagos Innovates Center,"H8P4+32J, Rafiu Jafojo Park, Shasha Road, Ajako Bustop Alimosho, Lagos 100272",6.5852015,3.3050178,coworking_space,B
+The Space,"1625B Saka Jojo St, off Idejo Street, Victoria Island, Lagos 101241, Lagos",6.4276574,3.413019,coworking_space,B
+The Work Haven Ogba,"Suite G303, Ogba Multipurpose Shopping Complex, Ifako-Ijaiye, Ikeja 101233, Lagos",6.6299373,3.3434909,coworking_space,B
+Proximity Space Nigeria,"315b Akin Ogunlewe Rd, Victoria Island, Lagos 106104, Lagos",6.4261254,3.4389487,coworking_space,B
+The Impression Hub,"3 St Finbarr's College Rd, Akoka, Lagos 102216, Lagos",6.5242887,3.3853119,coworking_space,B
+LeadSpace Yaba (Lagos),"10 Hughes Ave, Yaba, Lagos 101245, Lagos",6.4993414,3.3772921,coworking_space,B
+WorkBox Limited,"10 Ojora Cl, off Idowu Martins Street, Victoria Island, Lagos 101241, Lagos",6.4351444,3.422095,coworking_space,B
+HUB30 Coworking Space,"29, 204 Road, 2nd Ave, Festac Town, Lagos 102312",6.4628383,3.2934209,coworking_space,B
+Ajegunle Co-Working Hub,"101 Kirikiri Road, Opp Mobil Filling Station, Wilmer Bus stop, Apapa, Lagos 100211",6.4483597,3.3345696,coworking_space,B
+SpaceUnlimited Workspace,"76, Mobolaji Bank Anthony Way (Anthony Agbodji Office Complex, 1st floor left wing Ikeja, Lagos 100211, Lagos",6.5939715,3.3437175,coworking_space,B
+Mon Cave,"10, Wilmer Street, Off Town Planning Way, Ilupeju, Lagos 100252",6.556232,3.3615052,coworking_space,B
+TLG hub Co-working Space,"1, Ayodele Street Zada Estate Off Iwaya Road Onike, Yaba, Lagos 100213, Lagos",6.5081303,3.3869108,coworking_space,B
+Spacepad | Co Working Space And Serviced Private Office Space Lekki,"Km 18, Lekki Penninsula II, Lekki",6.4379857,3.5137467,coworking_space,B
+TyWorkSpace,"17 Ibikunle St, Yaba, Lagos 100001, Lagos",6.5140461,3.3769924,coworking_space,B
+MyWorkSpace,"BADEJO AKINYEMI HOUSE 17/19 Badejo / Akinyemi Crescent Off Fatai Atere Way Matori Industrial Estate, Ladipo St, Matori, Lagos 023401",6.5395658,3.3502163,coworking_space,B
+MusterPoint CoWorking Space,"Plot 49 Wemco Rd, Ogba, Ikeja 101233, Lagos",6.6316296,3.348881,coworking_space,B
+Wrkout Hub,"J7QG+G4C, Oke Odo, Lagos 102213, Lagos",6.6388782,3.2752376,coworking_space,B
+Workcentral Ilupeju Hub,"9b Tinubu Rd, Ilupeju, Lagos 102215, Lagos",6.5414047,3.3628091,coworking_space,B
+SpaceUnlimited GRA,"14 Ayo Rosiji Cres, off Oduduwa Way, Ikeja, Lagos 100271, Lagos",6.5725574,3.3502632,coworking_space,B
+The Space Hq,"1 Bunmi Olowude Street Eti osa, Maruwa, Lekki Phase 1, Lagos",6.4289387,3.4674752,coworking_space,B
+Smart X Business Hub - Co-working space in Ikeja,"16B Mobolaji Bank Anthony Way, Maryland, Lagos 101233, Lagos",6.5728769,3.3629495,coworking_space,B
+Rejoice Spaces and Event management Ltd,"16 Idowu St, Ojodu, Ogba, Lagos 101232, Lagos",6.6459603,3.3283068,coworking_space,B
+Coworkstyle Limited,"15 Ihuntayi Road, Oniru, Eti Osa 101241, Lagos",6.4295545,3.4448275,coworking_space,B
+989 Workspaces Ikeja,"43 Sobo Arobiodu Street Ikeja, Lagos 100212",6.5772527,3.3561108,coworking_space,B
+AMG WorkSpace,"Festac Tower, 22 Rd, Festac Town, Lagos 102102, Lagos",6.4650909,3.2850825,coworking_space,B
+theBUNKer Yaba,"279 Herbert Macaulay Wy, Yaba, Lagos 101245, Lagos",6.5007182,3.377628,coworking_space,B
+CM Workstation,"Plot 13, Bona Bus stop, Abesan Estate Rd, Ipaja, Lagos 102213, Lagos",6.6068686,3.2730276,coworking_space,B
+"Regus - Lagos, The Zone","The Zone, 9 Gbagada - Oworonshoki Expy, Araromi, Lagos 105102, Lagos",6.5516825,3.3768495,coworking_space,B
+Zahari Workspace,"Lagos, Plot 15 Orchid Rd, off Chevron Toll Gate, Eti-Osa, Lekki 105102, Lagos",6.4417842,3.5423305,coworking_space,B
+Civic Hive,"42 Montgomery Rd, Sabo yaba, Lagos 101245, Lagos",6.5098293,3.3765273,coworking_space,B
+"CubeHub - Coworking, Virtual and Serviced Offices - Adebola Centre, Lagos","38 Opebi road Adebola House (Suite 100, Rear Car Park Wing Ikeja, Lagos 100281",6.5911546,3.359383,coworking_space,B
+Ally Hub,"15 Ramat Cres, Ogudu, Lagos 105102, Lagos",6.5730386,3.3910247,coworking_space,B
+Glendale Workspaces,"4 Babatope Bejide Cres, Lekki Phase I, Lagos 106104, Lagos",6.4432793,3.4740538,coworking_space,B
+The Professional Place,"12b Olumoroti Jaiyesimi Street, Gbagada Phase 2 Estate, Gbagada Expy, Gbagada, Lagos",6.5462296,3.3839461,coworking_space,B
+Meeting Arena NG,"Exploit glass complex, 1, Exploit lane, off Sir Kollington St, Aboru, Lagos 100323",6.6293362,3.2791866,coworking_space,B
+THE RESOURCE SPACE,"12A Mabinuori Dawodu St, Gbagada, Lagos 102216, Lagos",6.54873,3.376688,coworking_space,B
+eeSPACE,"11 Adekoya St, Ogba, Lagos 100001, Lagos",6.6413135,3.3276025,coworking_space,B
+Agos Executive Business Lounge,"54b Adeniyi Jones, Oba Akran, Ikeja 101233, Lagos",6.6125652,3.3458567,coworking_space,B
+Venia Business Hub,"Plot 8 The Providence St, Lekki Phase I, Lekki 106104, Lagos",6.4311824,3.4629115,coworking_space,B
+Workbay Onikan Lagos,"F1 Lagos City Mall Onikan, Island, Lagos 101231",6.4462669,3.4020748,coworking_space,B
+Café Naija Cowork,"Maben Terrace, 11 LFS Maben Rd, off Northern Foreshore Road, off Chevron Drive, Eti-Osa, Lekki 106104, Lagos",6.4558587,3.5286936,coworking_space,B
+The Nest Innovation Technology Park,"1A Hughes Ave, Yaba, Lagos 101212, Lagos",6.4992962,3.3766976,coworking_space,B
+Workcentral Ogunlana Hub Surulere,"8 Ayinde Giwa Street, Off Ogunlana Dr, Surulere, Lagos 101283",6.5019504,3.3519965,coworking_space,B
+Workcity Africa,"Workcity, Plot 1, Maruwa Bus Stop, 128 Remi Olowude St, Lekki Phase 1, Lagos 105102, Lagos",6.4298268,3.4689061,coworking_space,B
+E-City Hub and Park,"19, Ajao Road, Off Adeniyi Jones, Ikeja, Lagos",6.6037752,3.3400301,coworking_space,B
+Adjacent Tech Hub & Coworking,"139 Idiroko Rd, Ota 112233, Ogun State",6.6895358,3.2270212,coworking_space,B
+Ghands co-work space,"Bluecrest mall, Majek-Sangotedo, Ajah, Lagos",6.4686254,3.6573807,coworking_space,B
+iWorkZone,"Spring valley Estate, km49 Lekki - Epe Expy, Eti-Osa, Lagos 106104, Lagos, Eti-Osa, Sangotedo 106104, Lagos",6.4687539,3.7033168,coworking_space,B
+989 Workspaces,"Block 12E, Admiralty Way Opposite Ascon Petrol Station Eti Osa, Lekki Phase 1, Lagos",6.447404,3.4808941,coworking_space,B
+Tyworkspace,"32 Lawson St, Lagos Island, Lagos 102273, Lagos",6.4484589,3.4049672,coworking_space,B
+City Space,"1b Oluseun Cres, Gbagada, Ikeja 100271, Lagos",6.5554437,3.3698603,coworking_space,B
+Huddle Workspaces,"2B Rev.Ogunbiyi St, off Oba Akinjobi Way, Ikeja GRA, Ikeja 101233, Lagos",6.5821175,3.3480089,coworking_space,B
+The Adrenalina,"369 Borno Way, Alagomeji-Yaba, Lagos 101241, Lagos",6.5012784,3.3759597,coworking_space,B
+Makerspace NG,"J859+5GF Cement Busstop, F&F Plaza Lagos NG, Adebisi Awoshoga St, Dopemu, Agege 102212",6.607939,3.3187928,coworking_space,B
+TecHub Spaces,"Lateef Jakande Rd, Agidingbi, Ikeja 101233, Lagos",6.6245121,3.3532059,coworking_space,B
+GLI HUB,"315 Borno Way, Yaba, Lagos 100001, Lagos",6.4964808,3.377838,coworking_space,B
+PEACE OFFICE HUB,"248 Muyibat Oyefusi Crescent Omole Phase 1 Estate, Isheri, Ikeja 100010",6.633559,3.3627877,coworking_space,B
+Ewa Agoyin Cafe,"36 Olayiwola St, Alimosho, Abule Egba 101232, Lagos",6.6596593,3.3096422,cafe,B
+CAFÉ MAHI,"3a Adekunle Fajuyi Way, Ikeja GRA, Ikeja 101233, Lagos",6.5737964,3.3608383,cafe,B
+Lotus Cafe Nigeria,"Plot ,9 Lateef Jakande Rd, Agidingbi, Ikeja 101233, Lagos",6.6333736,3.3535089,cafe,B
+Ola’s Café,"30 Abdul Quadri Adebiyi Street, Ikosi Ketu, Lagos 105102, Lagos",6.6191479,3.3744221,cafe,B
+Martins Cafe,"M89G+W44, Ajibode St, Ifako-Ijaiye, Lagos 101232, Lagos",6.6696186,3.325348,cafe,B
+CAFE MESI,"Lagos NG, 5 Ayinde Akinmade St, Phase 1, Lekki 106104",6.4471625,3.4812597,cafe,B
+Indomie Cafe VI,"3 Idowu Martins St, Victoria Island, Lagos 101241, Lagos",6.4314267,3.4195089,cafe,B
+Mathemagic Cafe,"No. 18, Oko Oba/ Abule Egba, In Front Of Adeniji Elereu Bus Stop, Agege, Nigeria, David Ogundele St, Lagos 100283",6.6099965,3.2578537,cafe,B
+Indomie Cafe - FESTAC,"Shop 2, Shoprite Festival Mall FESTAC Town, FESTAC, Lagos 102314",6.464619,3.3043783,cafe,B
+ART CAFE,"282 Akin Olugbade St, Victoria Island, Lagos 106104, Lagos",6.4313976,3.4203483,cafe,B
+C & A Cafe,"J848+9RX, A5, Dopemu, Lagos 102212, Lagos",6.6059856,3.3170954,cafe,B
+Slush Cafe Lagos,"40a Adebayo Doherty Rd, Lekki Phase I, Lagos 106104, Lagos",6.4386518,3.4638752,cafe,B
+Cookbox Cafe,"Igando, Lagos 102213, Lagos",6.5403738,3.2246809,cafe,B
+Yum-Yum Cafe,"67B Aina Obembe Street Off Oluwaga Road Baruwa Lagos Lagos NG, Ipaja, Baruwa 100278",6.5957998,3.2600343,cafe,B
+Hot Crust Cafe,"Alpha Mall, 117 Ogudu Rd, Ogudu, Lagos 100242, Lagos",6.5769284,3.3894864,cafe,B
+Talk2me Cyber Cafe,"10 Oka Akoko Rd, Ifako-Ijaiye, Agege 112105, Ogun State",6.6833411,3.3285715,cafe,B
+Yum Yum Cafe,"Local Government, 136 Isheri Oshun Rd, Isolo Rd, Ijegun, Lagos 102213, Lagos",6.5144494,3.2701823,cafe,B
+Damakel Cafe,"120 Ogba Rd, Ijaiye, Age 102212, Lagos",6.617444,3.3343798,cafe,B
+Indomie Cafe - Yaba,"Ozone e-centre, 1-11 Commercial Ave, Yaba, Lagos 101241, Lagos",6.5063376,3.3743698,cafe,B
+Ijeoma Eatery,"Unnamed Road, Alimosho, Lagos 102213, Lagos",6.5998304,3.2357561,cafe,B
+Crust Cafe,"5 Fola Osibo Rd, Lekki Phase I, Lekki 106104, Lagos",6.4428408,3.4651044,cafe,B
+Tiffany Amber Cafe,"15 Gerrard Road, Ikoyi, Lagos 106104, Lagos",6.4544382,3.4394335,cafe,B
+"2, Adeoye Close","2 Adeoye Cl, Ifako-Ijaiye, Lagos 101232, Lagos",6.6733971,3.2839016,cafe,B
+Indomie Cafe - Lekki Phase 1,"Block 64 Plot 3 Fola Osibo Street, Emma Abimbola Cole, Lekki Phase 1, Lagos",6.4423376,3.4734325,cafe,B
+Olasheu Foods,"Agege, Lagos 102212, Lagos",6.6223851,3.3291383,cafe,B
+Murtala Cafe,"G9FH+QM4, Nearest Police Station, Kankia 822101, Katsina",6.5243793,3.3792057,cafe,B
+Eko Five Restaurant Igando Lagos,"Isheri Rd, Ikotun, Lagos 102213, Lagos",6.5516527,3.2404797,cafe,B
+Alhaja Olaiya Food Canteen,"Agbotikuyo, 14 Alh Olaiya St, Agege, Lagos",6.6251722,3.3119186,cafe,B
+"Milk and Honey Lagos, by Livvy's Twist cake co.","47 Admiralty Road Eti-osa, Lekki Phase 1, Lagos 105102",6.4520238,3.4702859,cafe,B
+COAH Lagos,"Plot 19 Lateef Jakande Road Ikeja, Lagos",6.6344523,3.3535532,cafe,B
+Divanni Place,"bus stop, Abule Eko / Igbopa, rd, Abule Eko Road, Ijede 104102, Lagos",6.5840073,3.5970511,cafe,B
+Close,"J8C4+5X2, Seriki St, Magbon, Lagos 102212, Lagos",6.6203599,3.3073763,cafe,B
+TOP BEANS. Coffee & more,"1436 Sanusi Fafunwa St, Victoria Island, Lagos 106104, Lagos",6.4312706,3.4265114,cafe,B
+CaffiCafé,"Popoola Are St, off Ago Palace Way, Isolo, Ikeja 100263, Lagos",6.5091137,3.3124914,cafe,B
+Oyinlola Food Canteen,"Shop No. 8, Ashade Market, Ifako-Ijaiye, Ikeja 102212, Lagos",6.6137079,3.3290703,cafe,B
+Chez Sam Cafe,"26 Prince Adelowo Adedeji St, Lekki Phase I, Lekki 106104, Lagos",6.4426215,3.4575619,cafe,B
+Dayo Kuye cl no 1,"12 Dayo Kuye Cl, Ifako-Ijaiye, Lagos 101232, Lagos",6.6569193,3.3115242,cafe,B
+Cybercafe,"J9RV+5RQ, Channel Rd, Isheri Oke, Agege 102109, Ogun State",6.6404717,3.3946009,cafe,B
+Big Femzy Bakery,"280 Meiran Rd, Oke Odo, Lagos 102213, Lagos",6.6370642,3.2698991,cafe,B
+Amala Yahoo Spot,"Bosun Anifowoshe St, Olakunle Ajibade St, off Olakunle Rd, Ojota, Lagos 105102, Lagos",6.5857448,3.3857618,cafe,B
+Crave Lagos,"60 Omorinre Johnson Street, Lekki Phase 1, Eti Osa 234001, Lagos",6.4364437,3.4610553,cafe,B
+Elysium Lagos,"Plot 6, Block, Lagos NG, 89 Omorinre Johnson Street, Phase 1, Lekki 105102",6.4362919,3.4599416,cafe,B
+Emmani Treats,"Opic/ Isheri-North Community, Channels TV Ave, Isheri Oke, Lagos 102109, Ogun State",6.6483483,3.3908011,cafe,B
+Lagos,"J8XF+V9C, Close B, Iju Rd, Lagos",6.6496839,3.3233751,cafe,B
+Amala Sky Lagos,"Beside Fidelity Bank, Admiralty Way, Lekki Phase 1, Eti-Osa, Lagos 101233, Lagos",6.445758,3.4578113,cafe,B
+"Tranquilbyglims - Restaurant and Spa in Ikorodu, Lagos","HF3F+24X Isasi, Ikorodu, Lagos 104102",6.5528733,3.472717,cafe,B
+G - Restaurant,"6 Bola Ayeni St, Papa Ashafa, Lagos 102212, Lagos",6.6254948,3.3107244,cafe,B
+K And K Communication,"G7J5+GXV, Ijegun, Lagos 102213, Lagos",6.531362,3.2599297,cafe,B
+Foodies Hot and Spicy 2 - Best Restaurant in Lagos,"32a Admiralty Wy, Eti-Osa, Lagos 106104, Lagos",6.4480082,3.4713806,cafe,B
+Mugg & Bean,"12 Old Medical Rd, Oregun, Ikeja 101233, Lagos",6.6142475,3.3580586,cafe,B
+Eni Afe lamo restaurant.,"39 Old Yaba Rd, Yaba, Lagos 101245, Lagos",6.4933419,3.3806471,cafe,B
+Restaurant,"Ijegun ajetomobi, Alimosho, Lagos 102213, Lagos",6.5289011,3.2602813,cafe,B
+Daily food cafeteria,"16 Keke Bello St, Agege, Lagos 102101, Lagos",6.4965422,3.1409823,cafe,B
+Yum Yum Cafe Akowonjo,"Adonai Plaza, 80 Akowonjo Rd, off Baale Bus/stop, Alimosho, Lagos 102213, Lagos",6.6005279,3.2979567,cafe,B
+O.K GRILLS,"FH23+JGM, Lekki - Epe Expy, adjacent Mega Chicken, Lekki Penninsula II, way, Lagos 106104",6.4512823,3.5536748,cafe,B
+AzdamTreats,"Channels TV Ave, Isheri Oke, Agege 102109, Ogun State",6.6492042,3.3901946,cafe,B
+Just Amala,"J942+9C7, Allen, Ikeja 101233, Lagos",6.6058849,3.3510572,cafe,B
+Moeshen Cafe Bar,"Plot 1049 Abubakar Koko Ave, Lifecamp, Abuja 900108, Federal Capital Territory",9.0861937,7.3909155,cafe,B
+Food,"Adonai shopping mall, 5 Channels TV Ave, Isheri Oke",6.6404479,3.3992514,cafe,B
+Get Trained,"8 akinwummi street arida opposite UBA, Lagos",6.5243793,3.3792057,cafe,B
+Enjoy Food Restaurant and Guest House,"4 Obanle Aro Cres, opposite Indian Legveg School, Ilupeju, 102215, Lagos",6.5524685,3.3636132,restaurant,B
+Ewa Agoyin Cafe,"36 Olayiwola St, Alimosho, Abule Egba 101232, Lagos",6.6596593,3.3096422,restaurant,B
+Lagos Kitchen,"31 Road, Round About, Gowon Estate Alimosho, Lagos 100001",6.6013817,3.2806906,restaurant,B
+Jasmine Home Foods Restaurant Abule Ijesa Lagos,"G99J+9JX, Abule ijesha, Lagos 101245, Lagos",6.5184667,3.3816065,restaurant,B
+Olasheu Foods,"Agege, Lagos 102212, Lagos",6.6223851,3.3291383,restaurant,B
+Mega chicken - Amuwo,"Festac Access Rd, Amuwo Odofin Estate, Lagos 102102, Lagos",6.4710773,3.3126485,restaurant,B
+Mercy's Place Restaurant,"2 Moyo Agoro St, Ifako Agege, Lagos 101232, Lagos",6.6331587,3.3328931,restaurant,B
+Ubok Abasi Restaurant,"91 Dopemu Rd, Agege, Lagos 102212, Lagos",6.6182265,3.3128582,restaurant,B
+Belly Mattaz Restaurant,"Off Lewis Street, Pen Cinema, 15 Sunmonu St, Agege, Lagos",6.6274578,3.3243,restaurant,B
+God's Time Restaurant,"65 Agege Motor Rd, Idi Oro, Lagos 102215, Lagos",6.5225075,3.3632884,restaurant,B
+De-Gold Resturant,"1 Bajomo Adenuga, Alimosho, Lagos 102213, Lagos",6.6540514,3.2858477,restaurant,B
+vintage africana lagos restaurant,"6 William Elliot north str, dele adedugbe estate, oko oba, Agege, Lagos",6.6570071,3.313542,restaurant,B
+WakaChow,"3 Philip Taiwo Coker St, coker estate, Lagos 102213, Lagos",6.5737071,3.3057994,restaurant,B
+Flames By Lacibo,"59 Ogunlana Dr, Surulere, Lagos 100011, Lagos",6.5080993,3.352923,restaurant,B
+Ibile Foods,"18 Lagos-Abeokuta Expy, beside Mobil Filling Station, Ifako-Ijaiye, Lagos 101232, Lagos",6.650517,3.3031023,restaurant,B
+"The Food place, abule egba","Progress seafood,Abule egba bus stop Agbado oke odo, Abule Egba, Lagos",6.6494677,3.3040076,restaurant,B
+Food place,"65 ilumo road Ikola off command ipaja Lagos, Alimosho, Lagos",6.6231157,3.2472411,restaurant,B
+Mama Opke Restaurant,"Power Line Rd, oke-ira, Lagos 101233, Lagos",6.6534486,3.3489124,restaurant,B
+Nmnvgjji,"J87C+JW5, Agege, Lagos 102212, Lagos",6.6140101,3.3223666,restaurant,B
+Mummy Chioma Restaurant,"Pipeline, 8 Pipeline Rd, Fagba",6.6546825,3.3201787,restaurant,B
+Native Tray Lekki Lagos,"19 Admiralty Way, Lekki Phase I 106104, Lekki, Lagos 106104",6.4474113,3.4788835,restaurant,B
+Homemade Meals In Lagos (The Snail Specialz),"22 Olatunde Okebola close, College Rd, Ogba, Lagos",6.6406638,3.3462237,restaurant,B
+G - Restaurant,"6 Bola Ayeni St, Papa Ashafa, Lagos 102212, Lagos",6.6254948,3.3107244,restaurant,B
+Amazonia Restaurant Lagos,"5 Adeola Hopewell St, Victoria Island, Lagos 106104, Lagos",6.4320996,3.4291687,restaurant,B
+Okebado Restaurant And Bar,"Off Dopemu Road, Papa Ashafa, 22 Fashola St, Lagos",6.6240414,3.3110687,restaurant,B
+Ami Tasty Meal,"Sewage Rd, 22 Rd, &, Agege 102213, Lagos",6.5983995,3.2782299,restaurant,B
+Legacy Restaurant & Bar,"24 Obafuwa Street, Agege, Lagos 102212, Lagos",6.6207644,3.3306363,restaurant,B
+Alhaja Olaiya Food Canteen,"Agbotikuyo, 14 Alh Olaiya St, Agege, Lagos",6.6251722,3.3119186,restaurant,B
+Lady Mk Restaurant,"J8CH+FHQ, Road, Ogba, Lagos 102212, Lagos",6.6212059,3.3289795,restaurant,B
+Mama Cass Restaurant,"1 Dayo Adeniyi Street, Ifako-Ijaiye, Lagos 101232, Lagos",6.6577291,3.3131079,restaurant,B
+Iya Tomiwa Restaurant,"J8PP+C82, Kayode St, Ogba, Lagos 101232, Lagos",6.6359842,3.3358112,restaurant,B
+Mama J Restaurant,"Agbotikuyo, 11 Alh Olaiya St, Agege, Lagos",6.6249343,3.3120005,restaurant,B
+Lacibo Restaurant and Lounge,"No. 59 Ogunlana Dr, Surulere, Lagos 101241, Lagos",6.5081044,3.3528812,restaurant,B
+MamaDoGood Restaurants,"1 Alhahja Sifau Street, Dopemu Rd, Agege, Ikeja 100273, Lagos",6.6176869,3.3130739,restaurant,B
+Hajia Restaurant,"19 Olaleke Taiwo St, Ojodu, 101233, Lagos",6.6434543,3.3601153,restaurant,B
+TASTY RESTURANT AND BAR,"16 Thomas Salako St, Ogba, Ikeja 300001, Lagos",6.6330286,3.3408773,restaurant,B
+MUMMY T& K RESTAURANT,"1, ANIDARA STREET, AYOBO, Ipaja, Lagos 300001",6.6023852,3.2534006,restaurant,B
+Mummy Bolatife Food Canteen,"Off Jonathan Coker Street, Brown Bus Stop, New Oka Oba, 5C Onanubi St, Ifako-Ijaiye, Lagos",6.6585864,3.3163131,restaurant,B
+Yakojeun,"68 TOS Benson Road, Ebute Ipakodo Rd, Ikorodu 104101, Lagos",6.6036812,3.4931444,restaurant,B
+Pleasure kitchen,"Graceland, Aja, Lekki 106104, Lagos",6.4702371,3.5823428,restaurant,B
+Mama Restaurant,"3 Pipeline Rd, Fagba, Lagos 101232, Lagos",6.6546498,3.320393,restaurant,B
+Food City,"9 Kolawole St, Papa Ashafa, Lagos 102212, Lagos",6.6197687,3.3085167,restaurant,B
+Prime Kitchen,"No 57, Isheri Road, Oja Bus Stop Before County Hospital, Ogba Ikeja Lagos., Lagos 100218",6.635056,3.348594,restaurant,B
+DIMAYO'S KITCHEN,"2 Adeshina Straat, Isheri Olofin, Lagos 102213, Lagos",6.5740514,3.2853444,restaurant,B
+Delicacies Restaurant,"20 Post Office Rd, Alimosho, Lagos 101232, Lagos",6.6638012,3.2858434,restaurant,B
+City's Best Restaurant,"11 Okeayo St, Agege, Lagos 102212, Lagos",6.6243959,3.31469,restaurant,B
+De Tastee Fried Chicken,"1 & 2 Balogun Street, Old Pen Cinema, Agege Agege, Lagos 100283",6.5988712,3.3355007,restaurant,B
+"The Place Restaurant, Ogba","31 Ogunnusi Street opposite airtel office Ikeja, Lagos 100218",6.6355939,3.3483714,restaurant,B
+"B & B, Restaurant and Bar","1, Aga street, Elliot bus stop, Iju-Ishaga, Lagos, Nigeria 81, Dopemu road, Trust in God bus stop, Dopemu, Lagos state, Nigeria 1, Powerline street, Salolo bus stop, Meiran, Lagos state, Nigeria Alimosho, Iju Ishaga Rd, Lagos",6.6205629,3.3123136,restaurant,B
+CONE DINNING,"15 Adeniji St, off Wemco Road, Ogba, Ikeja 101233, Lagos",6.6331328,3.34913,restaurant,B
+Tasty dishes restaurant and catering services,"3,Shobowale Street,awori abule egba, Ikeja 300001",6.6568526,3.3054851,restaurant,B
+God's Own Restaurant,"Power Line Bus Stop, Orile, 17 Oko-Oba Rd, Agege, Lagos",6.6337068,3.3117596,restaurant,B
+Amala Yahoo Spot,"Bosun Anifowoshe St, Olakunle Ajibade St, off Olakunle Rd, Ojota, Lagos 105102, Lagos",6.5857448,3.3857618,restaurant,B
+Close,"J8C4+5X2, Seriki St, Magbon, Lagos 102212, Lagos",6.6203599,3.3073763,restaurant,B
+Omojesu Foods,"Sapara St, Badia, Lagos 102272, Lagos",6.4566395,3.362037,restaurant,B
+Mako Lagos,"36 Ademola St, Ikoyi, Lagos 106104, Lagos",6.4401554,3.4159652,restaurant,B
+Igbo Food Restaurant,"Pen Cinema, Off Lewu Street, 8 Sunmonu St, Agege, Lagos",6.6270592,3.3238879,restaurant,B
+Oyinlola Food Canteen,"Shop No. 8, Ashade Market, Ifako-Ijaiye, Ikeja 102212, Lagos",6.6137079,3.3290703,restaurant,B
+Amala Sky Lagos,"Beside Fidelity Bank, Admiralty Way, Lekki Phase 1, Eti-Osa, Lagos 101233, Lagos",6.445758,3.4578113,restaurant,B
+Boluwatife Food Canteen,"7 Iju Rd, Agege, Lagos 101232, Lagos",6.6431275,3.3238159,restaurant,B
+Lagos State University,"Lasu Main Rd, Ojo, Lagos 102101, Lagos",6.4663553,3.2003007,school OR university,B
+"Lagos State University of Education, Oto-Ijanikin","G426+385, Staff Club Mami Market,AOCOED,Oto/Ijanikin, Ojo, Lagos",6.5001319,3.1108612,school OR university,B
+University of Lagos,"University of Lagos, University Road Lagos Mainland Akoka, Yaba, Lagos",6.515759,3.3898447,school OR university,B
+CROWNMENT SERVICES LIMITED,"Staff Club, LASUED/AOCOED, Oto, Lagos 102101, Lagos",6.5000485,3.110905,school OR university,B
+Lagos State University International School,"Inside Lagos State University, Lagos Badagry Express Way, Ojo, Lagos 102101, Lagos",6.4801006,3.1986542,school OR university,B
+Anchor University,"Ayobo Street, Ayobo Rd, Ipaja, Lagos",6.6039714,3.2419436,school OR university,B
+"Lagos State University of Education, Epe Campus","Km 7 Epe Ijebu Ode Road, Noforija, Epe 106101, Lagos",6.6261625,3.9852503,school OR university,B
+UNIVERSITY OF LAGOS STAFF SCHOOL,"University Of Lagos, Akoka Rd, Yaba, Lagos 101245, Lagos",6.5158092,3.3971423,school OR university,B
+"Lagos State University College of Medicine,","Ishaga Rd, beside Lagos University Teaching hospital, Idi-Araba, Lagos 101233, Lagos",6.5888547,3.3418315,school OR university,B
+Joke Ayo Comprehensive College,"Joke Ayo Bus Stop 50/52 Old Otta Road, Off A. I. T. Rd, Alagbado, Lagos",6.66305,3.2599313,school OR university,B
+Cokwills College of Education,"Karaole Estate, Adewale Adegun Avenue Lagos NG, off College Rd, Ifako-Ijaiye, Agege 100215, Lagos",6.6464466,3.3282922,school OR university,B
+Lagos State University School of Communication,"F6C2+W33, Lagos - Badagry Expy, Ojo, Lagos 102101, Lagos",6.4722514,3.2001871,school OR university,B
+EKO UNIVERSITY OF MEDICAL AND HEALTH SCIENCES,"Klm 28 Badagry Exp, Ojo, Lagos 102101, Lagos",6.4918396,3.1221936,school OR university,B
+"Oduduwa College Of Professional Studies, Oduduwa University, Idimu","213 Idimu Rd, Idimu, Lagos 102213, Lagos",6.5842092,3.2846613,school OR university,B
+The Palms Shopping Mall,"1 Bisway St, Maroko, Lekki 106104, Lagos",6.4357545,3.4516297,shopping_mall,B
+Ikeja City Mall,"Obafemi Awolowo Wy, Alausa, Ojodu 101233, Lagos",6.6143564,3.3581327,shopping_mall,B
+Ogudu City Mall,"Local government area, 175 Ogudu Rd, Ogudu, Lagos 100242, Lagos",6.5739328,3.3944715,shopping_mall,B
+Quiet Pols Residence,"2A Richard Adejumo Cl, off Odegbami Street, next to Temple School, Boet Estate, Ikeja 100282, Lagos",6.6156948,3.3495168,lodging,B
+Ikeja Central Hotel,"6 Obe Street, Off Adeniyi Jones, Ikeja",6.6020123,3.3397972,lodging,B
+Ben Auto Guest House Idi Mangoro Lagos,"18 Oladipupo Fafore St, Akowonjo, Lagos 102213, Lagos",6.6048158,3.3124351,lodging,B
+Quietlane Residence,"1 Olu Akerele Street off Lagoon Hospital, Obafemi Awolowo Wy, Ikeja",6.6031963,3.3428154,lodging,B
+Legendary Hotel And Lounge,"47 Oritshe street off Obafemi Awolowo way Ikeja ground floor, Lagos 100271",6.6039757,3.3465483,lodging,B
+Thapunchline Apartments and Hotels,"14 Independence St, Ikeja, 100001, Lagos",6.5997058,3.3365018,lodging,B
+De Genesix Hotel and Suites,"10A-C Abo-Aba St, Ojodu, Lagos 101233, Lagos",6.6444072,3.344524,lodging,B
+Terris Hotel,"J8CH+CMR, Ogba, Lagos 102212, Lagos",6.6211029,3.329151,lodging,B
+House9Royale,"16 Ladipo Oluwole St, Lagos, Ikeja 100282, Lagos",6.6151752,3.34231,lodging,B
+ARIFLAD HOTEL & SUITES,"Off Haruna B/Stop, 17 Emmanuel Olurunfemi St, College Rd, Ogba, Lagos",6.6390185,3.3310518,lodging,B
+Martinos Hotel and Events Centre,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+New generation hotel,"4 Kolawole St, Ifako Agege, Lagos 101232, Lagos",6.6343538,3.3318677,lodging,B
+Haute Aparthotel,"9 Alade Ave, Allen, Ikeja 100282, Lagos",6.6042324,3.3478547,lodging,B
+Cosmic Guest house,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Marble Brand Hotel,"35 Oritshe St, off Obafemi Awolowo Wy, Ikeja",6.6031253,3.3457329,lodging,B
+Offshore Roomz Hotel,"1, Odumosu Street, Off Iju Road, Agege, Lagos",6.641521,3.323492,lodging,B
+Blitz Hotels and Suites,"Off Oyemekun, 2 Omomo Street, by College Rd, Ogba, Lagos",6.6348483,3.3261504,lodging,B
+Oragon hotel and suites,"9 Oluwasijibomi Street, Off Yaya Abatan Rd, Ogba, Ikeja",6.6373489,3.3416925,lodging,B
+La'Avril Hotels and Suits,"4 Taqwa Crescent, Iju Rd, Lagos",6.6405954,3.3236883,lodging,B
+Thoak Royal Suite,"5 Odegbami St, Adeniyi Jones, off Talabi Street, Boet Estate, Ikeja 100233, Lagos",6.6180822,3.3461131,lodging,B
+The African Garden Lodge,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Hotel 1960 Eagles Park,"7 Obokun Cl, Obafemi Awolowo Wy, off Dipeolu Street, Allen, Ikeja 101233, Lagos",6.6047492,3.3482342,lodging,B
+ZIGI HOTELS /CLUB ZIGI,"1 Zukada Cl, off Shasha Road, Akowonjo, Ikeja 234001, Lagos",6.6015377,3.3100249,lodging,B
+Greenbelt Hotel & Suites,"5 Mathew Street, off Ogba Rd, Agege, Lagos 100213, Lagos",6.6176564,3.3318283,lodging,B
+Dreamland Luxury Suites,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Nola's Lounge,"17b Dada St, Ifako Agege, Lagos 101232, Lagos",6.6345755,3.331023,lodging,B
+Galpin Suites,"1 Jafac Close, Adeniyi Jones Avenue, Alh. Jimoh St, Ikeja",6.6145669,3.3499274,lodging,B
+Paradise Hotel & Suites,"Cinema B/Stop, 6/8 Alimi Ogunyemi Street, Off College Rd, Ogba, Lagos 100218",6.6376126,3.3321848,lodging,B
+Sese Cottage,"45, Olu Akrerele Street, Off Kofo Crescent, Off Balogun St, Ikeja, Lagos",6.6044334,3.3444242,lodging,B
+CHUKZIE HOME SUITE,"13 Alhaja Kofoworola St, Oba Akran, Ikeja 101233, Lagos",6.6141822,3.3490908,lodging,B
+Glandov Hotel,"3 Itohan Ave, Ikeja 101233, Lagos, Ikeja, 101233, Lagos",6.6027953,3.3422565,lodging,B
+Executive Hotel & Suites,"4 Awofisayo Close, Ogba, Ikeja 102212, Lagos",6.6167209,3.3335329,lodging,B
+Paradise Hotel and Garden,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Suite 29 Hotel,"29 Oluwaleimu St, Off Ladipo Kuku St, off Allen, Ikeja 101233",6.6001945,3.3484398,lodging,B
+"Class Suites, Agege-Ogba","3, Emiloju Street, Behind Agege Stadium, 1 Emiloju St, Agege, Lagos 234001",6.6228143,3.3306679,lodging,B
+House 30 hotels suites and apartments,"30a Abba Johnson Crescent Akora, Adeniyi Jones, Ikeja, Lagos",6.6125589,3.3478185,lodging,B
+luxol homes and suites,"BOET Estate Gate, 7 Odegbami Close, Adeniyi Jones, Ikeja 100282",6.6174373,3.3486578,lodging,B
+Bridgelink,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Watercress Hotelsboutique Executive and Luxurious Hotel in Ikeja,"J83W+24X, Oritshe St, Allen, Lagos 101233, Lagos",6.6026285,3.3453467,lodging,B
+Ebony Spot Hotel,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Posh Apartments Metro,"73 Abba Johnston Crescent Off Adeniyi Jones Avenue Ikeja Lagos, Lagos",6.6118895,3.3472182,lodging,B
+"De Santos Hotel, Lagos","7 Shasha Rd, Akowonjo, Lagos 300001, Lagos",6.6054158,3.3107285,lodging,B
+White Villa hotel & suite,"62 Olatunde Cl, Ojodu, Lagos 101233, Lagos",6.6412281,3.3451831,lodging,B
+Blue Sea Hotel & Lounge,"1, Cocoa Industry Ltd, Via, Akilo Rd, Ogba, Ojodu",6.6214604,3.3359279,lodging,B
+A Y Hotel,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Triedent Suites,"14A Ladipo Oluwole St, Ogba, Ikeja 101233, Lagos",6.6152101,3.3420474,lodging,B
+Rhodes Wood Motel | Best Hotel in Agege,"1 Nepa powerline, Otubu St, Ogba, Agege 100283, Lagos",6.620136,3.331907,lodging,B
+Unique Grace Shortlet Apartment In Ogba Lagos,"39 Adeyeri Cres, off college road, Ogba, Ikeja 101232, Lagos",6.6397614,3.3357632,lodging,B
+Eche - Homo Hotel,"Cement, 3 Aiyetoro St, Ikeja",6.6036517,3.3199972,lodging,B
+Solochus Hotel & Suites,"Pen Cinema, 5 Sunmonu St, Agege, Lagos",6.627173,3.3236778,lodging,B
+Ivy hotel ikeja,"13, Aromire avenue Off Adeniyi Jones, By Allen Ave, Ikeja, 101233, Lagos",6.6082699,3.3475741,lodging,B
+Senators Suites,"J922+PHP, Allen, Ikeja 101233, Lagos",6.6018262,3.3514628,lodging,B
+Purple Crown Hotel Gold,"110 Obafemi Awolowo Wy, Allen, Ikeja 100282, Lagos",6.6022497,3.3447046,lodging,B
+DownTown Lagos Hotel Ikeja,"22 Dipeolu St, Opebi, Ikeja 101233, Lagos",6.6052504,3.3493751,lodging,B
+AOTEL HOTEL IKEJA,"2 Owodunni St, Amore Street, Allen, Ikeja 101233, Lagos",6.5992959,3.3501002,lodging,B
+Sands Hotel Nigeria Limited,"J8RF+VXG, Ifako Agege, Lagos 101232, Lagos",6.6422136,3.3249244,lodging,B
+Blackwood Grillss and Bar,"11 Olu Akerele St, behind Lagoon Hospital, Ikeja, Lagos 101233, Lagos",6.6038664,3.3440439,lodging,B
+Class Suites Villa,"69 Old Abeokuta Rd, Papa Ashafa, Lagos 234001, Lagos",6.6166197,3.3268749,lodging,B
+B & S hotels,"40 Adebise Awosoga St, Dopemu, Lagos 102212, Lagos",6.6087759,3.3184874,lodging,B
+Humble Star Hotel,"Alfa Nla Rd, Papa Ashafa, Ikeja 102212, Lagos",6.6154514,3.323108,lodging,B
+Biggie's Work Space,"Beside Conoil, Jumofak Bus stop, Aruna Ikorodu, Ikorodu, Lagos",6.6243102,3.4915532,coworking_space,C
+Workquarters - Coworking Space in Ikorodu | Private Office | Meeting Room | Virtual Office,"Blue House, Jumofak Bus Stop, 134 Lagos Ikorodu Express Road, Ikorodu, 104101, Lagos",6.6251666,3.4910388,coworking_space,C
+Ajegunle Co-Working Hub,"101 Kirikiri Road, Opp Mobil Filling Station, Wilmer Bus stop, Apapa, Lagos 100211",6.4483597,3.3345696,coworking_space,C
+Workstation,"Lagos NG, 350 - 360 Ikorodu Rd, Maryland, Ikeja 100211",6.5666447,3.3670074,coworking_space,C
+TyWorkSpace,"17 Ibikunle St, Yaba, Lagos 100001, Lagos",6.5140461,3.3769924,coworking_space,C
+The Work Haven Ogba,"Suite G303, Ogba Multipurpose Shopping Complex, Ifako-Ijaiye, Ikeja 101233, Lagos",6.6299373,3.3434909,coworking_space,C
+eeSPACE,"11 Adekoya St, Ogba, Lagos 100001, Lagos",6.6413135,3.3276025,coworking_space,C
+Technology Incubation Centre,"1 Oba Ogunji Rd, Ijaiye, Lagos 102212, Lagos",6.6285435,3.3259949,tech_hub OR incubator,C
+Adjacent Tech Hub & Coworking,"139 Idiroko Rd, Ota 112233, Ogun State",6.6895358,3.2270212,tech_hub OR incubator,C
+CcHUB,"294 Herbert Macaulay Wy, Sabo yaba, Lagos 101245, Lagos",6.5042937,3.3779848,tech_hub OR incubator,C
+Africa Fintech Foundry,"1216 Ibiyinka Olorunbe, off Amodu Ojikutu Street, Victoria Island, Lagos 106104, Lagos",6.4254263,3.4198882,tech_hub OR incubator,C
+Passion Incubator,"70 Olonode St, Alagomeji-Yaba, Lagos 101245, Lagos",6.4959621,3.379063,tech_hub OR incubator,C
+"Vatebra Tech Hub, Ajah","Royal Office Building KM 25 Lekki - Epe Expressway Ajiwe Eti-osa Ajiwe, Ajah, Ajiwe, Lagos 101245",6.4694244,3.5823763,tech_hub OR incubator,C
+NITDA IT HUB,"6 Commercial Rd, University Of Lagos, Lagos 101245, Lagos",6.5164389,3.391422,tech_hub OR incubator,C
+Eko Innovation Centre,"50 Awolowo Rd, Ikoyi, Lagos 100211, Lagos",6.4421814,3.4136844,tech_hub OR incubator,C
+Lagos Technology Business Incubator Centre,"6 Balogun St, Pen Cinema, Agege 102212, Lagos",6.6325453,3.3098221,tech_hub OR incubator,C
+Tech-hub telecom,"Iyana Aboru Bus Stop, 2 Ige Street, Ipaja Rd, Alimosho, Iyana ipaja 300001",6.6172297,3.2973337,tech_hub OR incubator,C
+Techub Connect Nigeria,"Connak Place 19 Akinremi St, Off Obafemi Awolowo Wy, Ikeja, Lagos",6.5985782,3.3377303,tech_hub OR incubator,C
+Outhub Technology Limited,"15b Onibeju St, shangisha, Ikeja 100001, Lagos",6.6165981,3.3749777,tech_hub OR incubator,C
+The Nest Innovation Technology Park,"1A Hughes Ave, Yaba, Lagos 101212, Lagos",6.4992962,3.3766976,tech_hub OR incubator,C
+Blockspace Tech Hub,"2 OLADELE MAKUNJUOLA, OBALODU STREET, Ikorodu, Lagos 084234, Lagos",6.5766544,3.5618168,tech_hub OR incubator,C
+Hub One,"10 Hughes Ave, Alagomeji-Yaba, Lagos 101011, Lagos",6.4993322,3.3772959,tech_hub OR incubator,C
+TecHub Spaces,"Lateef Jakande Rd, Agidingbi, Ikeja 101233, Lagos",6.6245121,3.3532059,tech_hub OR incubator,C
+iTechngdotnet Enterprises,"F82Q+HQC, Fasasi St, Ajegunle, Lagos 102103, Lagos",6.4512191,3.3393767,tech_hub OR incubator,C
+Civic Hive,"42 Montgomery Rd, Sabo yaba, Lagos 101245, Lagos",6.5098293,3.3765273,tech_hub OR incubator,C
+Print and Tech Hub,"81/90 Abraham Adesanya Complex, Onipanu, Lagos Lagos, Somolu",6.5329688,3.3682176,tech_hub OR incubator,C
+C-Sharp Technology,"8 Aduke St, Aiyegbogun Mayegun Estate, Elegba 102110, Lagos",6.4623341,3.3373766,tech_hub OR incubator,C
+Infozhub,"Trinity Bustop, 44 Palace Rd, off Fidelity Bank, Apapa, Lagos 102241, Lagos",6.4473098,3.3234504,tech_hub OR incubator,C
+Impact Hub Lagos,"22 Glover Rd, Ikoyi, Lagos 106104, Lagos",6.4553064,3.4303431,tech_hub OR incubator,C
+Jimbit Tech Hub,"Transformer, 39 Anifowoshe St, Agbede, Ikorodu 104101, Lagos",6.6096079,3.5138405,tech_hub OR incubator,C
+TECHHUB,"15 akanni showumi Street beesem ikeja, Beesam, Mafoluku",6.5682233,3.3334196,tech_hub OR incubator,C
+TechHub Integrated Services Limited,"Unity Estate, 60 Isiba Oluwo St, Egbeda, Lagos 102213, Lagos",6.5859248,3.2912753,tech_hub OR incubator,C
+Henbuk Technology,"Mammy Market, Apapa, 138 Ojo Rd, Lagos",6.4608308,3.323328,tech_hub OR incubator,C
+Technology Incubation Centre,"37WQ+8R, Nepa Drive, Idiori 110104, Ogun State",7.0996631,3.2916747,tech_hub OR incubator,C
+Habtec System Technology,"13 Odofin St, Amukoko, Lagos 102103, Lagos",6.4456469,3.3278075,tech_hub OR incubator,C
+Startup Hub,"The Resource Centre, 17 Ibikunle St, Road, off University Of Lagos, Yaba, Lagos 101245, Lagos",6.5140366,3.3770711,tech_hub OR incubator,C
+I Tech Hub,"Lekki - Epe Expy, Oko Ado, Lagos 106104, Lagos",6.475898,3.6144,tech_hub OR incubator,C
+Chibyke Technology Limited,"A096 ABIA PLAZA LAGOS INT'L TRADE FAIR ALONG, Lagos - Badagry Expy, Lagos",6.5243793,3.3792057,tech_hub OR incubator,C
+DDTECH HUB,"DDTECH HUB, 16B Akintan Street, Dideolu Estate, Lagos 100001, Lagos",6.6303535,3.3374106,tech_hub OR incubator,C
+E-Business Hub Nigeria,"3A Ahmad Tijani Ottun Street, Off Victoria Arobieke St, Eti-Osa, Lagos",6.5244,3.3792,tech_hub OR incubator,C
+"Phone engineer,( soft ware and hardwa","local government, 7tolu road ajegunle, Ajeromi-Ifelodun, Lagos",6.4519514,3.3498005,tech_hub OR incubator,C
+Noble-Achievers Technology,"4 Olokudana Stree Lagos, Ajeromi-Ifelodun, Lagos",6.4662461,3.331772,tech_hub OR incubator,C
+Tech Hub,"2 Francis Oremeji street computer village Ikeja, Ikeja, Lagos",6.5935591,3.3391045,tech_hub OR incubator,C
+Techpoint Africa,"43b Emina Crescent, off Toyin Street, Avenue, Allen, Ikeja 100281",6.5961931,3.3541259,tech_hub OR incubator,C
+GAIN Business Incubator,"9 Dopemu Rd, Dopemu, Lagos 100273, Lagos",6.6092113,3.3105055,tech_hub OR incubator,C
+Tobi Tech telecommunications,"10 Mensah St, Tolu Rd, Ajegunle, Ikorodu 100001, Lagos",6.4493542,3.3476575,tech_hub OR incubator,C
+TECH HUB COMPUTER INSTITUTE,"ST Akonwonjo, 9/10 AJIMOTOKAN STREET, Akowonjo Rd, Lagos",6.5963783,3.3515745,tech_hub OR incubator,C
+"Mindthegap Training Center, Incubation Hub & Co-working Space","Immam Dauda St, Iganmu, Lagos 101241, Lagos",6.484624,3.3528179,tech_hub OR incubator,C
+Ajegunle Co-Working Hub,"101 Kirikiri Road, Opp Mobil Filling Station, Wilmer Bus stop, Apapa, Lagos 100211",6.4483597,3.3345696,tech_hub OR incubator,C
+The Africa Talent and Skills Hub,"MindtheGap Social Enterprise Incubation Hub 2nd Floor, TAPA HOUSE, Imam Dauda Street, Off Eric Moore Rd, Surulere, Lagos 100001",6.4842492,3.3532281,tech_hub OR incubator,C
+Placement Hub Tech Institute,"8 Adelabu St, off Masha Bus-Stop, Surulere, Lagos 101241, Lagos",6.5009538,3.3501258,tech_hub OR incubator,C
+Urban Service Hub,"4 Ondo Street, Road, Ikorodu, Lagos",6.4842411,3.3827224,tech_hub OR incubator,C
+N-Techorg,"174 Oba Olu-Iwa Rd, Apapa, Lagos 102103, Lagos",6.4481735,3.327031,tech_hub OR incubator,C
+Tech hub,"10 Olusesan Ogunro St, Egbeda, Lagos 102213, Lagos",6.5987009,3.2885107,tech_hub OR incubator,C
+Innovation Hub,"15 Ayinde Giwa St, Masha, Lagos 101241, Lagos",6.5024563,3.3519218,tech_hub OR incubator,C
+THGI Network International,"59 Aiyetoro St, surlere, Lagos 101241, Lagos",6.4900249,3.3440181,tech_hub OR incubator,C
+Innovation Hub,"35 Adebisi Ogunniyi Cres, Lekki Phase I, Lekki/Ikate And Environs 106104, Lagos",6.4332783,3.4789061,tech_hub OR incubator,C
+IkoroduHub,"48 Obafemi Awolowo Rd, Igbogbo, Ikorodu 104101, Lagos",6.6177679,3.5155976,tech_hub OR incubator,C
+Hilamatech Enterprises,"40 Idewu St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4479062,3.3393786,tech_hub OR incubator,C
+ICEDIGITAL HUB,"5 Sadiku St, Apapa, Olodi 100001, Lagos",6.4439541,3.3286839,tech_hub OR incubator,C
+The Incubator,"Maroko, Lagos 106104, Lagos",6.428878,3.444123,tech_hub OR incubator,C
+TechHub Africa,"7 Unity Rd, Allen, Ikeja 100271, Lagos",6.5988329,3.3460938,tech_hub OR incubator,C
+TRACHEIDS TECH HUB,"2 Seriki Abass Crescent, off Osolo Way Ajao Estate., Lagos 100236",6.5437062,3.3311609,tech_hub OR incubator,C
+Gabzgadget Hub,"Ilepo oba Bustop, Sabo Ikorodu, Ikorodu, Lagos 104223, Lagos",6.6282318,3.5066425,tech_hub OR incubator,C
+Technology Edge Limited,"18 Igbeyin Adun Street, Charly Boy Bus Stop Lagos Brigade, Lagos",6.549034,3.379212,tech_hub OR incubator,C
+Garden Technology Center,"Apapa, Ajegunle, 23 Baale Alayabiagba St, Lagos",6.4548097,3.3496612,tech_hub OR incubator,C
+Tech Innovation hub,"26 Emma Emeagwai St, Abijor, Lagos 441117, Lagos",6.4618169,3.6621457,tech_hub OR incubator,C
+royal cafe,"5 Sanwo-olo Rd, Ajegunle, Lagos 102103, Lagos",6.4559155,3.3436151,cafe,C
+Regin Cafe,"Iyalode St, Ajegunle, Lagos 102103, Lagos",6.4562747,3.344544,cafe,C
+Ostrich Cybercafe,"30 Oyebo St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4453875,3.3395078,cafe,C
+Arami Cafe,"55 Adeniran Ogunsanya St, Surulere, Lagos 101241, Lagos",6.493403,3.3573262,cafe,C
+ENNY'S WINE CAFE,"Okoya St, Malu, Lagos 102103, Lagos",6.4594534,3.3434111,cafe,C
+Da Vibe,"F86H+3VJ, Alaba, Lagos 102103, Lagos",6.460143,3.3296323,cafe,C
+Hot Fun Cafe,"32 Calcutta Cres, Apapa Quays, Lagos 102272, Lagos",6.4406404,3.3656087,cafe,C
+Ajegunle Apapa Lagos,"F85M+85M, Ajegunle, Lagos 102103, Lagos",6.4583444,3.3329151,cafe,C
+Delicious Treat,"C8XJ+84Q, Oba Olu-Iwa Rd, Apapa, Lagos 102103, Lagos",6.4483633,3.3303605,cafe,C
+BJ cafe,"61 Gaskiya Rd, Ijora, Lagos 102272, Lagos",6.4663874,3.3585996,cafe,C
+Kingsail Coffee Shop,"71 Old Ojo Rd, Amuwo, Lagos 102102, Lagos",6.4585201,3.2995357,cafe,C
+Edo Kitchen,"51 Isikalu St, ikorodu, Lagos 102103, Lagos",6.4423216,3.335642,cafe,C
+officallydbfoods,"ITIRE BUS STOP, Ajeromi-Ifelodun, Lagos 100021, Lagos",6.4658132,3.3329694,cafe,C
+iya idris,"F88P+QGP, Market St, Amukoko, Lagos 102103, Lagos",6.4669449,3.3363349,cafe,C
+Eminent Tech World,"C9Q2+749, Ajegunle, Lagos 102272, Lagos",6.4381542,3.3503614,cafe,C
+Okosisi Restaurant & Bar,"F83G+38W, Chidi St, Ajegunle, Lagos 102103, Lagos",6.4527299,3.3258648,cafe,C
+Calabar Kitchen,"F88M+CP8, Apasa St, Amukoko, Lagos 102103, Lagos",6.4660385,3.3343342,cafe,C
+near redeem church,"9 Freedom St, Ajegunle, Lagos 102103, Lagos",6.4541768,3.3385371,cafe,C
+God time restaurant,"23 Yaya Cres, Apapa, Lagos 102103, Lagos",6.449072,3.3363703,cafe,C
+De Ultimate Abula,"1 Endurance Street Boge by Gbaga Bus-stop ijede road ikorodu Lagos F82W+5CG Ikorodu, Ikorodu, Lagos 104102, Lagos",6.4504375,3.3460625,cafe,C
+ST. CHRISTOPHER CYBER CAFE,"57, cementery road, amukoko lagos, Cementry Rd, Ajeromi-Ifelodun, Lagos",6.4663423,3.3432727,cafe,C
+Favour Restaurant,"Shop No. 4, Block L, Mammy Market, Apapa, Ojo Rd, Lagos",6.4632014,3.3235131,cafe,C
+Masfad Cafe,"Blk 207 Jakande Estate, Amuwo Odofin Estate, Lagos 102102, Lagos",6.4612053,3.3121026,cafe,C
+PALATABLE,"236 Ojo Rd, Alaba, Lagos 102103, Lagos",6.4601343,3.3253462,cafe,C
+Tetrazzini Food,"182 Oba Olu-Iwa Rd, Apapa, Lagos 100001, Lagos",6.4481394,3.3263734,cafe,C
+Shop for all cafe,"78 Marine Rd, Apapa, Lagos 100001, Lagos",6.4488601,3.3527754,cafe,C
+Perfect Delicious,"Road, Apapa, Lagos 102103, Lagos",6.4554777,3.3338547,cafe,C
+Anyanwu Restaurant,"F87M+M5C, Awope St, Alaba, Lagos 102103, Lagos",6.4641882,3.3328969,cafe,C
+Calabar kitchen,"67 Idowu St, Apapa, Lagos 102103, Lagos",6.4471551,3.337092,cafe,C
+Pingins Bar,"32 Ojo Rd, Ajegunle, Lagos 102103, Lagos",6.4597033,3.3409379,cafe,C
+Commando bar,"63 Kalejaiye Adeboye, Apapa, Lagos 102103, Lagos",6.453046,3.3428144,cafe,C
+Meat Midere Restaurant,"63 Nosamu St, Ajegunle, Lagos 102103, Lagos",6.4546276,3.347478,cafe,C
+Chris-Vanny Centre,"C8XR+RM9, Oba Olu-Iwa Rd, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4495292,3.3417264,cafe,C
+King star bar,"64 Kalejaiye Adeboye, Ajegunle, Lagos 102103, Lagos",6.4535725,3.3423462,cafe,C
+eat24 restaurant.,"57 Sanwo-olo Rd, Ajegunle, Lagos 102103, Lagos",6.4555882,3.3421923,cafe,C
+F3 Spices,"25 Raji Rasaki Estate Rd, Amuwo Odofin, Lagos 100323, Lagos",6.4733501,3.3033067,cafe,C
+Mama Wabisi,"F83V+V3F, Ajegunle, Lagos 102103, Lagos",6.4547164,3.3426621,cafe,C
+Mama Joy Restaurant,"Boundary, 101 Nosamu St, Ajeromi-Ifelodun, Lagos",6.4553334,3.3450967,cafe,C
+Deola Canteen,"Shop No. 41, Aratumi Market, Imam Raji St, Amukoko, Lagos 102272, Lagos",6.4773441,3.3442062,cafe,C
+God Wish Restaurant & Bar,"2/4 Ikenne St, Alaba, Lagos 102103, Lagos",6.4577899,3.3420314,cafe,C
+Yahwal Cyber Cafe,"102 Market St, Lagos - Badagry Expy, odunade, Ajegunle 102215, Lagos",6.4678739,3.3323259,cafe,C
+SPICYFOOD,"66 Oba Olu-Iwa Rd, Apapa, Lagos 102103, Lagos",6.4487211,3.3360222,cafe,C
+iya rashida,"F87P+XFV, Ishaga St, Alaba, Lagos 102103, Lagos",6.4648129,3.3362144,cafe,C
+HOTPORTION FOODS AND RESTUARANT,"LOCAL GOVERNMENT, Aiyenero St, IFELODUN, Ajegunle, Lagos 100001, Lagos",6.4608476,3.3415132,cafe,C
+Madam Peace Restaurant (Nwanyingwa),"14 Balogun St, Amukoko, Lagos 102103, Lagos",6.4660934,3.3291163,cafe,C
+Shalom favour restaurant and bar,"F84V+FCJ, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4562149,3.3435146,cafe,C
+Gunners Link,"78-80 Coker Rd, Coker, Lagos 101241, Lagos",6.4758145,3.3324998,cafe,C
+God's Gift Restaurant,"Off Ojo Rd, Suru B/Stop, Ifelodun, 33 Charles Ave, Lagos",6.460438,3.3261081,cafe,C
+Popoo k square viewing centre,"43 Oyedeji St, Alaba, Lagos 102103, Lagos",6.458162,3.3296042,cafe,C
+Madam Electric,"42 Musibau Oluwa, Apapa, Lagos 102103, Lagos",6.4488912,3.3283514,cafe,C
+Rockhouse Lagos Cafe,"8 Akpoguma St, Ikate, Lagos 100001, Lagos",6.5008358,3.3448307,cafe,C
+macdons,"F83H+MFX, Otuniyo St, Ajegunle, Lagos 102103, Lagos",6.4542376,3.3287284,cafe,C
+Buks restaurant,"3 Akerele St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4534086,3.3297158,cafe,C
+Derek-t Shawarma Spot,"33 Okoya St, Malu, Lagos 102103, Lagos",6.4594373,3.3431825,cafe,C
+Mummy Fatimo,"7 Tolu Rd, Ajegunle, Lagos 102103, Lagos",6.4519275,3.3498019,cafe,C
+Idy's Crib,"2 Al Ameen St, Surulere, Lagos 101241, Lagos",6.4803918,3.3323285,cafe,C
+Infinity Business Centre,"56 Oba Abdulfatai Aremu Aromire St, Ajegunle, Lagos 202114, Lagos",6.4551707,3.3476004,cafe,C
+Cafe & Event Planning,"28 Mba St, Surulere, Lagos 101241, Lagos",6.4955145,3.3563008,cafe,C
+Affiliate,"Adekoya St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4591333,3.3381319,cafe,C
+Agnes Shop for Noodles,"2 Thomas street, off adebumoye junction ,olodi apapa lagos, Ajeromi-Ifelodun, Ajegunle 100001",6.4495032,3.3319375,cafe,C
+Ajegunle Apapa Lagos,"F85M+85M, Ajegunle, Lagos 102103, Lagos",6.4583444,3.3329151,restaurant,C
+Okosisi Restaurant & Bar,"F83G+38W, Chidi St, Ajegunle, Lagos 102103, Lagos",6.4527299,3.3258648,restaurant,C
+Edo Kitchen,"51 Isikalu St, ikorodu, Lagos 102103, Lagos",6.4423216,3.335642,restaurant,C
+officallydbfoods,"ITIRE BUS STOP, Ajeromi-Ifelodun, Lagos 100021, Lagos",6.4658132,3.3329694,restaurant,C
+Everyday Kitchen,"Off Ojo Road, Suru Bus Stop, 51 Charles Ave, Ajeromi-Ifelodun, Lagos",6.460438,3.3261081,restaurant,C
+Ojora Royal Family And Council,"Off Alafia Bus Stop, 1 Amai St, Ajeromi-Ifelodun, Lagos",6.4713219,3.339749,restaurant,C
+Calabar kitchen,"67 Idowu St, Apapa, Lagos 102103, Lagos",6.4471551,3.337092,restaurant,C
+Anyanwu Restaurant,"F87M+M5C, Awope St, Alaba, Lagos 102103, Lagos",6.4641882,3.3328969,restaurant,C
+Favour Restaurant,"Shop No. 4, Block L, Mammy Market, Apapa, Ojo Rd, Lagos",6.4632014,3.3235131,restaurant,C
+Calabar Kitchen,"F88M+CP8, Apasa St, Amukoko, Lagos 102103, Lagos",6.4660385,3.3343342,restaurant,C
+Delicious Treat,"C8XJ+84Q, Oba Olu-Iwa Rd, Apapa, Lagos 102103, Lagos",6.4483633,3.3303605,restaurant,C
+Meat Midere Restaurant,"63 Nosamu St, Ajegunle, Lagos 102103, Lagos",6.4546276,3.347478,restaurant,C
+Madam B Restaurant,"Boundary, Apapa, 4 Tolu Rd, Lagos",6.4554019,3.3506307,restaurant,C
+iya idris,"F88P+QGP, Market St, Amukoko, Lagos 102103, Lagos",6.4669449,3.3363349,restaurant,C
+Tetrazzini Food,"182 Oba Olu-Iwa Rd, Apapa, Lagos 100001, Lagos",6.4481394,3.3263734,restaurant,C
+PALATABLE,"236 Ojo Rd, Alaba, Lagos 102103, Lagos",6.4601343,3.3253462,restaurant,C
+De Ultimate Abula,"1 Endurance Street Boge by Gbaga Bus-stop ijede road ikorodu Lagos F82W+5CG Ikorodu, Ikorodu, Lagos 104102, Lagos",6.4504375,3.3460625,restaurant,C
+God time restaurant,"23 Yaya Cres, Apapa, Lagos 102103, Lagos",6.449072,3.3363703,restaurant,C
+SPICYFOOD,"66 Oba Olu-Iwa Rd, Apapa, Lagos 102103, Lagos",6.4487211,3.3360222,restaurant,C
+Mama Gani food canteen,"22 Alhaji Ligali Tiamiyu St, Alaba, Lagos 102103, Lagos",6.4608638,3.330331,restaurant,C
+HOTPORTION FOODS AND RESTUARANT,"LOCAL GOVERNMENT, Aiyenero St, IFELODUN, Ajegunle, Lagos 100001, Lagos",6.4608476,3.3415132,restaurant,C
+Benachi Liking Fingers,"Ladega St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4474433,3.342859,restaurant,C
+J5 Lounge & Bar,"26-38 Oba Abdulfatai Aremu Aromire St, Apapa, Lagos 102103, Lagos",6.4506931,3.3464233,restaurant,C
+Nwachukwu Restaurant,"Boundary, 8 Nosamu St, Ajeromi-Ifelodun, Lagos",6.4542454,3.3504823,restaurant,C
+eat24 restaurant.,"57 Sanwo-olo Rd, Ajegunle, Lagos 102103, Lagos",6.4555882,3.3421923,restaurant,C
+Madam Peace Restaurant (Nwanyingwa),"14 Balogun St, Amukoko, Lagos 102103, Lagos",6.4660934,3.3291163,restaurant,C
+E-Lounge & Bar,"68 Ojora St, Ajegunle, Lagos 102272, Lagos",6.4558086,3.3466759,restaurant,C
+Mama Joy Restaurant,"Boundary, 101 Nosamu St, Ajeromi-Ifelodun, Lagos",6.4553334,3.3450967,restaurant,C
+Yakoyo Food Canteen,"F982+F9P, Olatunji St, Badia, Lagos 102103, Lagos",6.4662038,3.3509405,restaurant,C
+Chris-Vanny Centre,"C8XR+RM9, Oba Olu-Iwa Rd, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4495292,3.3417264,restaurant,C
+Mama Wabisi,"F83V+V3F, Ajegunle, Lagos 102103, Lagos",6.4547164,3.3426621,restaurant,C
+Nnwanyi Umunze Restaurant,"Coker Bus Stop, 11 Coker St, Amukoko, Lagos 102103, Lagos",6.4681127,3.333524,restaurant,C
+near redeem church,"9 Freedom St, Ajegunle, Lagos 102103, Lagos",6.4541768,3.3385371,restaurant,C
+Codelia Store,"21 Nosamu St, Apapa, Lagos 102103, Lagos",6.4542662,3.3499215,restaurant,C
+Commando bar,"63 Kalejaiye Adeboye, Apapa, Lagos 102103, Lagos",6.453046,3.3428144,restaurant,C
+Perfect Delicious,"Road, Apapa, Lagos 102103, Lagos",6.4554777,3.3338547,restaurant,C
+King star bar,"64 Kalejaiye Adeboye, Ajegunle, Lagos 102103, Lagos",6.4535725,3.3423462,restaurant,C
+Mama Odinaka Restaurant,"64 Oluwa St, Apapa, Lagos 102103, Lagos",6.4479784,3.3438075,restaurant,C
+Ola mummy food and catering services,"50 Baale Aiyetoro St, Malu, Lagos 102103, Lagos",6.4586316,3.346643,restaurant,C
+God Wish Restaurant & Bar,"2/4 Ikenne St, Alaba, Lagos 102103, Lagos",6.4577899,3.3420314,restaurant,C
+Mama Basira Restaurant,"8 Tolu Rd, Boundary, Lagos 102103, Lagos",6.452396,3.34996,restaurant,C
+Buks restaurant,"3 Akerele St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4534086,3.3297158,restaurant,C
+Pingins Bar,"32 Ojo Rd, Ajegunle, Lagos 102103, Lagos",6.4597033,3.3409379,restaurant,C
+iya rashida,"F87P+XFV, Ishaga St, Alaba, Lagos 102103, Lagos",6.4648129,3.3362144,restaurant,C
+TANGIBLES Restaurant,"by 2nd Rainbow Bus stop, Plot A Festac Access Rd, Amuwo Odofin Estate, Lagos 101283, Lagos",6.4708107,3.3226439,restaurant,C
+De Mart Kitchen,"Ajegunle, Apapa 6/40 Orodu St 08026760706,08161236143 Ajeromi Ifelodun L.G.A, Lagos 102103",6.4530198,3.3496429,restaurant,C
+Shalom favour restaurant and bar,"F84V+FCJ, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4562149,3.3435146,restaurant,C
+Madam C Restaurant,"F83X+PHJ, 31 Nosamu St, Ajegunle, Lagos 102103, Lagos",6.4544337,3.3489122,restaurant,C
+macdons,"F83H+MFX, Otuniyo St, Ajegunle, Lagos 102103, Lagos",6.4542376,3.3287284,restaurant,C
+God Bless Restaurant,"1 Ecowas Street Lagos, Alafia St, Lagos",6.4690018,3.340031,restaurant,C
+Derek-t Shawarma Spot,"33 Okoya St, Malu, Lagos 102103, Lagos",6.4594373,3.3431825,restaurant,C
+Tank and Tummy,"30 Ligali St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4608841,3.329609,restaurant,C
+Mid-Town Hotel,"44 Babani St, Ajegunle, Lagos 102103, Lagos",6.4570347,3.3404855,restaurant,C
+Ab-Shawarma,"174 Oba Olu-Iwa Rd, Apapa, Lagos 102111, Lagos",6.4481863,3.3270302,restaurant,C
+Madam Electric,"42 Musibau Oluwa, Apapa, Lagos 102103, Lagos",6.4488912,3.3283514,restaurant,C
+The Grill Station,"Malu, Lagos 102103, Lagos",6.4597977,3.3388161,restaurant,C
+Mama Ebere Peppersoup,"54 Cemetery St, Malu, Lagos 102103, Lagos",6.4586196,3.343517,restaurant,C
+Iya Maria Restaurant,"3 Oba Abdulfatai Aremu Aromire St, Eti-Osa, Lagos 102103, Lagos",6.4563817,3.3434534,restaurant,C
+Eleojo Jumal Restaurant,"66 Olatunji St, Amukoko, Lagos 102103, Lagos",6.466011,3.3373565,restaurant,C
+Yahoo Rice spot,"2 Bolaji Oloro St, Apapa, Lagos 102103, Lagos",6.44627,3.32983,restaurant,C
+NIGERIAN INSTITUTION OF MARINE ENGINEERS AND NAVAL ARCHITECTS,"8 Liverpool Rd, Apapa Quays, Lagos 101251, Lagos",6.4442123,3.36324,school OR university,C
+NIPEM Professional Education Management Int’l,"No 2, Industrial road, trinity, Apapa-warf Express, Olodi Apapa Wilmer Bus Stop, 104 Muyibi St, Apapa, Lagos",6.4477606,3.3331606,school OR university,C
+Nigerian Army Intelligence School (NAIS),"Tego Barracks, Bonny St, Apapa, Lagos 102272, Lagos",6.4585743,3.3612663,school OR university,C
+"Grace Polytechnic, Lagos","9 Joseph Shyngle Close, Off James Robertson Rd, Lagos",6.5024185,3.356604,school OR university,C
+University of Lagos,"University of Lagos, University Road Lagos Mainland Akoka, Yaba, Lagos",6.515759,3.3898447,school OR university,C
+Lagos State University of Science and Technology,"Ikorodu - Shagamu Rd, Ikorodu, 104101, Lagos",6.6385682,3.5231218,school OR university,C
+"International School, University Of Lagos.","G96R+9J2, DLI Rd, University Of Lagos, Lagos 101245, Lagos",6.510883,3.3915266,school OR university,C
+"Nigerian Army School of Finance and Administration, Apapa","3-11 Yala Cl, Apapa Quays, Lagos 102272, Lagos",6.4517508,3.3558241,school OR university,C
+TRINITY UNIVERSITY CAMPUS,"1 FFF Rd, Off Alara St, near Queen's College, Sabo yaba, Lagos 100001, Lagos",6.5054866,3.3837945,school OR university,C
+Hotel De Sandra,"60 Fashinro St, Amuwo, Lagos 102102, Lagos",6.4577626,3.2998944,lodging,C
+Paragon Hotel,"24/26 Sanya St, Surulere, Lagos 101241, Lagos",6.4849518,3.3304609,lodging,C
+Penthouse Hotel,"F83G+FGP, Ajegunle, Lagos 102103, Lagos",6.4537047,3.3263077,lodging,C
+Cariton Hotel Apapa,"coconut bus stop, 3 Tex Olawale street, Apapa-Oshodi Express Way, along, Lagos",6.4403511,3.3357992,lodging,C
+Becfom Hotel,"F947+4JG, Apapa, Lagos 102272, Lagos",6.4553166,3.3640852,lodging,C
+Blueberry Hotel,"Plot 316 Durbar Rd, Amuwo Odofin, Lagos 102102, Lagos",6.4655058,3.3116084,lodging,C
+Abayomi Agia Hotel,"4Ifebajo St, Amuwo Odofin, Lagos 102102, Lagos",6.456524,3.3069203,lodging,C
+Britainnia de Jabell hotel and suites,"2/4 Engr Ajibola Bello street all saints estate cele bus stop, Ijede Rd, Ikorodu",6.6251757,3.5456816,lodging,C
+Kingsmead Hotels and Services,"3 Church Street Ikorodu Opp Laspotech, Ikorodu",6.5981537,3.4996065,lodging,C
+Beni Hotel Surulere,"Doyin Bus Stop, 27 Jimoh Odutola St, Surulere, Lagos 101241, Lagos",6.4805665,3.3534703,lodging,C
+Divine Fountain Hotel Apapa,"3 Lisabi Rd off Liverpool Rd, Lagos 200132",6.444806,3.359417,lodging,C
+Allure Suites Limited,"5 Census Close, Off Babs Animashaun Street, Lagos 930023",6.489367,3.3495086,lodging,C
+Emglo Suites,"Festac Access Rd, Amuwo Odofin Estate, Lagos 102102, Lagos",6.4714858,3.3106637,lodging,C
+Domani Suite And Leisure Limited,"Block 60 Plot 1331, Doyin Scale, Off Joseph Orru, Festac Link Road, Festac Town, Lagos",6.4703959,3.3021739,lodging,C
+Bana Hotel and Suites,"176 Idewu St, Apapa, Lagos 102241, Lagos",6.4469566,3.3296653,lodging,C
+Jemadex kings hotel,"17 banjo crescent owutu Ikorodu, Lagos",6.6342424,3.4790336,lodging,C
+Owee Hotel Exclusive Apartments & Suites,"Lilly Estate, 2130 Ausbeth Ajagu St, Amuwo Odofin, 102102, Lagos",6.4739754,3.3085349,lodging,C
+Winchester Suites,"F947+4JG, Apapa, Lagos 102272, Lagos",6.4553166,3.3640852,lodging,C
+Aquatic Suites & Lounge,"Osca Abu Cr / Yomi Oshikoya Cl, Lagos 123456",6.4850069,3.3480325,lodging,C
+Befo Global Suites,"47 Idewu St, Apapa, Lagos 102103, Lagos",6.4475162,3.3383894,lodging,C
+Cynergy Suites Festac Town,"Block 19, Plot 339B, Durbar Road, Festac Town, Festac Town, Lagos",6.4651599,3.3120142,lodging,C
+Semper Diamond Lodge,"Plot 207, Sunny Ogbeide Close, Diamond Estate, FESTAC Bridge Link Road, Lagos, Agboju 102314",6.4673888,3.3040668,lodging,C
+Opera Classic Suite Limited,"102, Festac Link Road, by Raji Rasaki Junction, Festac Town, Lagos",6.4703722,3.3039735,lodging,C
+Cynergy Suites Apapa,"2 Liverpool Rd, Apapa Quays, Lagos 200132, Lagos",6.4453178,3.3656243,lodging,C
+Oak Hotel,"Festac Access Rd, Amuwo Odofin Estate, Lagos 102102, Lagos",6.4695554,3.3035855,lodging,C
+"De Rigg Place, Alaka Estate.","Estate, National Stadium side, 6 Rafiu Shittu St, Alaka, Lagos",6.4907846,3.3637468,lodging,C
+Pulville Boulevard Hotel,"7 Irone Ave, Surulere, Lagos 102224, Lagos",6.4903672,3.3357928,lodging,C
+Big Fish Restaurant and Bar,"Bode Thomas St, Surulere, Lagos 101241, Lagos",6.4891781,3.3592277,lodging,C
+De Web Hotel & Lodge,"Block 35A, Plot 721A Abiodun Lawson Cres, Cre, Lagos 102102, Lagos",6.468836,3.299892,lodging,C
+Nippon Diamond Hotel/suites,"Plot 3504, Divine Estate, 79 Ihie St, Festac, Lagos 102102, Lagos",6.4857596,3.3052622,lodging,C
+Beni Gold Apapa,"19 Liverpool Rd, Apapa Quays, Lagos 102272, Lagos",6.4436969,3.3627796,lodging,C
+RBT Hotel,"100 Festac Access Rd, Amuwo Odofin Estate, Lagos 102102, Lagos",6.4707682,3.3052846,lodging,C
+Newport Suites,"48 Oba Olu-Iwa Rd, Apapa, Lagos 100211, Lagos",6.4484587,3.337691,lodging,C
+"Command Guest House | Bronx Int'l Hotel, Lagos","26 Child Ave, Island, Lagos 234100, Lagos",6.4497972,3.3604028,lodging,C
+Rock View Hotel,"17b Park Ln, Apapa, Lagos 102272, Lagos",6.4479277,3.3609008,lodging,C
+Galaxy Guesthouse,"1Umuchichi Road, Alaba, Aba 102103, Lagos",6.4652895,3.3331826,lodging,C
+Ndokwa Entertainment Extension,"160A Gaskiya Rd, Amukoko, Lagos 102103, Lagos",6.4665127,3.3523018,lodging,C
+Rita Lori Hotels Ltd,"1 Taoridi St, Surulere, Lagos 101211, Lagos",6.4902325,3.3476859,lodging,C
+Suru Express Plus Ikorodu,"1 omologede street oba sekunmade road Ikorodu Ikorodu, Lagos 100211",6.6140301,3.4778406,lodging,C
+Yais Hotel & Suites,"14a/b Yaya Abubakar Street Awobo Estate Igbogbo Ikorodu, Ikorodu, Lagos 100112",6.619411,3.5104388,lodging,C
+Lotus Hotel Lagos,"126 Orodu St, Ajeromi-Ifelodun, Lagos 102103, Lagos",6.4548936,3.3409715,lodging,C
+De Clove Residence,"21, Imam Dauda St, Off Eric Moore Rd, Surulere, Lagos",6.4841852,3.3521462,lodging,C
+Delsam Hotel,"Ikorodu, 104101, Lagos",6.619411,3.5104388,lodging,C
+Graziella Hotel,"F82X+6GF, Salami St, Apapa, Lagos 102103, Lagos",6.4505972,3.3488268,lodging,C
+Castle Lodge Serviced Apartments,"19A Badagry Road, GRA, Apapa, Lagos",6.436,3.366,lodging,C
+City Point Hotel,"Round About Street, Lagos",6.4666836,3.3537125,lodging,C
+I-MAX GUEST HOUSE & SUITE,"2 Oranyan Road, Off Oduduwa Rd, Apapa, Lagos",6.4452651,3.3575897,lodging,C
+J27 Lounge and Suites,"2 Idowu Akindele Crescent beside Oba ojora's palace, Ijora 7up, Lagos",6.4641659,3.3474454,lodging,C
+Alomars Lodge,"JG96+Q58, Ikorodu, 104101, Lagos",6.619411,3.5104388,lodging,C
+Happy Day Hotel,"87Iganmu Road, Amukoko, Lagos 102272, Lagos",6.477175,3.3465718,lodging,C
+MITOS LUXURY SUITES (BODE THOMAS),"28 Johnson St, Surulere, Lagos 101241, Lagos",6.4865818,3.3492389,lodging,C
+De Firenze Suites,"F8J4+365, Daniel Asomugha Cl, Lakeview Estate, Phase I, Lagos 102102",6.480141,3.3056245,lodging,C
+LA POSH HOTEL & LOUNGE COKER,"19 Alhaji Opere St, off Wema bank busstop, Coker, Lagos 102215, Lagos",6.4744478,3.3349368,lodging,C
+Tenplus Hotel,"36a Sadiku St, Apapa, Lagos 102241, Lagos",6.44407,3.3263808,lodging,C
+IMPEX EGDE,"199, 200 Idewu St, Apapa, Lagos 102103, Lagos",6.4467392,3.3272244,lodging,C
+Envoy Hotel,"25 27Okoya Street, Alaba, Lagos 102103, Lagos",6.4592823,3.3412251,lodging,C
+New Generation Hotel (Apapa),"105, Baale Street, Ajegunle, Apapa, Apapa, Lagos",6.4552851,3.3447733,lodging,C
+Vicjames Apartment,"Diamond Estate, 1 Alh. Kuti Olayiwola St, Amuwo Odofin, Lagos 102102, Lagos",6.4676409,3.3012342,lodging,C
+H23 Casaminos,"23 Eric Manuel Crescent, Off Bode Thomas St, Surulere, Lagos 101241",6.4912892,3.360206,lodging,C
+Promise Land Hotel,"6 Old Ojo Road 09067796589 MAZA MAZA, Amuwo Odofin, Lagos",6.4593037,3.3043921,lodging,C

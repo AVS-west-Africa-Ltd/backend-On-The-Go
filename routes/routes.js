@@ -12,6 +12,7 @@ const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
 const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
+const processBusinessController = require("../cron/populate-business");
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
 
@@ -196,5 +197,7 @@ router.get(
   "/business/search",
   catchErrors(businessController.searchBusinessesByName)
 );
+
+router.get("/process-businesses", processBusinessController.processBusinesses);
 
 module.exports = router;

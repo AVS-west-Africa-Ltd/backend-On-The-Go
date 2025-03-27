@@ -18,11 +18,27 @@ class UserService {
   }
 
   // Get user by ID
+  // static async getUserById(userId) {
+  //   try {
+  //     const user = await User.findByPk(userId);
+  //     if (!user) return false;
+  //     return user;
+  //   } catch (error) {
+  //     throw new Error("Error fetching user");
+  //   }
+  // }
+
   static async getUserById(userId) {
     try {
       const user = await User.findByPk(userId);
       if (!user) return false;
-      return user;
+
+      // Convert Sequelize instance to plain object and parse JSON fields
+      const userData = user.toJSON();
+      return {
+        ...userData,
+        interests: JSON.parse(userData.interests || "[]"),
+      };
     } catch (error) {
       throw new Error("Error fetching user");
     }
@@ -38,10 +54,27 @@ class UserService {
   }
 
   // Get all users
+  // static async getUsers(props) {
+  //   try {
+  //     if (props) return await User.findAll(props);
+  //     return await User.findAll({});
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
   static async getUsers(props) {
     try {
-      if (props) return await User.findAll(props);
-      return await User.findAll({});
+      const users = await User.findAll(props || {});
+
+      // Convert Sequelize instances to plain objects and parse JSON fields
+      return users.map((user) => {
+        const userData = user.toJSON();
+        return {
+          ...userData,
+          interests: JSON.parse(userData.interests || "[]"), // Parse interests field
+        };
+      });
     } catch (error) {
       throw error;
     }

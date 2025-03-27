@@ -34,7 +34,6 @@ const upload = multer({
 const businessController = {
   // Create a new Business
   createBusiness: async (req, res) => {
-    console.log("Request Body:", req.body);
     const uploadHandler = upload.fields([
       { name: "logo", maxCount: 1 },
       { name: "cacDoc", maxCount: 1 },

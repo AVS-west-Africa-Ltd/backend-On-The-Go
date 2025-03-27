@@ -23,6 +23,9 @@ const Business = sequelize.define(
     description: {
       type: DataTypes.TEXT,
     },
+    location: {
+      type: DataTypes.TEXT,
+    },
     logo: {
       type: DataTypes.STRING,
     },
@@ -52,6 +55,22 @@ const Business = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
       defaultValue: [],
+    },
+    latitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+    },
+    longitude: {
+      type: DataTypes.DOUBLE,
+      allowNull: true,
+    },
+    zone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

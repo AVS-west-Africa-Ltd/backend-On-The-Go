@@ -310,10 +310,10 @@ const businessController = {
       const { businessId } = req.params;
       const { userId, location, wifiName } = req.body;
 
-        // Validate inputs
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
+      // Validate inputs
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
       const user = await BusinessService.addWifiScanner(
         userId,
         businessId,
@@ -321,9 +321,7 @@ const businessController = {
         wifiName
       );
       if (!user) return res.status(404).json({ message: "User not found" });
-      return res
-        .status(201)
-        .json({ message: user.message, user: user.data });
+      return res.status(201).json({ message: user.message, user: user.data });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -352,6 +350,60 @@ const businessController = {
       return res.status(200).json({ wifiScanners });
     } catch (error) {
       return res.status(500).json({ error: error.message });
+    }
+  },
+
+  // business.controller.js
+  filterBusinesses: async (req, res) => {
+    try {
+      // Extract all possible filter parameters
+      const filters = {
+        wifi: req.query.wifi === "true",
+        parkingSpace: req.query.parkingSpace === "true",
+        airConditioning: req.query.airConditioning === "true",
+        petFriendly: req.query.petFriendly === "true",
+        // Add more as needed
+      };
+
+      // Use the appropriate service method based on your database
+      const businesses = await BusinessService.filterBusinessesAlt(filters);
+
+      return res.status(200).json({
+        businesses,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to filter businesses",
+        error: error.message,
+      });
+    }
+  },
+
+  searchBusinessesByName: async (req, res) => {
+    try {
+      const searchTerm = req.query.q; // Get search term from query params
+
+      if (!searchTerm) {
+        return res.status(400).json({
+          message: "Search term is required",
+          error: "Missing 'q' parameter",
+        });
+      }
+
+      // Use service method for searching
+      const businesses = await BusinessService.searchBusinessesByName(
+        searchTerm
+      );
+
+      return res.status(200).json({
+        count: businesses.length,
+        businesses,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to search businesses",
+        error: error.message,
+      });
     }
   },
 };

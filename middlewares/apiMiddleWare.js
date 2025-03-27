@@ -1,7 +1,6 @@
 const config = require("../config/config");
 
 const validateApiKey = (req, res, next) => {
-  console.log(req.path);
   if (req.path.includes("/api-docs/")) {
     return next();
   }

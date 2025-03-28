@@ -23,9 +23,9 @@ const Business = sequelize.define(
     description: {
       type: DataTypes.TEXT,
     },
-    // location: {
-    //   type: DataTypes.TEXT,
-    // },
+    location: {
+      type: DataTypes.TEXT,
+    },
     logo: {
       type: DataTypes.STRING,
     },

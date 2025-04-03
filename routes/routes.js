@@ -8,6 +8,7 @@ const CommentController = require("../controllers/CommentController");
 const businessController = require("../controllers/BusinessController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
+const BotController = require("../controllers/BotController");
 const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
 const { catchErrors } = require("../handlers/errorHandler");
@@ -187,6 +188,11 @@ router.get(
   "/posts/:businessId/posts",
   catchErrors(businessPostsController.getBusinessPosts)
 );
+
+// Bot routes
+router.get("/bot/fetch-post", BotController.fetchAndLogPost);
+// New endpoint for Nigerian-style comments on specific posts
+router.get("/bot/generate-comment/:postId", catchErrors(BotController.generateCommentForPost));
 
 // Get Images
 router.get("/uploads/:id", getImage);

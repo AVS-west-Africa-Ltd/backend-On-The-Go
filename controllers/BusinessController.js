@@ -109,7 +109,7 @@ const businessController = {
   getBusinessByUserId: async (req, res) => {
     try {
       const { userId } = req.params;
-      const business = await BusinessService.getBusinessById(userId);
+      const business = await BusinessService.getBusinessByUserId(userId);
 
       if (!business) {
         return res.status(404).json({

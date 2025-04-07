@@ -15,27 +15,28 @@ const { Op } = require("sequelize");
 const crypto = require("crypto");
 const UserModel = require("../models/User");
 const DeleteRequestModel = require("../models/DeleteRequest");
+const { uploadProfileImage } = require("../utils/upload");
 
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
-});
+// const s3 = new AWS.S3({
+//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+//   region: process.env.AWS_REGION,
+// });
 
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.AWS_BUCKET_NAME,
-    // acl: "public-read",
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    metadata: function (req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: function (req, file, cb) {
-      cb(null, `profiles/${Date.now()}-${file.originalname}`);
-    },
-  }),
-});
+// const upload = multer({
+//   storage: multerS3({
+//     s3: s3,
+//     bucket: process.env.AWS_BUCKET_NAME,
+//     // acl: "public-read",
+//     contentType: multerS3.AUTO_CONTENT_TYPE,
+//     metadata: function (req, file, cb) {
+//       cb(null, { fieldName: file.fieldname });
+//     },
+//     key: function (req, file, cb) {
+//       cb(null, `profiles/${Date.now()}-${file.originalname}`);
+//     },
+//   }),
+// });
 
 class UserController {
   static async CreateUser(req, res) {
@@ -64,36 +65,85 @@ class UserController {
     }
   }
 
+  // static async UpdateUserImage(req, res) {
+  //   const uploadHandler = upload.single("profileImage");
+  //   uploadHandler(req, res, async (err) => {
+  //     if (err) {
+  //       console.error("Error uploading files:", err);
+  //       return res
+  //         .status(501)
+  //         .json({ message: "Error uploading files", error: err.message });
+  //     }
+
+  //     const { userId } = req.params;
+
+  //     try {
+  //       const mediaPaths = req.file.location.toString();
+
+  //       const user = await userService.updateUser(userId, {
+  //         picture: mediaPaths,
+  //       });
+  //       if (!user) return res.status(404).json({ message: "User not found" });
+  //       return res.status(200).json({
+  //         message: "Profile picture updated successfully",
+  //         info: user,
+  //       });
+  //     } catch (error) {
+  //       res.status(500).json({
+  //         message: "Error uploading picture",
+  //         error: error.message,
+  //       });
+  //     }
+  //   });
+  // }
   static async UpdateUserImage(req, res) {
-    const uploadHandler = upload.single("profileImage");
-    uploadHandler(req, res, async (err) => {
-      if (err) {
-        console.error("Error uploading files:", err);
-        return res
-          .status(501)
-          .json({ message: "Error uploading files", error: err.message });
-      }
+    try {
+      // First handle the file upload
+      await new Promise((resolve, reject) => {
+        uploadProfileImage.single("profileImage")(req, res, (err) => {
+          if (err) {
+            console.error("Profile image upload error:", err);
+            reject(new Error(`Image upload failed: ${err.message}`));
+          } else {
+            resolve();
+          }
+        });
+      });
 
       const { userId } = req.params;
 
-      try {
-        const mediaPaths = req.file.location.toString();
-
-        const user = await userService.updateUser(userId, {
-          picture: mediaPaths,
-        });
-        if (!user) return res.status(404).json({ message: "User not found" });
-        return res.status(200).json({
-          message: "Profile picture updated successfully",
-          info: user,
-        });
-      } catch (error) {
-        res.status(500).json({
-          message: "Error uploading picture",
-          error: error.message,
+      if (!req.file) {
+        return res.status(400).json({
+          message: "No profile image provided",
         });
       }
-    });
+
+      const user = await userService.updateUser(userId, {
+        picture: req.file.location,
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Profile picture updated successfully",
+        info: user.picture,
+        // data: {
+        //   userId: user.id,
+        //   profileImageUrl: user.picture,
+        // },
+      });
+    } catch (error) {
+      console.error("Error in UpdateUserImage:", error);
+      const statusCode = error.message.includes("upload") ? 400 : 500;
+      res.status(statusCode).json({
+        message: "Error updating profile picture",
+        error: error.message.replace("Image upload failed: ", ""),
+      });
+    }
   }
 
   static async Login(req, res) {

@@ -3,6 +3,10 @@ const UserFollower = require("../models/UserFollowers");
 // const { Op } = require("sequelize");
 const Notification = require("../models/Notification");
 const sequelize = require("../config/database");
+const Comment = require("../models/Comment");
+const PostSchema = require("../models/Post");
+const WifiScan = require("../models/WifiScan");
+const RepeatedCustomer = require("../models/RepeatedCustomers");
 // const NotificationService = require("./NotificationService");
 // const RepeatedCustomer = require("../models/RepeatedCustomers");
 // const WifiScan = require("../models/WifiScan");
@@ -13,20 +17,9 @@ class UserService {
     try {
       return await User.create(data);
     } catch (error) {
-      throw new Error("Error creating user");
+      throw new Error(error);
     }
   }
-
-  // Get user by ID
-  // static async getUserById(userId) {
-  //   try {
-  //     const user = await User.findByPk(userId);
-  //     if (!user) return false;
-  //     return user;
-  //   } catch (error) {
-  //     throw new Error("Error fetching user");
-  //   }
-  // }
 
   static async getUserById(userId) {
     try {
@@ -93,12 +86,44 @@ class UserService {
 
   // Delete a user
   static async deleteUser(userId) {
+    // Get the sequelize instance from your User model
+    const transaction = await User.sequelize.transaction();
+
     try {
-      const user = await User.findByPk(userId);
-      if (!user) return false;
-      return await user.destroy();
+      const user = await User.findByPk(userId, { transaction });
+      if (!user) {
+        await transaction.rollback();
+        return false;
+      }
+
+      // Delete all dependent records first
+      await Comment.destroy({
+        where: { authorId: userId },
+        transaction,
+      });
+
+      await UserFollower.destroy({
+        where: { followerId: userId },
+        transaction,
+      });
+
+      await PostSchema.destroy({ where: { userId }, transaction });
+      await WifiScan.destroy({ where: { userId }, transaction });
+      await RepeatedCustomer.destroy({
+        where: { wifiScanId: userId },
+        transaction,
+      });
+
+      // Then delete the user
+      await user.destroy({ transaction });
+
+      // Commit the transaction if everything succeeded
+      await transaction.commit();
+      return true;
     } catch (error) {
-      throw new Error("Error deleting user");
+      // Rollback if any error occurs
+      await transaction.rollback();
+      throw new Error(`Error deleting user: ${error.message}`);
     }
   }
 
@@ -306,7 +331,17 @@ class UserService {
           model: User,
           as: "Followers",
           through: { where: { status: "active" } },
-          attributes: ["id", "username", "picture", "profession", "skills", "gender", "location", "placesVisited", "interests"],
+          attributes: [
+            "id",
+            "username",
+            "picture",
+            "profession",
+            "skills",
+            "gender",
+            "location",
+            "placesVisited",
+            "interests",
+          ],
           // limit,
           // offset,
         },
@@ -324,7 +359,17 @@ class UserService {
           model: User,
           as: "Following",
           through: { where: { status: "active" } },
-          attributes: ["id", "username", "picture", "profession", "skills", "gender", "location", "placesVisited", "interests"],
+          attributes: [
+            "id",
+            "username",
+            "picture",
+            "profession",
+            "skills",
+            "gender",
+            "location",
+            "placesVisited",
+            "interests",
+          ],
           // limit,
           // offset,
         },

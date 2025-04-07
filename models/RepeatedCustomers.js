@@ -46,9 +46,11 @@ const RepeatedCustomer = sequelize.define(
   }
 );
 
-RepeatedCustomer.belongsTo(WifiScan, {
-  foreignKey: "wifiScanId",
-  as: "wifiScan",
-});
+RepeatedCustomer.associate = function (models) {
+  RepeatedCustomer.belongsTo(models.WifiScan, {
+    foreignKey: "wifiScanId",
+    as: "wifiScan",
+  });
+};
 
 module.exports = RepeatedCustomer;

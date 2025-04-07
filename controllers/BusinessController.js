@@ -1,51 +1,28 @@
 require("dotenv").config();
-const multer = require("multer");
-// const multer = require("multer");
-const AWS = require("aws-sdk");
-const multerS3 = require("multer-s3");
 
 const Business = require("../models/Business");
-const { BusinessPosts, BusinessFollowers } = require("../models/index");
+const { BusinessPosts } = require("../models/index");
 const BusinessService = require("../services/BusinessService");
-
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
-});
-// gh
-// gh
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.AWS_BUCKET_NAME,
-    // acl: "public-read",
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    metadata: function (req, file, cb) {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: function (req, file, cb) {
-      cb(null, `business/${Date.now()}-${file.originalname}`);
-    },
-  }),
-});
+const { uploadGenericFiles } = require("../utils/upload");
 
 const businessController = {
   // Create a new Business
   createBusiness: async (req, res) => {
-    const uploadHandler = upload.fields([
-      { name: "logo", maxCount: 1 },
-      { name: "cacDoc", maxCount: 1 },
-    ]);
-
-    uploadHandler(req, res, async (err) => {
-      if (err) {
-        console.error("Error uploading files:", err);
-        return res
-          .status(501)
-          .json({ message: "Error uploading files", error: err.message });
-      }
+    try {
+      // First handle the file uploads
+      await new Promise((resolve, reject) => {
+        uploadGenericFiles.fields([
+          { name: "logo", maxCount: 1 },
+          { name: "cacDoc", maxCount: 1 },
+        ])(req, res, (err) => {
+          if (err) {
+            console.error("Error uploading files:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
 
       const {
         userId,
@@ -59,44 +36,43 @@ const businessController = {
         wifi,
       } = req.body;
 
-      try {
-        // Extract file URLs from S3
-        const logoUrl = req.files.logo ? req.files.logo[0].location : null;
-        const cacDocUrl = req.files.cacDoc
-          ? req.files.cacDoc[0].location
-          : null;
+      // Extract file URLs from S3
+      const logoUrl = req.files?.logo?.[0]?.location || null;
+      const cacDocUrl = req.files?.cacDoc?.[0]?.location || null;
 
-        const socialArray = social ? JSON.parse(social) : null;
-        const wifiArray = wifi ? JSON.parse(wifi) : null;
-        const hoursArray = hours ? JSON.parse(hours) : null;
-        const amenitiesArray = amenities ? JSON.parse(amenities) : null;
+      // Parse JSON strings if they exist
+      const socialArray = social ? JSON.parse(social) : null;
+      const wifiArray = wifi ? JSON.parse(wifi) : null;
+      const hoursArray = hours ? JSON.parse(hours) : null;
+      const amenitiesArray = amenities ? JSON.parse(amenities) : null;
 
-        const business = await Business.create({
-          userId,
-          name,
-          type,
-          address,
-          description,
-          logo: logoUrl,
-          amenities: amenitiesArray,
-          cacDoc: cacDocUrl,
-          hours: hoursArray,
-          social: socialArray,
-          wifi: wifiArray,
-        });
+      // Create the business
+      const business = await Business.create({
+        userId,
+        name,
+        type,
+        address,
+        description,
+        logo: logoUrl,
+        amenities: amenitiesArray,
+        cacDoc: cacDocUrl,
+        hours: hoursArray,
+        social: socialArray,
+        wifi: wifiArray,
+      });
 
-        res.status(201).json({
-          message: "Business created successfully",
-          data: business,
-        });
-      } catch (error) {
-        console.error("Error creating business:", error);
-        res.status(500).json({
-          message: "Error creating business",
-          error: error.message,
-        });
-      }
-    });
+      res.status(201).json({
+        message: "Business created successfully",
+        data: business,
+      });
+    } catch (error) {
+      console.error("Error creating business:", error);
+      const statusCode = error.message.includes("upload") ? 400 : 500;
+      res.status(statusCode).json({
+        message: "Error creating business",
+        error: error.message,
+      });
+    }
   },
 
   // Get all Businesses
@@ -105,7 +81,6 @@ const businessController = {
       const businesses = await BusinessService.getAllBusinesses();
 
       return res.status(200).json({
-        message: "Businesses retrieved successfully",
         businesses,
       });
     } catch (error) {
@@ -121,10 +96,7 @@ const businessController = {
     try {
       const businesses = await BusinessService.getAllBusiness();
 
-      return res.status(200).json({
-        message: "Businesses retrieved successfully",
-        businesses,
-      });
+      return res.status(200).json(businesses);
     } catch (error) {
       return res.status(500).json({
         message: "Failed to retrieve businesses",
@@ -134,11 +106,28 @@ const businessController = {
   },
 
   // Get a user business
-
-  getBusinessById: async (req, res) => {
+  getBusinessByUserId: async (req, res) => {
     try {
       const { userId } = req.params;
       const business = await BusinessService.getBusinessById(userId);
+
+      if (!business) {
+        return res.status(404).json({
+          message: "Business not found",
+        });
+      }
+
+      return res.status(200).json(business);
+    } catch (error) {
+      // console.error("Error fetching user's businesses:", error);
+      res.status(500).json(error.message);
+    }
+  },
+  // Get a user business
+  getBusinessById: async (req, res) => {
+    try {
+      const { businessId } = req.params;
+      const business = await BusinessService.getBusinessById(businessId);
 
       if (!business) {
         return res.status(404).json({
@@ -177,18 +166,21 @@ const businessController = {
 
   // Update a Business
   updateBusiness: async (req, res) => {
-    const uploadHandler = upload.fields([
-      { name: "logo", maxCount: 1 },
-      { name: "cacDoc", maxCount: 1 },
-    ]);
-
-    uploadHandler(req, res, async (err) => {
-      if (err) {
-        console.error("Error uploading files:", err);
-        return res
-          .status(501)
-          .json({ message: "Error uploading files", error: err.message });
-      }
+    try {
+      // First handle the file uploads
+      await new Promise((resolve, reject) => {
+        uploadGenericFiles.fields([
+          { name: "logo", maxCount: 1 },
+          { name: "cacDoc", maxCount: 1 },
+        ])(req, res, (err) => {
+          if (err) {
+            console.error("File upload error:", err);
+            reject(new Error(`File upload failed: ${err.message}`));
+          } else {
+            resolve();
+          }
+        });
+      });
 
       const { id } = req.params;
       const {
@@ -202,75 +194,53 @@ const businessController = {
         wifi,
       } = req.body;
 
-      try {
-        // Find the business to update
-        const business = await Business.findByPk(id);
-
-        if (!business) {
-          return res.status(404).json({ message: "Business not found" });
-        }
-
-        // Extract new file URLs (if any) from S3
-        const updatedLogo = req.files.logo
-          ? req.files.logo[0].location
-          : business.logo;
-        const updatedCacDoc = req.files.cacDoc
-          ? req.files.cacDoc[0].location
-          : business.cacDoc;
-
-        // Ensure JSON fields are correctly parsed before storing/updating
-        const socialArray = social ? JSON.parse(social) : business.social;
-        const wifiArray = wifi ? JSON.parse(wifi) : business.wifi;
-        const hoursArray = hours ? JSON.parse(hours) : business.hours;
-        const amenitiesArray = amenities
-          ? JSON.parse(amenities)
-          : business.amenities;
-
-        // Update business fields
-        business.name = name || business.name;
-        business.type = type || business.type;
-        business.address = address || business.address;
-        business.description = description || business.description;
-        business.logo = updatedLogo || business.logo;
-        business.amenities = amenitiesArray || business.amenities;
-        business.cacDoc = updatedCacDoc || business.cacDoc;
-        business.hours = hoursArray || business.hours;
-        business.social = socialArray || business.social;
-        business.wifi = wifiArray || business.wifi;
-
-        await business.save();
-
-        // Ensure the response data is formatted properly
-        res.status(200).json({
-          message: "Business updated successfully",
-          data: {
-            ...business.toJSON(),
-            social:
-              typeof business.social === "string"
-                ? JSON.parse(business.social)
-                : business.social,
-            wifi:
-              typeof business.wifi === "string"
-                ? JSON.parse(business.wifi)
-                : business.wifi,
-            amenities:
-              typeof business.amenities === "string"
-                ? JSON.parse(business.amenities)
-                : business.amenities,
-            hours:
-              typeof business.hours === "string"
-                ? JSON.parse(business.hours)
-                : business.hours,
-          },
-        });
-      } catch (error) {
-        console.error("Error updating business:", error);
-        res.status(500).json({
-          message: "Error updating business",
-          error: error.message,
-        });
+      // Find the business to update
+      const business = await Business.findByPk(id);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
       }
-    });
+
+      // Prepare update data
+      const updateData = {
+        name: name || business.name,
+        type: type || business.type,
+        address: address || business.address,
+        description: description || business.description,
+        logo: req.files?.logo?.[0]?.location || business.logo,
+        cacDoc: req.files?.cacDoc?.[0]?.location || business.cacDoc,
+        amenities: amenities ? JSON.parse(amenities) : business.amenities,
+        hours: hours ? JSON.parse(hours) : business.hours,
+        social: social ? JSON.parse(social) : business.social,
+        wifi: wifi ? JSON.parse(wifi) : business.wifi,
+      };
+
+      // Update business
+      await business.update(updateData);
+
+      // Format response data
+      const formatJsonField = (field) =>
+        typeof field === "string" ? JSON.parse(field) : field;
+
+      const responseData = {
+        ...business.toJSON(),
+        social: formatJsonField(business.social),
+        wifi: formatJsonField(business.wifi),
+        amenities: formatJsonField(business.amenities),
+        hours: formatJsonField(business.hours),
+      };
+
+      res.status(200).json({
+        message: "Business updated successfully",
+        data: responseData,
+      });
+    } catch (error) {
+      console.error("Error in updateBusiness:", error);
+      const statusCode = error.message.includes("upload") ? 400 : 500;
+      res.status(statusCode).json({
+        message: "Error updating business",
+        error: error.message.replace("File upload failed: ", ""),
+      });
+    }
   },
 
   getBusinessPosts: async (req, res) => {

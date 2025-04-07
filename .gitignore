@@ -3,3 +3,7 @@ zzzz.js
 uploads
 .early.coverage
 .env
+/.env
+/.env.*
+.env
+.env

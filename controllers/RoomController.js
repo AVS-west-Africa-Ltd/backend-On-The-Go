@@ -802,4 +802,122 @@ exports.deleteRoom = async (req, res) => {
     });
   }
 };
+
+exports.deleteRoomsByType = async (req, res) => {
+  const { type } = req.params;
+  const { userId } = req.query; // Optional: only delete rooms created by a specific user
+
+  if (!type || !['group', 'direct'].includes(type)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid room type. Must be 'group' or 'direct'"
+    });
+  }
+
+  try {
+    // Find all rooms of the specified type
+    const whereClause = { type };
+    if (userId) {
+      whereClause.created_by = userId;
+    }
+
+    const rooms = await Room.findAll({
+      where: whereClause,
+      include: [{
+        model: RoomMember,
+        as: "members",
+        attributes: ["user_id"],
+      }]
+    });
+
+    if (rooms.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No ${type} rooms found` + (userId ? ` for user ${userId}` : '')
+      });
+    }
+
+    // Collect all member IDs for socket notifications
+    const memberNotifications = {};
+    rooms.forEach(room => {
+      room.members.forEach(member => {
+        if (!memberNotifications[member.user_id]) {
+          memberNotifications[member.user_id] = [];
+        }
+        memberNotifications[member.user_id].push(room.id);
+      });
+    });
+
+    // Start transaction for bulk deletion
+    await sequelize.transaction(async (t) => {
+      const roomIds = rooms.map(room => room.id);
+
+      // Delete all room members for these rooms
+      await RoomMember.destroy({
+        where: { room_id: roomIds },
+        transaction: t
+      });
+
+      // Delete all chats in these rooms
+      await Chat.destroy({
+        where: { room_id: roomIds },
+        transaction: t
+      });
+
+      // Delete the rooms themselves
+      await Room.destroy({
+        where: { id: roomIds },
+        transaction: t
+      });
+
+      // Delete any S3 images for these rooms
+      const deletePromises = rooms
+        .filter(room => room.image_url)
+        .map(room => {
+          const key = room.image_url.split('/').pop();
+          return s3.deleteObject({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: `community/${key}`
+          }).promise().catch(error => {
+            console.error(`Error deleting room image for room ${room.id}:`, error);
+          });
+        });
+
+      await Promise.all(deletePromises);
+    });
+
+    // Emit socket events for room deletions
+    if (io) {
+      // Emit general room deleted events
+      rooms.forEach(room => {
+        io.emit('room_deleted', { roomId: room.id });
+      });
+
+      // Notify each member of their room deletions
+      Object.entries(memberNotifications).forEach(([userId, roomIds]) => {
+        io.emit(`user_${userId}_rooms_updated`, {
+          type: 'rooms_deleted',
+          roomIds
+        });
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Deleted ${rooms.length} ${type} rooms` + (userId ? ` created by user ${userId}` : ''),
+      data: {
+        count: rooms.length,
+        roomIds: rooms.map(room => room.id)
+      }
+    });
+
+  } catch (error) {
+    console.error('Error deleting rooms by type:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 module.exports = exports;

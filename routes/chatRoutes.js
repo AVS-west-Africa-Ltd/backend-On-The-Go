@@ -28,7 +28,7 @@ router.get("/room/:roomId", roomController.getRoomById);
 router.get("/user/:userId/rooms", roomController.getUserRooms);
 router.get("/rooms/:roomId/users", roomController.getRoomUsers);
 router.get("/room/:roomId/members", chatController.getRoomMembers);
-
+router.delete("/rooms/type/:type", roomController.deleteRoomsByType); // New route
 // Invitation operations
 router.post("/invitation/create", invitationController.createInvitation);       // Create an invitation
 router.get("/invitations", invitationController.getAllInvitations);            // Get all invitations

@@ -75,7 +75,7 @@ class BusinessService {
     }
   }
 
-  static async getBusinessById(userId) {
+  static async getBusinessByUserId(userId) {
     try {
       // Find the user by primary key (userId) and include their associated Businesses
       const user = await User.findByPk(userId, {

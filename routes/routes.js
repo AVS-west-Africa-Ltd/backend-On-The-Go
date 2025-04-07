@@ -153,7 +153,8 @@ router.get(
 
 router.post("/register-business", businessController.createBusiness);
 // router.post("/business/toggle-follow", businessController.toggleFollow);
-router.get("/businesses/:userId", businessController.getBusinessById);
+router.get("/businesses/:userId", businessController.getBusinessByUserId);
+router.get("/business/:businessId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business", businessController.getAllBusiness);
 // router.get("/business/:userId/user", businessController.getUserBusinesses);

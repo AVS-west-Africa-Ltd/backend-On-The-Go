@@ -41,40 +41,39 @@ class BusinessService {
     }
   }
 
-  // static async getAllBusiness() {
-  //   try {
-  //     // Fetch all businesses
-  //     const businesses = await Business.findAll();
+  static async getAllBusiness() {
+    try {
+      // Fetch all businesses
+      const businesses = await Business.findAll();
 
-  //     // If no businesses are found, return false
-  //     if (!businesses || businesses.length === 0) return false;
+      // If no businesses are found, return false
+      if (!businesses || businesses.length === 0) return false;
 
-  //     // Parse JSON strings into objects for each business
-  //     const parsedBusinesses = businesses.map((business) => {
-  //       // Parse the JSON fields if they exist
-  //       const amenities = business.amenities
-  //         ? JSON.parse(business.amenities)
-  //         : null;
-  //       const hours = business.hours ? JSON.parse(business.hours) : null;
-  //       const social = business.social ? JSON.parse(business.social) : null;
-  //       const wifi = business.wifi ? JSON.parse(business.wifi) : null;
+      // Parse JSON strings into objects for each business
+      const parsedBusinesses = businesses.map((business) => {
+        // Parse the JSON fields if they exist
+        const amenities = business.amenities
+          ? JSON.parse(business.amenities)
+          : null;
+        const hours = business.hours ? JSON.parse(business.hours) : null;
+        const social = business.social ? JSON.parse(business.social) : null;
+        const wifi = business.wifi ? JSON.parse(business.wifi) : null;
 
-  //       // Return the business object with parsed fields
-  //       return {
-  //         ...business.toJSON(),
-  //         amenities,
-  //         hours,
-  //         social,
-  //         wifi,
-  //       };
-  //     });
+        return {
+          ...business.toJSON(),
+          amenities,
+          hours,
+          social,
+          wifi,
+        };
+      });
 
-  //     // Return the parsed businesses
-  //     return parsedBusinesses;
-  //   } catch (error) {
-  //     throw new Error("Error fetching businesses: " + error.message);
-  //   }
-  // }
+      // Return the parsed businesses
+      return parsedBusinesses;
+    } catch (error) {
+      throw new Error("Error fetching businesses: " + error.message);
+    }
+  }
 
   static async getBusinessById(userId) {
     try {
@@ -103,6 +102,24 @@ class BusinessService {
       return {
         ...user.toJSON(),
         Businesses: parsedBusinesses,
+      };
+    } catch (error) {
+      throw new Error("Error fetching user: " + error.message);
+    }
+  }
+
+  static async getBusinessById(businessId) {
+    try {
+      const business = await Business.findByPk(businessId);
+
+      if (!business) return null;
+
+      return {
+        ...business.toJSON(),
+        amenities: JSON.parse(business.amenities),
+        hours: JSON.parse(business.hours),
+        social: JSON.parse(business.social),
+        wifi: JSON.parse(business.wifi),
       };
     } catch (error) {
       throw new Error("Error fetching user: " + error.message);

@@ -35,6 +35,7 @@
     "nanoid": "^5.0.7",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.14",
+    "openai": "^4.92.0",
     "sequelize": "^6.37.5",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.1",

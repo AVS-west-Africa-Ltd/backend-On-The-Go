@@ -2,6 +2,8 @@ const express = require("express");
 const chatController = require("../controllers/ChatController");
 const roomController = require("../controllers/RoomController");
 const invitationController = require('../controllers/InvitationController');
+const BotController = require('../controllers/BotController');
+
 
 const router = express.Router();
 
@@ -10,6 +12,10 @@ router.post("/message/send", chatController.sendMessage);
 router.get("/message/history", chatController.getMessages);
 router.delete("/message/delete", chatController.deleteMessage);
 router.get("/room/:roomId/messages", chatController.getRoomMessages);
+
+// Bot operations
+router.get("/bot/generate-comment", BotController.fetchAndLogPost); // Add this route
+router.get("/bot/generate-comment/:postId", BotController.generateCommentForPost); // Add this route
 
 router.patch('/:room_id/toggle-broadcast', chatController.toggleBroadcast);
 router.get('/:room_id/broadcast-status', chatController.getBroadcastStatus);

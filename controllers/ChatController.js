@@ -376,7 +376,10 @@ exports.toggleBroadcast = async (req, res) => {
   const { room_id, user_id, broadcast_enabled } = req.body;
 
   try {
+    console.log(`Attempting to toggle broadcast for room ${room_id} by user ${user_id}`);
+
     if (!room_id || !user_id) {
+      console.error('Missing parameters:', { room_id, user_id });
       return res.status(400).json({
         success: false,
         message: "Missing required parameters"
@@ -385,39 +388,53 @@ exports.toggleBroadcast = async (req, res) => {
 
     const room = await Room.findByPk(room_id);
     if (!room) {
+      console.error(`Room ${room_id} not found`);
       return res.status(404).json({
         success: false,
         message: "Room not found"
       });
     }
 
-    // Verify admin status
-    const memberInfo = await RoomMember.findOne({
-      where: { room_id, user_id, is_admin: true }
-    });
+    // Verify user is the room creator
+    const isCreator = Number(room.created_by) === Number(user_id);
+    console.log(`Admin verification result:`, { isCreator });
 
-    if (!memberInfo) {
+    if (!isCreator) {
+      console.error(`User ${user_id} is not authorized to toggle broadcast for room ${room_id}`);
       return res.status(403).json({
         success: false,
-        message: "Only admins can toggle broadcast mode"
+        message: "Only room creator can toggle broadcast mode"
       });
     }
 
-    await room.update({ broadcast_enabled });
+    await room.update({ 
+      broadcast_enabled,
+      // Optional: Also update status if you want
+      status: broadcast_enabled ? 'Broadcast' : 'Private'
+    });
 
     // Emit broadcast status change
     if (io) {
       io.emit(`room_${room_id}_broadcast`, { broadcast_enabled });
+      io.emit(`room_${room_id}_updated`, room);
     }
 
+    console.log(`Broadcast mode toggled successfully to ${broadcast_enabled}`);
     res.status(200).json({
       success: true,
       message: `Broadcast mode ${broadcast_enabled ? 'enabled' : 'disabled'}`,
       data: room
     });
   } catch (error) {
-    console.error("Error toggling broadcast:", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Error toggling broadcast:", {
+      error: error.message,
+      stack: error.stack,
+      requestBody: req.body
+    });
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 };
 

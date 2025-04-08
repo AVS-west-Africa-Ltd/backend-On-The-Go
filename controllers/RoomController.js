@@ -131,6 +131,7 @@ exports.createRoom = async (req, res) => {
       const roomMembers = memberIdsArray.map((user_id) => ({
         room_id: room.id,
         user_id,
+        is_admin: user_id === created_by
       }));
 
       await RoomMember.bulkCreate(roomMembers);

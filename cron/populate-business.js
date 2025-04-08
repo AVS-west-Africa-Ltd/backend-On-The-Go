@@ -12,7 +12,7 @@ const processBusinessController = {
   processBusinesses: async (req, res) => {
     const results = [];
 
-    fs.createReadStream("cron/businesses_with_logos.csv")
+    fs.createReadStream("cron/others_with_coordinates.csv")
       .pipe(csv())
       .on("data", (data) => results.push(data))
       .on("end", async () => {
@@ -38,6 +38,7 @@ const processBusinessController = {
               firstName: business.name,
               username: business.username || generateUsername(business.name),
               email: business.email || generateEmail(business.name, results),
+              phone_number: business.phone,
               password: "otgafrica",
             });
 
@@ -99,7 +100,6 @@ async function createUser(userData) {
       updatedAt: new Date(),
       placesVisited: "",
       lastName: "",
-      phone_number: "",
       picture: "",
       bio: "",
       interests: "",

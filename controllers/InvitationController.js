@@ -23,7 +23,6 @@ exports.createInvitation = async (req, res) => {
   }
 };
 
-
 // Remove user from invitees array
 exports.removeUserFromInvitation = async (roomId, userId) => {
   try {
@@ -160,7 +159,6 @@ exports.addMember = async (req, res) => {
     });
   }
 };
-
 
 // Get all invitations
 exports.getAllInvitations = async (req, res) => {
@@ -342,3 +340,43 @@ exports.getUserInvitations = async (req, res) => {
   }
 };
 
+// Get all invitations for a specific room
+exports.getRoomInvites = async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    const invitations = await Invitation.findAll({
+      where: { room_id: roomId },
+      include: [{
+        model: Room,
+        as: 'room',
+        attributes: ['id', 'name', 'type', 'description', 'image_url']
+      }]
+    });
+
+    // Transform the data to match frontend expectations
+    const transformedInvites = invitations.map(invite => {
+      const inviteData = invite.toJSON();
+      return {
+        id: inviteData.id,
+        inviter_id: inviteData.inviter_id,
+        room_id: inviteData.room_id,
+        invitees: inviteData.invitees,
+        created_at: inviteData.createdAt,
+        room: inviteData.room
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: transformedInvites
+    });
+  } catch (error) {
+    console.error('Error fetching room invites:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching room invites',
+      error: error.message
+    });
+  }
+};

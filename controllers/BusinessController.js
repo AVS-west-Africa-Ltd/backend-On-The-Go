@@ -350,7 +350,9 @@ const businessController = {
 
   searchBusinessesByName: async (req, res) => {
     try {
-      const searchTerm = req.query.q; // Get search term from query params
+      const searchTerm = req.query.q;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
 
       if (!searchTerm) {
         return res.status(400).json({
@@ -359,13 +361,13 @@ const businessController = {
         });
       }
 
-      // Use service method for searching
-      const businesses = await BusinessService.searchBusinessesByName(
-        searchTerm
-      );
+      const { businesses, total } =
+        await BusinessService.searchBusinessesByName(searchTerm, page, limit);
 
       return res.status(200).json({
-        count: businesses.length,
+        count: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
         businesses,
       });
     } catch (error) {

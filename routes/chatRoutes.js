@@ -2,7 +2,7 @@ const express = require("express");
 const chatController = require("../controllers/ChatController");
 const roomController = require("../controllers/RoomController");
 const invitationController = require('../controllers/InvitationController');
-
+const botController = require("../controllers/BotController");
 
 const router = express.Router();
 
@@ -38,4 +38,5 @@ router.put("/invitation/:id", invitationController.updateInvitation);          /
 router.delete("/invitation/:id", invitationController.deleteInvitation);       // Delete an invitation
 router.get("/user/:userId/invitations", invitationController.getUserInvitations);  // New route to get all invitations for a user
 router.get("/room/:roomId/invites", invitationController.getRoomInvites);
+router.post("/generate-comment/:postId", botController.generateCommentForPost);
 module.exports = router;

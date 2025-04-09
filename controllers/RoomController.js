@@ -463,20 +463,61 @@ exports.requestToJoinRoom = async (req, res) => {
     }
 
     // Handle join requests for private rooms
+    // ALWAYS initialize joinRequests as an array
     let joinRequests = [];
+    
+    // Handle various data formats that might be stored in the database
     if (room.join_requests) {
-      joinRequests = typeof room.join_requests === 'string'
-        ? JSON.parse(room.join_requests)
-        : room.join_requests;
+      if (typeof room.join_requests === 'string') {
+        try {
+          // Try to parse if it's a JSON string
+          joinRequests = JSON.parse(room.join_requests);
+          // Make sure it's an array after parsing
+          if (!Array.isArray(joinRequests)) {
+            console.error("join_requests was parsed but is not an array");
+            joinRequests = [];
+          }
+        } catch (e) {
+          console.error("Failed to parse join_requests string:", e);
+          joinRequests = [];
+        }
+      } else if (Array.isArray(room.join_requests)) {
+        joinRequests = [...room.join_requests]; // Create a copy of the array
+      } else {
+        console.warn("join_requests is neither a string nor an array, initializing as empty array");
+        joinRequests = [];
+      }
     }
 
-    // Check if the user has already requested to join
-    if (!joinRequests.includes(user_id)) {
-      joinRequests.push(user_id);
+    // Check if user_id is already in the array (safely)
+    const userIdNum = Number(user_id);
+    let userIdExists = false;
+    
+    // Only perform .some() if we're sure joinRequests is an array
+    if (Array.isArray(joinRequests)) {
+      userIdExists = joinRequests.some(id => 
+        (typeof id === 'number' && id === userIdNum) || 
+        (typeof id === 'string' && id === user_id.toString())
+      );
+    }
+
+    // Only add if user is not already in the requests
+    if (!userIdExists) {
+      joinRequests.push(userIdNum); // Add as number for consistency
+      
+      // Update the room with the new join_requests array
       await room.update({ join_requests: joinRequests });
+      
+      console.log(`Added user ${user_id} to join requests for room ${room_id}`);
+    } else {
+      console.log(`User ${user_id} already in join requests for room ${room_id}`);
     }
 
-    res.status(200).json({ success: true, message: "Join request sent successfully" });
+    res.status(200).json({ 
+      success: true, 
+      message: "Join request sent successfully" 
+    });
+    
   } catch (error) {
     console.error("Error in requestToJoinRoom:", error);
     res.status(500).json({ success: false, error: error.message });

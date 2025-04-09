@@ -457,13 +457,18 @@ exports.requestToJoinRoom = async (req, res) => {
       });
     }
 
-    // If the room is private, handle join requests
+    // If the room is private and displayed, handle join requests
     if (room.status !== 'Private' || !room.is_private_displayed) {
       return res.status(400).json({ success: false, message: "Invalid room type" });
     }
 
-    // Ensure join_requests is always an array
-    const joinRequests = Array.isArray(room.join_requests) ? room.join_requests : [];
+    // Handle join requests for private rooms
+    let joinRequests = [];
+    if (room.join_requests) {
+      joinRequests = typeof room.join_requests === 'string'
+        ? JSON.parse(room.join_requests)
+        : room.join_requests;
+    }
 
     // Check if the user has already requested to join
     if (!joinRequests.includes(user_id)) {
@@ -477,76 +482,57 @@ exports.requestToJoinRoom = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+
+
 exports.getJoinRequests = async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    console.log(`[getJoinRequests] Fetching join requests for roomId: ${roomId}`);
-
-    const room = await Room.findByPk(roomId, {
-      attributes: ['id', 'join_requests']
-    });
-
+    const room = await Room.findByPk(roomId);
     if (!room) {
-      console.warn(`[getJoinRequests] Room not found for roomId: ${roomId}`);
       return res.status(404).json({ success: false, message: "Room not found" });
     }
 
-    // Handle join_requests as a string or an array
+    // Handle both string and array formats for join_requests
     let joinRequests = [];
     if (room.join_requests) {
       if (typeof room.join_requests === 'string') {
-        if (room.join_requests.trim() === '[]') {
-          joinRequests = [];  // If it's the string "[]", use an empty array
-        } else {
-          joinRequests = JSON.parse(room.join_requests);  // Parse if it's a JSON string
+        try {
+          joinRequests = JSON.parse(room.join_requests);
+        } catch (e) {
+          // If parsing fails, treat as empty array
+          joinRequests = [];
         }
       } else if (Array.isArray(room.join_requests)) {
         joinRequests = room.join_requests;
       }
     }
 
-    console.log(`[getJoinRequests] Parsed joinRequests:`, joinRequests);
-
-    // If no join requests, return an empty array directly
-    if (joinRequests.length === 0) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-      });
-    }
-
     // Fetch user details for each join request
-    const userRequests = await Promise.all(
+    const userDetails = await Promise.all(
       joinRequests.map(async (userId) => {
         const user = await User.findByPk(userId, {
           attributes: ['id', 'username', 'email', 'firstName', 'lastName', 'picture']
         });
-        if (user) {
-          return {
-            user_id: user.id,
-            username: user.username || `${user.firstName} ${user.lastName}`.trim() || user.email,
-            email: user.email,
-            picture: user.picture
-          };
-        } else {
-          console.warn(`[getJoinRequests] User not found for userId: ${userId}`);
-          return null;
-        }
+        return user ? {
+          user_id: user.id,
+          username: user.username || `${user.firstName} ${user.lastName}`.trim() || user.email,
+          email: user.email,
+          picture: user.picture
+        } : null;
       })
     );
 
-    // Filter out null values if some users are not found
-    const filteredRequests = userRequests.filter((user) => user !== null);
-
-    console.log(`[getJoinRequests] Detailed join requests:`, filteredRequests);
+    // Filter out any null values (users not found)
+    const filteredRequests = userDetails.filter(request => request !== null);
 
     res.status(200).json({
       success: true,
-      data: filteredRequests,
+      data: filteredRequests
     });
   } catch (error) {
-    console.error(`[getJoinRequests] Error fetching join requests for roomId: ${roomId}`, error);
+    console.error("Error fetching join requests:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

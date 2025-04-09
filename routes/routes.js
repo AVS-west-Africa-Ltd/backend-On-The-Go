@@ -194,10 +194,7 @@ router.get(
 router.get("/uploads/:id", getImage);
 
 router.get("/business/filters", businessController.filterBusinesses);
-router.get(
-  "/business/search",
-  catchErrors(businessController.searchBusinessesByName)
-);
+router.get("/search/business", businessController.searchBusinessesByName);
 
 router.get("/process-businesses", processBusinessController.processBusinesses);
 

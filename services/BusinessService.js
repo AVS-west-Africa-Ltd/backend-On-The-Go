@@ -353,6 +353,67 @@ class BusinessService {
       throw new Error("Business search failed");
     }
   }
+  static async searchBusinessesByName(searchTerm, page = 1, limit = 10) {
+    try {
+      const offset = (page - 1) * limit;
+
+      const { count, rows } = await Business.findAndCountAll({
+        where: {
+          name: {
+            [Op.like]: `%${searchTerm}%`,
+          },
+        },
+        limit: parseInt(limit),
+        offset: offset,
+        order: [["name", "ASC"]],
+      });
+
+      // return businesses.map((business) => {
+      //   const parsedBusiness = business.get({ plain: true });
+
+      //   // Parse all stringified JSON fields
+      //   const jsonFields = ["amenities", "hours", "social", "wifi"];
+      //   jsonFields.forEach((field) => {
+      //     try {
+      //       parsedBusiness[field] = parsedBusiness[field]
+      //         ? JSON.parse(parsedBusiness[field])
+      //         : null;
+      //     } catch (e) {
+      //       console.error(`Error parsing ${field}:`, e);
+      //       parsedBusiness[field] = null;
+      //     }
+      //   });
+
+      //   return parsedBusiness;
+      // });
+
+      // Parse all JSON string fields
+      const businesses = rows.map((business) => {
+        const parsedBusiness = business.get({ plain: true });
+        const jsonFields = ["amenities", "hours", "social", "wifi"];
+        jsonFields.forEach((field) => {
+          try {
+            parsedBusiness[field] = parsedBusiness[field]
+              ? JSON.parse(parsedBusiness[field])
+              : null;
+          } catch (e) {
+            console.error(`Error parsing ${field}:`, e);
+            parsedBusiness[field] = null;
+          }
+        });
+
+        return parsedBusiness;
+      });
+
+      return {
+        businesses,
+        total: count,
+      };
+    } catch (error) {
+      console.error("Search error:", error);
+      throw new Error("Business search failed");
+    }
+  }
 }
 
 module.exports = BusinessService;

@@ -1831,48 +1831,6 @@ router.get("/businesses", businessController.getAllBusinesses);
 
 /**
  * @swagger
- * /business/search:
- *   get:
- *     tags: [Business]
- *     summary: Search businesses by name
- *     parameters:
- *       - in: query
- *         name: q
- *         required: true
- *         schema:
- *           type: string
- *         description: Name search term
- *         example: "cafe"
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Maximum results to return
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 count:
- *                   type: integer
- *                 businesses:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Business'
- *       400:
- *         description: Missing search term
- *       500:
- *         description: Server error
- */
-
-/**
- * @swagger
  * /business:
  *   get:
  *     tags: [Business]

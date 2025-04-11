@@ -33,6 +33,10 @@ const User = sequelize.define(
     bio: {
       type: DataTypes.TEXT,
     },
+    pushToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     interests: {
       type: DataTypes.JSON,
     },

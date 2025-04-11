@@ -24,9 +24,16 @@ const Invitation = require("./models/Invitation");
 // Add Swagger imports
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const admin = require('firebase-admin'); 
 
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
+
+const serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const PORT = process.env.PORT || 5000;
 const app = express();

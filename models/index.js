@@ -1,8 +1,11 @@
 const Business = require("./Business");
 const BusinessPosts = require("./BusinessPost");
 const BusinessFollowers = require("./BusinessFollowers");
+const User = require("./User");
+const PushNotification = require("./PushNotification");
 const sequelize = require("../config/database");
 
+// Business relationships
 Business.hasMany(BusinessPosts, {
   foreignKey: "businessId",
   onDelete: "CASCADE",
@@ -25,6 +28,17 @@ Business.belongsToMany(Business, {
   onDelete: "CASCADE",
 });
 
+// PushNotification relationships
+PushNotification.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user"
+});
+
+User.hasMany(PushNotification, {
+  foreignKey: "userId",
+  as: "notifications"
+});
+
 sequelize
   .sync()
   .then(() => {
@@ -34,4 +48,10 @@ sequelize
     console.error("Error creating tables:", error);
   });
 
-module.exports = { Business, BusinessPosts, BusinessFollowers };
+module.exports = { 
+  Business, 
+  BusinessPosts, 
+  BusinessFollowers,
+  User,
+  PushNotification 
+};

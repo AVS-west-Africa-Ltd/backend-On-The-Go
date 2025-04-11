@@ -10,9 +10,10 @@ const path = require("path");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const crypto = require('crypto');
+const { sendChatNotification } = require('./PushNotificationController');
 
 // Encryption configuration
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY 
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY
   ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex').slice(0, 32) // Convert hex to buffer and ensure 32 bytes
   : crypto.randomBytes(32); // Generate random 32 bytes if no key provided
 const IV_LENGTH = 16;
@@ -122,6 +123,48 @@ exports.sendMessage = async (req, res) => {
       // Emit to socket if available
       if (io) {
         io.emit(`room_${room_id}`, messageForSocket);
+      }
+
+      // Send push notifications to other room members (excluding sender)
+      try {
+        // Get all room members except sender
+        const roomMembers = await RoomMember.findAll({
+          where: {
+            room_id,
+            user_id: { [Op.ne]: sender_id } // Exclude sender
+          },
+          include: [{
+            model: User,
+            as: 'user',
+            attributes: ['id', 'pushToken']
+          }]
+        });
+
+        // Filter members who have push tokens
+        const recipients = roomMembers
+          .filter(member => member.user.pushToken)
+          .map(member => member.user.id);
+
+        if (recipients.length > 0) {
+          const mediaType = req.file ?
+            req.file.mimetype.split('/')[0] === 'image' ? 'image' :
+              req.file.mimetype.split('/')[1] : null;
+
+          await sendChatNotification({
+            senderId: sender_id,
+            recipientIds: recipients,
+            roomId: room_id,
+            message: content,
+            mediaType,
+            customData: {
+              messageId: message.id,
+              isRequest: request
+            }
+          });
+        }
+      } catch (notificationError) {
+        console.error('Error sending push notifications:', notificationError);
+        // Don't fail the message send operation if notifications fail
       }
 
       res.status(201).json({
@@ -407,11 +450,53 @@ exports.toggleBroadcast = async (req, res) => {
       });
     }
 
-    await room.update({ 
+    await room.update({
       broadcast_enabled,
-      // Optional: Also update status if you want
       status: broadcast_enabled ? 'Broadcast' : 'Private'
     });
+
+    // Get all room members except the creator (who is toggling)
+    const roomMembers = await RoomMember.findAll({
+      where: {
+        room_id,
+        user_id: { [Op.ne]: user_id } // Exclude the creator
+      },
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'pushToken']
+      }]
+    });
+
+    // Filter members who have push tokens
+    const recipients = roomMembers
+      .filter(member => member.user.pushToken)
+      .map(member => member.user.id);
+
+    // Send push notification if there are recipients
+    if (recipients.length > 0) {
+      try {
+        const creator = await User.findByPk(user_id, {
+          attributes: ['username', 'firstName', 'lastName']
+        });
+        const creatorName = creator.username || `${creator.firstName} ${creator.lastName}`.trim();
+
+        await sendChatNotification({
+          senderId: user_id,
+          recipientIds: recipients,
+          roomId: room_id,
+          message: `Broadcast mode has been ${broadcast_enabled ? 'enabled' : 'disabled'} by ${creatorName}`,
+          customData: {
+            type: 'broadcast_status_change',
+            broadcast_enabled,
+            changed_by: user_id
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending broadcast status notifications:', notificationError);
+        // Don't fail the operation if notifications fail
+      }
+    }
 
     // Emit broadcast status change
     if (io) {
@@ -431,9 +516,9 @@ exports.toggleBroadcast = async (req, res) => {
       stack: error.stack,
       requestBody: req.body
     });
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 };

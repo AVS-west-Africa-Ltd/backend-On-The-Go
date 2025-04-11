@@ -166,8 +166,144 @@ exports.sendNotificationToAllUsers = catchErrors(async (req, res) => {
   });
 });
 
-// Export the reusable function
+/**
+ * Send room-specific push notification to targeted users
+ * @param {Object} options - Notification configuration
+ * @param {string} options.senderId - ID of the user triggering the action
+ * @param {Array} options.receiverIds - Array of user IDs to receive the notification
+ * @param {string} options.title - Notification title
+ * @param {string} options.body - Notification body
+ * @param {Object} [options.data] - Additional data payload (optional)
+ * @param {string} [options.roomId] - Associated room ID (optional)
+ * @returns {Object} - Result of the notification send operation
+ */
+async function sendRoomNotification({ senderId, receiverIds, title, body, data = {}, roomId = null }) {
+  if (!receiverIds || receiverIds.length === 0) {
+    console.log('[PushNotification] No receiverIds specified - skipping room notification');
+    return {
+      success: false,
+      message: 'No receivers specified'
+    };
+  }
+
+  // Enhance data payload with room context
+  const enhancedData = {
+    ...data,
+    type: 'room_notification',
+    senderId,
+    timestamp: new Date().toISOString()
+  };
+
+  if (roomId) {
+    enhancedData.roomId = roomId;
+  }
+
+  // Get sender info for the notification
+  let senderInfo = {};
+  try {
+    const sender = await User.findByPk(senderId, {
+      attributes: ['username', 'firstName', 'lastName', 'picture']
+    });
+    if (sender) {
+      senderInfo = {
+        senderName: sender.username || `${sender.firstName} ${sender.lastName}`.trim(),
+        senderAvatar: sender.picture
+      };
+    }
+  } catch (error) {
+    console.error('[PushNotification] Error fetching sender info:', error);
+  }
+
+  return sendPushNotification({
+    title,
+    body,
+    data: {
+      ...enhancedData,
+      ...senderInfo
+    },
+    userIds: receiverIds
+  });
+}
+
+
+/**
+ * Send chat-specific push notification
+ * @param {Object} options - Notification configuration
+ * @param {string} options.senderId - ID of the message sender
+ * @param {Array} options.recipientIds - Array of user IDs to receive the notification
+ * @param {string} options.roomId - Room ID where the message was sent
+ * @param {string} [options.message] - The message content (optional)
+ * @param {string} [options.mediaType] - Type of media if message has attachment (optional)
+ * @param {Object} [options.customData] - Additional custom data (optional)
+ * @returns {Object} - Result of the notification send operation
+ */
+async function sendChatNotification({ senderId, recipientIds, roomId, message = null, mediaType = null, customData = {} }) {
+  console.log('[PushNotification] Preparing chat notification', { 
+    senderId, 
+    recipientIds, 
+    roomId 
+  });
+
+  try {
+    // Get sender info
+    const sender = await User.findByPk(senderId, {
+      attributes: ['username', 'firstName', 'lastName', 'picture']
+    });
+
+    if (!sender) {
+      console.error('[PushNotification] Sender not found');
+      return {
+        success: false,
+        message: 'Sender not found'
+      };
+    }
+
+    const senderName = sender.username || `${sender.firstName} ${sender.lastName}`.trim();
+    const isMediaMessage = mediaType !== null;
+
+    // Prepare notification content
+    const title = `New message from ${senderName}`;
+    let body = isMediaMessage 
+      ? `${senderName} sent a ${mediaType} file` 
+      : (message ? message.substring(0, 100) : 'New message');
+
+    // Prepare data payload
+    const data = {
+      ...customData,
+      type: 'chat_message',
+      senderId,
+      senderName,
+      senderAvatar: sender.picture || '',
+      roomId,
+      timestamp: new Date().toISOString(),
+      isMediaMessage,
+      mediaType: mediaType || ''
+    };
+
+    // Send notification to recipients
+    return await sendPushNotification({
+      title,
+      body,
+      data,
+      userIds: recipientIds
+    });
+
+  } catch (error) {
+    console.error('[PushNotification] Error in sendChatNotification:', {
+      error: error.message,
+      stack: error.stack
+    });
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+// Add to exports
 module.exports = {
   ...exports,
-  sendPushNotification
+  sendPushNotification,
+  sendRoomNotification,
+  sendChatNotification
 };

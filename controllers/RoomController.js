@@ -10,7 +10,8 @@ const Chat = require('../models/Chat');
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const crypto = require('crypto');
-const { sendPushNotification, sendRoomNotification } = require('./PushNotificationController');
+const { sendPushNotification, sendRoomNotification, sendChatNotification } = require('./PushNotificationController');
+const { Op } = require('sequelize');
 
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -94,6 +95,10 @@ exports.createRoom = async (req, res) => {
     let memberIdsArray = [];
     try {
       memberIdsArray = typeof member_ids === "string" ? JSON.parse(member_ids) : member_ids;
+      // Ensure memberIdsArray is an array
+      if (!Array.isArray(memberIdsArray)) {
+        memberIdsArray = [memberIdsArray];
+      }
     } catch (error) {
       return res.status(400).json({ success: false, message: "Invalid member_ids format" });
     }
@@ -132,16 +137,33 @@ exports.createRoom = async (req, res) => {
 
       // Notify all members except creator
       if (memberIdsArray.length > 1) {
-        await sendRoomNotification({
-          senderId: created_by,
-          receiverIds: memberIdsArray.filter(id => id !== created_by),
-          title: "You've been added to a new room",
-          body: `${room.name}`,
-          roomId: room.id,
-          data: {
-            action: 'room_created'
+        try {
+          const notificationReceiversIds = memberIdsArray.filter(id => id !== created_by && id);
+          
+          if (notificationReceiversIds.length > 0) {
+            console.log(`[RoomController] Sending room creation notification to ${notificationReceiversIds.length} members`);
+            
+            const notificationResult = await sendRoomNotification({
+              senderId: created_by,
+              receiverIds: notificationReceiversIds,
+              title: "You've been added to a new room",
+              body: `${room.name}`,
+              roomId: room.id,
+              data: {
+                action: 'room_created'
+              }
+            });
+            
+            console.log('[RoomController] Room creation notification result:', 
+              notificationResult.success ? 
+                `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` : 
+                `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+            );
           }
-        });
+        } catch (notificationError) {
+          console.error('[RoomController] Failed to send room creation notifications:', notificationError);
+          // Don't fail the room creation if notification fails
+        }
       }
 
       if (io) {
@@ -329,6 +351,9 @@ exports.addMember = async (req, res) => {
       return res.status(400).json({ success: false, message: "User already in room" });
     }
 
+    // Get admin user for notification sender ID
+    const admin_user_id = req.user ? req.user.id : (room.created_by || null);
+
     await sequelize.transaction(async (t) => {
       await room.increment("total_members", { transaction: t });
       await RoomMember.create({ room_id, user_id }, { transaction: t });
@@ -344,16 +369,29 @@ exports.addMember = async (req, res) => {
     });
 
     // Send notification to new member
-    await sendRoomNotification({
-      senderId: req.user.id, // Assuming req.user contains the current user
-      receiverIds: [user_id],
-      title: "Room Access Granted",
-      body: `You've been added to ${room.name}`,
-      roomId: room_id,
-      data: {
-        action: 'added_to_room'
+    try {
+      if (user_id) {
+        const notificationResult = await sendRoomNotification({
+          senderId: admin_user_id,
+          receiverIds: [user_id],
+          title: "Room Access Granted",
+          body: `You've been added to ${room.name}`,
+          roomId: room_id,
+          data: {
+            action: 'added_to_room'
+          }
+        });
+        
+        console.log('[RoomController] Add member notification result:', 
+          notificationResult.success ? 
+            `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` : 
+            `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+        );
       }
-    });
+    } catch (notificationError) {
+      console.error('[RoomController] Failed to send add member notification:', notificationError);
+      // Don't fail the add member operation if notification fails
+    }
 
     const updatedRoom = await Room.findByPk(room_id, { include: [{ model: RoomMember, as: "members" }] });
     if (io) {
@@ -390,17 +428,33 @@ exports.acceptJoinRequest = async (req, res) => {
 
     await RoomMember.create({ room_id, user_id });
 
+    // Get admin user for notification sender ID
+    const admin_user_id = req.user ? req.user.id : (room.created_by || null);
+
     // Notify user their request was accepted
-    await sendRoomNotification({
-      senderId: req.user.id, // Admin who accepted
-      receiverIds: [user_id],
-      title: "Join Request Accepted",
-      body: `Your request to join ${room.name} has been approved`,
-      roomId: room_id,
-      data: {
-        action: 'join_request_accepted'
+    try {
+      if (user_id) {
+        const notificationResult = await sendRoomNotification({
+          senderId: admin_user_id,
+          receiverIds: [user_id],
+          title: "Join Request Accepted",
+          body: `Your request to join ${room.name} has been approved`,
+          roomId: room_id,
+          data: {
+            action: 'join_request_accepted'
+          }
+        });
+        
+        console.log('[RoomController] Join request accepted notification result:', 
+          notificationResult.success ? 
+            `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` : 
+            `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+        );
       }
-    });
+    } catch (notificationError) {
+      console.error('[RoomController] Failed to send join request accepted notification:', notificationError);
+      // Don't fail the operation if notification fails
+    }
 
     res.status(200).json({ success: true, message: "User added to room successfully" });
   } catch (error) {
@@ -412,6 +466,7 @@ exports.acceptJoinRequest = async (req, res) => {
 // Request to join room
 exports.requestToJoinRoom = async (req, res) => {
   const { room_id, user_id } = req.body;
+  console.log('[requestToJoinRoom] Request body:', req.body);
 
   try {
     const room = await Room.findByPk(room_id);
@@ -428,7 +483,7 @@ exports.requestToJoinRoom = async (req, res) => {
       const existingMember = await RoomMember.findOne({ 
         where: { room_id, user_id: userIdNum } 
       });
-      
+
       if (existingMember) {
         return res.status(400).json({ success: false, message: "User already in room" });
       }
@@ -436,20 +491,33 @@ exports.requestToJoinRoom = async (req, res) => {
       await RoomMember.create({ room_id, user_id: userIdNum });
       await room.increment("total_members");
 
-      // Welcome notification
-      await sendRoomNotification({
-        senderId: userIdNum, // The user who joined
-        receiverIds: [userIdNum],
-        title: "Room Joined",
-        body: `You've joined ${room.name}!`,
-        roomId: room_id,
-        data: {
-          action: 'room_joined'
-        }
-      });
+      // Public room join notification
+      try {
+        const notificationResult = await sendRoomNotification({
+          senderId: userIdNum,
+          receiverIds: [userIdNum],
+          title: "Room Joined",
+          body: `You've joined ${room.name}!`,
+          roomId: room_id,
+          data: {
+            action: 'room_joined'
+          }
+        });
+
+        console.log('[RoomController] Public room join notification result:', 
+          notificationResult.success ? 
+            `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` : 
+            `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+        );
+      } catch (notificationError) {
+        console.error('[RoomController] Failed to send public room join notification:', notificationError);
+      }
 
       return res.status(200).json({ success: true, message: "User added to public room" });
     }
+
+    console.log('[requestToJoinRoom] Room status:', room.status);
+    console.log('[requestToJoinRoom] Room is not public, checking join_requests...');
 
     let joinRequests = [];
     if (room.join_requests) {
@@ -459,38 +527,44 @@ exports.requestToJoinRoom = async (req, res) => {
           joinRequests = Array.isArray(parsed) ? parsed : [];
         } else if (Array.isArray(room.join_requests)) {
           joinRequests = [...room.join_requests];
-        } else {
-          joinRequests = [];
         }
       } catch (e) {
+        console.error('[requestToJoinRoom] Failed to parse join_requests:', e);
         joinRequests = [];
       }
     }
 
     const alreadyRequested = joinRequests.some(id => Number(id) === userIdNum);
+    console.log('[requestToJoinRoom] Already requested:', alreadyRequested);
+
     if (!alreadyRequested) {
       joinRequests.push(userIdNum);
-      
       try {
         await room.update({ join_requests: joinRequests });
+      } catch (updateError) {
+        console.error('[RoomController] Failed to update join_requests:', updateError);
+      }
+    }
 
-        // Notify admins
-        const adminRecords = await RoomMember.findAll({
-          where: { room_id, is_admin: true },
-          raw: true
+    // Notify admins always
+    try {
+      const adminRecords = await RoomMember.findAll({
+        where: { room_id, is_admin: true },
+        raw: true
+      });
+
+      if (adminRecords.length > 0) {
+        const adminUsers = await User.findAll({
+          where: {
+            id: adminRecords.map(admin => admin.user_id),
+            pushToken: { [Op.ne]: null }
+          },
+          attributes: ['id']
         });
 
-        if (adminRecords.length > 0) {
-          const adminUsers = await User.findAll({
-            where: {
-              id: adminRecords.map(admin => admin.user_id),
-              pushToken: { [Op.ne]: null }
-            },
-            attributes: ['id']
-          });
-
-          if (adminUsers.length > 0) {
-            await sendRoomNotification({
+        if (adminUsers.length > 0) {
+          try {
+            const notificationResult = await sendRoomNotification({
               senderId: userIdNum,
               receiverIds: adminUsers.map(user => user.id),
               title: "New Join Request",
@@ -498,14 +572,26 @@ exports.requestToJoinRoom = async (req, res) => {
               roomId: room_id,
               data: { 
                 action: "join_request", 
-                requesterId: user_id 
+                requesterId: String(user_id) 
               }
             });
+
+            console.log('[RoomController] Join request notification result:',
+              notificationResult.success ?
+                `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` :
+                `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+            );
+          } catch (notificationError) {
+            console.error('[RoomController] Failed to send join request notification to admins:', notificationError);
           }
+        } else {
+          console.log('[RoomController] No admin users with push tokens found.');
         }
-      } catch (updateError) {
-        throw updateError;
+      } else {
+        console.log('[RoomController] No admin records found for room.');
       }
+    } catch (e) {
+      console.error('[RoomController] Error during admin notification:', e);
     }
 
     res.status(200).json({ success: true, message: "Join request processed" });
@@ -518,6 +604,8 @@ exports.requestToJoinRoom = async (req, res) => {
     });
   }
 };
+
+
 
 // Get join requests
 exports.getJoinRequests = async (req, res) => {
@@ -588,17 +676,32 @@ exports.removeMember = async (req, res) => {
     await room.decrement("total_members", { by: 1 });
     await member.destroy();
 
+    // Get admin user for notification sender ID
+    const admin_user_id = req.user ? req.user.id : (room.created_by || null);
+
     // Notify removed user
-    await sendRoomNotification({
-      senderId: req.user.id, // Assuming req.user contains the remover
-      receiverIds: [user_id],
-      title: "Removed from Room",
-      body: `You've been removed from ${room.name}`,
-      roomId: room_id,
-      data: {
-        action: 'removed_from_room'
+    try {
+      if (user_id) {
+        const notificationResult = await sendRoomNotification({
+          senderId: admin_user_id,
+          receiverIds: [user_id],
+          title: "Removed from Room",
+          body: `You've been removed from ${room.name}`,
+          roomId: room_id,
+          data: {
+            action: 'removed_from_room'
+          }
+        });
+        
+        console.log('[RoomController] Remove member notification result:', 
+          notificationResult.success ? 
+            `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` : 
+            `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+        );
       }
-    });
+    } catch (notificationError) {
+      console.error('[RoomController] Failed to send remove member notification:', notificationError);
+    }
 
     const updatedRoom = await Room.findByPk(room_id, {
       include: [{
@@ -746,17 +849,32 @@ exports.deleteRoom = async (req, res) => {
     }
 
     const memberIds = room.members.map(member => member.user_id);
+    
+    // Get admin user for notification sender ID
+    const admin_user_id = req.user ? req.user.id : (room.created_by || null);
 
     // Notify all members before deletion
-    await sendRoomNotification({
-      senderId: req.user.id, // Assuming req.user contains the deleter
-      receiverIds: memberIds,
-      title: "Room Deleted",
-      body: `The room "${room.name}" has been deleted`,
-      data: {
-        action: 'room_deleted'
+    try {
+      if (memberIds.length > 0) {
+        const notificationResult = await sendRoomNotification({
+          senderId: admin_user_id,
+          receiverIds: memberIds,
+          title: "Room Deleted",
+          body: `The room "${room.name}" has been deleted`,
+          data: {
+            action: 'room_deleted'
+          }
+        });
+        
+        console.log('[RoomController] Room deletion notification result:', 
+          notificationResult.success ? 
+            `Success: ${notificationResult.successCount}/${notificationResult.totalRecipients}` : 
+            `Failed: ${notificationResult.error?.message || 'Unknown error'}`
+        );
       }
-    });
+    } catch (notificationError) {
+      console.error('[RoomController] Failed to send room deletion notifications:', notificationError);
+    }
 
     await sequelize.transaction(async (t) => {
       await RoomMember.destroy({
@@ -807,6 +925,7 @@ exports.deleteRoom = async (req, res) => {
     });
   }
 };
+
 
 // Delete rooms by type
 exports.deleteRoomsByType = async (req, res) => {

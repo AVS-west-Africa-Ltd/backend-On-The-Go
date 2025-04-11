@@ -71,18 +71,20 @@ async function sendPushNotification({ title, body, data = {}, userIds = null }) 
         token: user.pushToken
       };
 
-      console.log(`[PushNotification] Sending to user ${index + 1}/${users.length} (ID: ${user.id})`);
+      console.log(`[PushNotification] Sending to user ${index + 1}/${users.length} (ID: ${user.id}, Email: ${user.email})`);
       
       try {
         const sendResult = await admin.messaging().send(message);
         console.log(`[PushNotification] Success for user ${user.id}`, {
           messageId: sendResult, 
-          username: user.username
+          username: user.username,
+          email: user.email
         });
         
         successCount++;
         results.push({
           userId: user.id,
+          email: user.email,
           status: 'success',
           messageId: sendResult
         });
@@ -90,11 +92,13 @@ async function sendPushNotification({ title, body, data = {}, userIds = null }) 
         console.error(`[PushNotification] Failed for user ${user.id}:`, {
           error: error.message,
           code: error.code,
-          username: user.username
+          username: user.username,
+          email: user.email
         });
         
         results.push({
           userId: user.id,
+          email: user.email,
           status: 'failed',
           error: {
             message: error.message,
@@ -112,7 +116,10 @@ async function sendPushNotification({ title, body, data = {}, userIds = null }) 
     };
 
     console.log('[PushNotification] Delivery complete', summary);
-    console.log('[PushNotification] Sample results (first 5):', results.slice(0, 5));
+    console.log('[PushNotification] Results summary:', {
+      successful: results.filter(r => r.status === 'success').map(r => ({ userId: r.userId, email: r.email })),
+      failed: results.filter(r => r.status === 'failed').map(r => ({ userId: r.userId, email: r.email }))
+    });
 
     return {
       success: true,
@@ -177,12 +184,27 @@ exports.sendNotificationToAllUsers = catchErrors(async (req, res) => {
  * @param {string} [options.roomId] - Associated room ID (optional)
  * @returns {Object} - Result of the notification send operation
  */
-async function sendRoomNotification({ senderId, receiverIds, title, body, data = {}, roomId = null }) {
-  if (!receiverIds || receiverIds.length === 0) {
-    console.log('[PushNotification] No receiverIds specified - skipping room notification');
+exports.sendRoomNotification = async function({ senderId, receiverIds, title, body, data = {}, roomId = null }) {
+  console.log('[PushNotification] Starting room notification', {
+    senderId,
+    receiverIds,
+    roomId
+  });
+
+  // Validate required parameters
+  if (!receiverIds || !Array.isArray(receiverIds) || receiverIds.length === 0) {
+    console.log('[PushNotification] No receiverIds specified or invalid format - skipping room notification');
     return {
       success: false,
-      message: 'No receivers specified'
+      message: 'No receivers specified or invalid receivers format'
+    };
+  }
+
+  if (!title || !body) {
+    console.log('[PushNotification] Missing required parameters (title or body) - skipping room notification');
+    return {
+      success: false, 
+      message: 'Missing required parameters'
     };
   }
 
@@ -190,30 +212,37 @@ async function sendRoomNotification({ senderId, receiverIds, title, body, data =
   const enhancedData = {
     ...data,
     type: 'room_notification',
-    senderId,
+    senderId: senderId ? String(senderId) : '',
     timestamp: new Date().toISOString()
   };
 
   if (roomId) {
-    enhancedData.roomId = roomId;
+    enhancedData.roomId = String(roomId);
   }
 
-  // Get sender info for the notification
+  // Get sender info for the notification if senderId is provided
   let senderInfo = {};
-  try {
-    const sender = await User.findByPk(senderId, {
-      attributes: ['username', 'firstName', 'lastName', 'picture']
-    });
-    if (sender) {
-      senderInfo = {
-        senderName: sender.username || `${sender.firstName} ${sender.lastName}`.trim(),
-        senderAvatar: sender.picture
-      };
+  if (senderId) {
+    try {
+      const sender = await User.findByPk(senderId, {
+        attributes: ['username', 'firstName', 'lastName', 'picture']
+      });
+      if (sender) {
+        senderInfo = {
+          senderName: sender.username || `${sender.firstName} ${sender.lastName}`.trim(),
+          senderAvatar: sender.picture || ''
+        };
+        console.log('[PushNotification] Sender info:', senderInfo);
+      }
+    } catch (error) {
+      console.error('[PushNotification] Error fetching sender info:', error);
     }
-  } catch (error) {
-    console.error('[PushNotification] Error fetching sender info:', error);
   }
 
+  // Make sure all receiverIds are strings
+  const validReceiverIds = receiverIds.filter(id => id).map(id => String(id));
+  
+  // Call the base notification function
   return sendPushNotification({
     title,
     body,
@@ -221,10 +250,9 @@ async function sendRoomNotification({ senderId, receiverIds, title, body, data =
       ...enhancedData,
       ...senderInfo
     },
-    userIds: receiverIds
+    userIds: validReceiverIds
   });
-}
-
+};
 
 /**
  * Send chat-specific push notification
@@ -237,14 +265,40 @@ async function sendRoomNotification({ senderId, receiverIds, title, body, data =
  * @param {Object} [options.customData] - Additional custom data (optional)
  * @returns {Object} - Result of the notification send operation
  */
-async function sendChatNotification({ senderId, recipientIds, roomId, message = null, mediaType = null, customData = {} }) {
+exports.sendChatNotification = async function({
+  senderId,
+  recipientIds,
+  roomId,
+  message = null,
+  mediaType = null,
+  customData = {}
+}) {
   console.log('[PushNotification] Preparing chat notification', { 
     senderId, 
     recipientIds, 
-    roomId 
+    roomId,
+    hasMessage: !!message,
+    mediaType
   });
 
   try {
+    // Validate required parameters
+    if (!recipientIds || !Array.isArray(recipientIds) || recipientIds.length === 0) {
+      console.log('[PushNotification] No recipientIds specified or invalid format - skipping chat notification');
+      return {
+        success: false,
+        message: 'No recipients specified or invalid recipients format'
+      };
+    }
+
+    if (!senderId || !roomId) {
+      console.log('[PushNotification] Missing required parameters (senderId or roomId) - skipping chat notification');
+      return {
+        success: false,
+        message: 'Missing required parameters'
+      };
+    }
+
     // Get sender info
     const sender = await User.findByPk(senderId, {
       attributes: ['username', 'firstName', 'lastName', 'picture']
@@ -267,25 +321,33 @@ async function sendChatNotification({ senderId, recipientIds, roomId, message = 
       ? `${senderName} sent a ${mediaType} file` 
       : (message ? message.substring(0, 100) : 'New message');
 
-    // Prepare data payload
+    console.log('[PushNotification] Notification content:', { title, body });
+
+    // Prepare data payload with all values as strings
     const data = {
-      ...customData,
+      ...Object.entries(customData).reduce((acc, [key, val]) => {
+        acc[key] = String(val);
+        return acc;
+      }, {}),
       type: 'chat_message',
-      senderId,
-      senderName,
+      senderId: String(senderId),
+      senderName: String(senderName),
       senderAvatar: sender.picture || '',
-      roomId,
+      roomId: String(roomId),
       timestamp: new Date().toISOString(),
-      isMediaMessage,
-      mediaType: mediaType || ''
+      isMediaMessage: isMediaMessage ? 'true' : 'false',
+      mediaType: mediaType ? String(mediaType) : ''
     };
+
+    // Make sure all recipientIds are strings
+    const validRecipientIds = recipientIds.filter(id => id).map(id => String(id));
 
     // Send notification to recipients
     return await sendPushNotification({
       title,
       body,
       data,
-      userIds: recipientIds
+      userIds: validRecipientIds
     });
 
   } catch (error) {
@@ -298,12 +360,8 @@ async function sendChatNotification({ senderId, recipientIds, roomId, message = 
       error: error.message
     };
   }
-}
-
-// Add to exports
-module.exports = {
-  ...exports,
-  sendPushNotification,
-  sendRoomNotification,
-  sendChatNotification
 };
+
+
+// Export the base function as well for reuse
+exports.sendPushNotification = sendPushNotification;

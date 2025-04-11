@@ -13,6 +13,7 @@ const upload = require("../utils/multerSetup");
 const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
 const processBusinessController = require("../cron/populate-business");
+const PushNotificationController = require("../controllers/PushNotificationController");
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
 
@@ -99,10 +100,8 @@ router.get(
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));
 router.get("/user/post/:postId", catchErrors(PostController.getPostById));
-router.get(
-  "/posts/user/:userId/:postType",
-  catchErrors(PostController.GetPostsByUserId)
-);
+router.get("/posts/user/:userId/:postType",catchErrors(PostController.GetPostsByUserId));
+router.put("/user/:userId/push-token", catchErrors(UserController.updatePushToken));
 router.get("/posts/user", catchErrors(PostController.getPosts));
 router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
@@ -197,5 +196,9 @@ router.get("/business/filters", businessController.filterBusinesses);
 router.get("/search/business", businessController.searchBusinessesByName);
 
 router.get("/process-businesses", processBusinessController.processBusinesses);
+
+// Push Notification routes
+router.post("/send-notification",catchErrors(PushNotificationController.sendNotificationToAllUsers)
+);
 
 module.exports = router;

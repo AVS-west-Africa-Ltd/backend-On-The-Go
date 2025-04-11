@@ -1,5 +1,7 @@
 const PostService = require("../services/PostService");
 const ImageService = require("../services/ImageService");
+const UserService = require("../services/UserService"); // Added UserService import
+const admin = require('firebase-admin'); // Added Firebase Admin import
 const multer = require("multer");
 const path = require("path");
 const AWS = require("aws-sdk");
@@ -75,6 +77,82 @@ const upload = multer({
   fileFilter: fileFilter,
 });
 
+// Helper function to send push notifications to followers
+async function sendNotificationsToFollowers(userId, postDescription) {
+  try {
+    // Get user details
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      console.error('User not found for sending notifications');
+      return;
+    }
+
+    // Get user's followers
+    const followers = await UserService.getFollowers(userId);
+    if (!followers || followers.length === 0) {
+      console.log('No followers to notify');
+      return;
+    }
+
+    // Filter followers who have push tokens
+    const followersWithTokens = followers.filter(follower => 
+      follower && follower.pushToken && follower.pushToken.trim() !== ''
+    );
+
+    if (followersWithTokens.length === 0) {
+      console.log('No followers with push tokens');
+      return;
+    }
+
+    console.log(`Sending notifications to ${followersWithTokens.length} followers`);
+
+    // Create shortened description for notification
+    const shortDescription = postDescription.length > 50 
+      ? `${postDescription.substring(0, 50)}...` 
+      : postDescription;
+
+    // Send notification to each follower
+    const sendPromises = followersWithTokens.map(async (follower) => {
+      try {
+        const message = {
+          notification: {
+            title: `${user.username || 'Someone you follow'} shared a new post`,
+            body: shortDescription
+          },
+          data: {
+            type: 'new_post',
+            posterId: userId.toString(),
+            posterName: user.username || '',
+            timestamp: Date.now().toString()
+          },
+          token: follower.pushToken
+        };
+
+        await admin.messaging().send(message);
+        console.log(`Notification sent to follower: ${follower.id}`);
+        return { userId: follower.id, status: 'success' };
+      } catch (error) {
+        console.error(`Failed to send notification to follower ${follower.id}:`, error);
+        return { userId: follower.id, status: 'failed', error: error.message };
+      }
+    });
+
+    const results = await Promise.all(sendPromises);
+    const successCount = results.filter(r => r.status === 'success').length;
+    console.log(`Successfully sent ${successCount} notifications out of ${followersWithTokens.length}`);
+    
+    return {
+      totalFollowers: followers.length,
+      followersWithTokens: followersWithTokens.length,
+      successCount,
+      failureCount: followersWithTokens.length - successCount
+    };
+  } catch (error) {
+    console.error('Error sending notifications to followers:', error);
+    return null;
+  }
+}
+
 class PostController {
   static async createPost(req, res) {
     const uploadHandler = upload.array("media", 10);
@@ -107,9 +185,15 @@ class PostController {
 
         const post = await PostService.createPost(payload);
 
+        // Send notifications to followers
+        const notificationResult = await sendNotificationsToFollowers(userId, description);
+        
         return res.status(201).json({
           message: "Post successfully created",
           post,
+          notifications: notificationResult 
+            ? `Notifications sent to ${notificationResult.successCount} followers` 
+            : "No notifications sent"
         });
       } catch (error) {
         console.error("Error creating post:", error);

@@ -10,6 +10,7 @@ const Chat = require('../models/Chat');
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const crypto = require('crypto');
+const { sendPushNotification } = require('./PushNotificationController');
 
 
 const s3 = new AWS.S3({
@@ -320,71 +321,47 @@ exports.addMember = async (req, res) => {
 
   try {
     const room = await Room.findByPk(room_id);
-
     if (!room) {
-      return res.status(404).json({
-        success: false,
-        message: "Room not found",
-      });
+      return res.status(404).json({ success: false, message: "Room not found" });
     }
 
-    const existingMember = await RoomMember.findOne({
-      where: { room_id, user_id },
-    });
-
+    const existingMember = await RoomMember.findOne({ where: { room_id, user_id } });
     if (existingMember) {
-      return res.status(400).json({
-        success: false,
-        message: "User is already a member of the room",
-      });
+      return res.status(400).json({ success: false, message: "User already in room" });
     }
 
-    // Start transaction
-    const result = await sequelize.transaction(async (t) => {
-      // Add member to room
-      await room.increment("total_members", { by: 1 }, { transaction: t });
+    // Add member
+    await sequelize.transaction(async (t) => {
+      await room.increment("total_members", { transaction: t });
+      await RoomMember.create({ room_id, user_id }, { transaction: t });
 
-      const member = await RoomMember.create({
-        room_id,
-        user_id,
-      }, { transaction: t });
-
-      // If this is an invite acceptance, remove user from invitees
       if (is_invite_acceptance) {
         await InvitationController.removeUserFromInvitation(room_id, user_id);
       }
 
-      // Remove user from join_requests if they were in the list
-      const joinRequests = Array.isArray(room.join_requests) ? room.join_requests : [];
-      const updatedRequests = joinRequests.filter(id => id !== user_id);
+      // Remove from join_requests if present
+      const updatedRequests = Array.isArray(room.join_requests)
+        ? room.join_requests.filter(id => id !== user_id)
+        : [];
       await room.update({ join_requests: updatedRequests }, { transaction: t });
-
-      return member;
     });
 
-    // Get updated room data
-    const updatedRoom = await Room.findByPk(room_id, {
-      include: [{
-        model: RoomMember,
-        as: "members",
-        attributes: ["user_id"],
-      }],
+    // Notify the new member
+    await sendPushNotification({
+      title: "Room Access Granted",
+      body: `You've been added to ${room.name}`,
+      userIds: [user_id],
+      data: { type: "room_added", roomId: room_id }
     });
 
-    // Emit socket events for member addition
+    // Socket updates (existing code)
+    const updatedRoom = await Room.findByPk(room_id, { include: [{ model: RoomMember, as: "members" }] });
     if (io) {
       io.emit('room_updated', updatedRoom);
-      io.emit(`user_${user_id}_rooms_updated`, {
-        type: 'joined_room',
-        room: updatedRoom
-      });
+      io.emit(`user_${user_id}_rooms_updated`, { type: 'joined_room', room: updatedRoom });
     }
 
-    res.status(201).json({
-      success: true,
-      message: "Member added successfully",
-      data: result,
-    });
+    res.status(201).json({ success: true, message: "Member added" });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -425,102 +402,169 @@ exports.acceptJoinRequest = async (req, res) => {
 
 exports.requestToJoinRoom = async (req, res) => {
   const { room_id, user_id } = req.body;
+  console.log(`[RoomController] Request to join - Room: ${room_id}, User: ${user_id}`);
 
   try {
+    // 1. Fetch the room
     const room = await Room.findByPk(room_id);
-
     if (!room) {
+      console.error(`[RoomController] Room not found: ${room_id}`);
       return res.status(404).json({ success: false, message: "Room not found" });
     }
 
-    // If the room is public, directly add the user to the room
-    if (room.status === 'Public') {
-      // Check if the user is already a member
-      const existingMember = await RoomMember.findOne({
-        where: { room_id, user_id },
-      });
+    console.log(`[RoomController] Room found - Type: ${room.type}, Status: ${room.status}`);
 
+    // 2. Convert user_id to number for consistent comparison
+    const userIdNum = Number(user_id);
+    if (isNaN(userIdNum)) {
+      console.error('[RoomController] Invalid user_id format');
+      return res.status(400).json({ success: false, message: "Invalid user ID" });
+    }
+
+    // 3. Handle public rooms (auto-join)
+    if (room.status === 'Public') {
+      console.log('[RoomController] Handling public room join');
+      const existingMember = await RoomMember.findOne({ 
+        where: { room_id, user_id: userIdNum } 
+      });
+      
       if (existingMember) {
-        return res.status(400).json({
-          success: false,
-          message: "User is already a member of the room",
+        console.log('[RoomController] User already in room');
+        return res.status(400).json({ 
+          success: false, 
+          message: "User already in room" 
         });
       }
 
-      // Add the user to the room
-      await RoomMember.create({ room_id, user_id });
-      await room.increment("total_members", { by: 1 });
+      // Add user to room
+      await RoomMember.create({ room_id, user_id: userIdNum });
+      await room.increment("total_members");
 
-      return res.status(200).json({
-        success: true,
-        message: "User successfully joined the public room",
+      // Send welcome notification to user
+      const user = await User.findByPk(userIdNum);
+      if (user && user.pushToken) {
+        console.log('[RoomController] Sending welcome notification');
+        await sendPushNotification({
+          title: "Room Joined",
+          body: `You've joined ${room.name}!`,
+          userIds: [userIdNum],
+          data: { type: "room_joined", roomId: room_id }
+        });
+      }
+
+      return res.status(200).json({ 
+        success: true, 
+        message: "User added to public room" 
       });
     }
 
-    // If the room is private and displayed, handle join requests
-    if (room.status !== 'Private' || !room.is_private_displayed) {
-      return res.status(400).json({ success: false, message: "Invalid room type" });
-    }
-
-    // Handle join requests for private rooms
-    // ALWAYS initialize joinRequests as an array
-    let joinRequests = [];
+    // 4. Handle private room join requests
+    console.log('[RoomController] Handling private room join request');
     
-    // Handle various data formats that might be stored in the database
+    // Robust join_requests parsing
+    let joinRequests = [];
     if (room.join_requests) {
-      if (typeof room.join_requests === 'string') {
-        try {
-          // Try to parse if it's a JSON string
-          joinRequests = JSON.parse(room.join_requests);
-          // Make sure it's an array after parsing
-          if (!Array.isArray(joinRequests)) {
-            console.error("join_requests was parsed but is not an array");
-            joinRequests = [];
-          }
-        } catch (e) {
-          console.error("Failed to parse join_requests string:", e);
+      try {
+        // Handle string case
+        if (typeof room.join_requests === 'string') {
+          const parsed = JSON.parse(room.join_requests);
+          joinRequests = Array.isArray(parsed) ? parsed : [];
+          console.log('[RoomController] Parsed join_requests from string');
+        } 
+        // Handle array case
+        else if (Array.isArray(room.join_requests)) {
+          joinRequests = [...room.join_requests];
+          console.log('[RoomController] Copied existing join_requests array');
+        }
+        // Handle unexpected cases
+        else {
+          console.warn('[RoomController] Unexpected join_requests format, initializing empty array');
           joinRequests = [];
         }
-      } else if (Array.isArray(room.join_requests)) {
-        joinRequests = [...room.join_requests]; // Create a copy of the array
-      } else {
-        console.warn("join_requests is neither a string nor an array, initializing as empty array");
+      } catch (e) {
+        console.error('[RoomController] Error parsing join_requests:', e);
         joinRequests = [];
       }
     }
 
-    // Check if user_id is already in the array (safely)
-    const userIdNum = Number(user_id);
-    let userIdExists = false;
-    
-    // Only perform .some() if we're sure joinRequests is an array
-    if (Array.isArray(joinRequests)) {
-      userIdExists = joinRequests.some(id => 
-        (typeof id === 'number' && id === userIdNum) || 
-        (typeof id === 'string' && id === user_id.toString())
-      );
+    console.log(`[RoomController] Current join requests (type: ${typeof joinRequests}):`, joinRequests);
+
+    // Additional array validation
+    if (!Array.isArray(joinRequests)) {
+      console.error('[RoomController] joinRequests is not an array, forcing to array');
+      joinRequests = [];
     }
 
-    // Only add if user is not already in the requests
-    if (!userIdExists) {
-      joinRequests.push(userIdNum); // Add as number for consistency
+    // Check if user already requested
+    const alreadyRequested = joinRequests.some(id => Number(id) === userIdNum);
+    console.log(`[RoomController] User already requested: ${alreadyRequested}`);
+
+    if (!alreadyRequested) {
+      console.log('[RoomController] Adding new join request');
+      joinRequests.push(userIdNum);
       
-      // Update the room with the new join_requests array
-      await room.update({ join_requests: joinRequests });
-      
-      console.log(`Added user ${user_id} to join requests for room ${room_id}`);
-    } else {
-      console.log(`User ${user_id} already in join requests for room ${room_id}`);
+      try {
+        await room.update({ join_requests: joinRequests });
+        console.log('[RoomController] Updated room with new join request');
+
+        // Notify admins
+        const adminRecords = await RoomMember.findAll({
+          where: { 
+            room_id, 
+            is_admin: true 
+          },
+          raw: true
+        });
+
+        console.log(`[RoomController] Found ${adminRecords.length} admins`);
+
+        if (adminRecords.length > 0) {
+          const adminUsers = await User.findAll({
+            where: {
+              id: adminRecords.map(admin => admin.user_id),
+              pushToken: { [Op.ne]: null }
+            },
+            attributes: ['id', 'pushToken']
+          });
+
+          console.log(`[RoomController] ${adminUsers.length} admins with push tokens`);
+
+          if (adminUsers.length > 0) {
+            await sendPushNotification({
+              title: "New Join Request",
+              body: `A user wants to join ${room.name}`,
+              userIds: adminUsers.map(user => user.id),
+              data: { 
+                type: "join_request", 
+                roomId: room_id, 
+                requesterId: user_id 
+              }
+            });
+            console.log('[RoomController] Sent notifications to admins');
+          }
+        }
+      } catch (updateError) {
+        console.error('[RoomController] Error updating join requests:', updateError);
+        throw updateError;
+      }
     }
 
     res.status(200).json({ 
       success: true, 
-      message: "Join request sent successfully" 
+      message: "Join request processed" 
     });
-    
   } catch (error) {
-    console.error("Error in requestToJoinRoom:", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('[RoomController] Error in requestToJoinRoom:', {
+      error: error.message,
+      stack: error.stack,
+      room_id,
+      user_id
+    });
+    res.status(500).json({ 
+      success: false, 
+      error: "Internal server error",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

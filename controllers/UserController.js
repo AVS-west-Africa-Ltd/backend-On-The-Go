@@ -41,7 +41,7 @@ const { uploadProfileImage } = require("../utils/upload");
 class UserController {
   static async CreateUser(req, res) {
     try {
-      const { username, email, password, pushToken } = req.body;
+      const { username, email, password, pushToken, phone_number } = req.body;
 
       if (!email || !password || !username) {
         return res.status(400).json({ message: "Email, username and password are required" });
@@ -52,7 +52,9 @@ class UserController {
         where: {
           [Op.or]: [
             { email: email },
-            { username: username }
+            { username: username },
+            // { phone_number:  phone_number }
+
           ]
         }
       });
@@ -61,6 +63,9 @@ class UserController {
         if (existingUser.email === email) {
           return res.status(400).json({ message: "Email already registered" });
         }
+        // if (existingUser.phone_number === phone_number) {
+        //   return res.status(400).json({ message: "Phone number already used" });
+        // }
         if (existingUser.username === username) {
           return res.status(400).json({ message: "Username already taken" });
         }

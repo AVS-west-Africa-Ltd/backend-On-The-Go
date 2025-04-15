@@ -144,31 +144,45 @@ class UserController {
 
 
   // Check if it's a Sequelize Unique Constraint error
-  if (error.name === 'SequelizeUniqueConstraintError') {
-    const errors = error?.errors?.map(err => ({
-      field: err?.path || "unknown",
-      message: err?.message || "Unique constraint failed"
-    })) || [];
+  // if (error.name === 'SequelizeUniqueConstraintError') {
+  //   const errors = error?.errors?.map(err => ({
+  //     field: err?.path || "unknown",
+  //     message: err?.message || "Unique constraint failed"
+  //   })) || [];
 
-    return res.status(400).json({
-      message: "Validation error",
-      errors: errors.length > 0 ? errors : [
-        { field: "unknown", message: "Unique constraint failed" }
-      ]
-    });
+  //   return res.status(400).json({
+  //     message: "Validation error",
+  //     errors: errors.length > 0 ? errors : [
+  //       { field: "unknown", message: "Unique constraint failed" }
+  //     ]
+  //   });
     
    
-  }
-  if (error.status === 400) {
-    // Transform the existing error format
-    const transformedErrors = error.errors.map(err => ({
-      field: err.field.replace('users_', ''),
-      message: `${err.field.replace('users_', '')} is already taken`
-    }));
+  // }
+
+
+  
+  if (error.name === 'SequelizeUniqueConstraintError' || error.status === 400) {
+    const errors = (error.errors || []).map(err => {
+      // Normalize field names (remove 'users_' prefix if present)
+      const field = err.path ? err.path.replace('users_', '') : err.field.replace('users_', '');
+      
+      // Create user-friendly messages
+      const messages = {
+        username: 'Username is already taken',
+        email: 'Email is already registered',
+        phone_number: 'Phone number is already in use'
+      };
+      
+      return {
+        field,
+        message: messages[field] || err.message || 'Field must be unique'
+      };
+    });
 
     return res.status(400).json({
-      message: "Registration failed",
-      errors: transformedErrors
+      message: "Validation failed",
+      errors
     });
   }
 

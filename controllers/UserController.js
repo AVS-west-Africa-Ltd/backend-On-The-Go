@@ -156,6 +156,20 @@ class UserController {
         { field: "unknown", message: "Unique constraint failed" }
       ]
     });
+    
+   
+  }
+  if (error.status === 400) {
+    // Transform the existing error format
+    const transformedErrors = error.errors.map(err => ({
+      field: err.field.replace('users_', ''),
+      message: `${err.field.replace('users_', '')} is already taken`
+    }));
+
+    return res.status(400).json({
+      message: "Registration failed",
+      errors: transformedErrors
+    });
   }
 
   // Fallback error

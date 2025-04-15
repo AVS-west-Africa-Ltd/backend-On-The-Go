@@ -47,17 +47,50 @@ class UserController {
         return res.status(400).json({ message: "Email, username and password are required" });
       }
 
-      // Check for both email and username existence
-      const existingUser = await userService.getUserByEmailOrUsername({
-        where: {
-          [Op.or]: [
-            { email: email },
-            { username: username },
-            { phone_number:  phone_number }
 
-          ]
-        }
-      });
+          // Check for existing user conflicts
+    const existingUser = await userService.getUserByEmailOrUsername({
+      where: {
+        [Op.or]: [
+          { email },
+          { username },
+          { phone_number }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      const conflicts = [];
+
+      if (existingUser.email === email) {
+        conflicts.push({ field: "email", message: "Email already registered" });
+      }
+      if (existingUser.phone_number === phone_number) {
+        conflicts.push({ field: "phone_number", message: "Phone number already used" });
+      }
+      if (existingUser.username === username) {
+        conflicts.push({ field: "username", message: "Username already taken" });
+      }
+
+      if (conflicts.length > 0) {
+        return res.status(400).json({
+          message: "Validation error",
+          errors: conflicts
+        });
+      }
+    }
+
+      // Check for both email and username existence
+      // const existingUser = await userService.getUserByEmailOrUsername({
+      //   where: {
+      //     [Op.or]: [
+      //       { email: email },
+      //       { username: username },
+      //       { phone_number:  phone_number }
+
+      //     ]
+      //   }
+      // });
 
       // if (existingUser) {
       //   if (existingUser.email === email) {
@@ -71,23 +104,6 @@ class UserController {
       //   }
       // }
 
-      if (existingUser) {
-        const conflicts = [];
-      
-        if (existingUser.email === email) {
-          conflicts.push("Email already registered");
-        }
-        if (existingUser.phone_number === phone_number) {
-          conflicts.push("Phone number already used");
-        }
-        if (existingUser.username === username) {
-          conflicts.push("Username already taken");
-        }
-      
-        if (conflicts.length > 0) {
-          return res.status(400).json({ message: conflicts.join(", ") , errors: `validation error:${conflicts}`});
-        }
-      }
       
 
       const hashedPassword = bcrypt.hashSync(password, 10);

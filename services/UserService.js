@@ -17,8 +17,11 @@ class UserService {
     try {
       return await User.create(data);
     } catch (error) {
-      throw new Error(error);
+      // throw new Error(error);
+      throw error; 
     }
+
+  
   }
 
   static async getUserById(userId) {

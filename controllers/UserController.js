@@ -53,7 +53,7 @@ class UserController {
           [Op.or]: [
             { email: email },
             { username: username },
-            // { phone_number:  phone_number }
+            { phone_number:  phone_number }
 
           ]
         }
@@ -63,9 +63,9 @@ class UserController {
         if (existingUser.email === email) {
           return res.status(400).json({ message: "Email already registered" });
         }
-        // if (existingUser.phone_number === phone_number) {
-        //   return res.status(400).json({ message: "Phone number already used" });
-        // }
+        if (existingUser.phone_number === phone_number) {
+          return res.status(400).json({ message: "Phone number already used" });
+        }
         if (existingUser.username === username) {
           return res.status(400).json({ message: "Username already taken" });
         }
@@ -91,21 +91,43 @@ class UserController {
     } catch (error) {
       console.error('Error in CreateUser:', error);
 
-      if (error.name === 'SequelizeUniqueConstraintError') {
-        const errors = error.errors.map(err => ({
-          field: err.path,
-          message: err.message
-        }));
-        return res.status(400).json({
-          message: "Validation error",
-          errors: errors
-        });
-      }
+      // if (error.name === 'SequelizeUniqueConstraintError') {
+      //   const errors = error.errors.map(err => ({
+      //     field: err.path,
+      //     message: err.message
+      //   }));
+      //   return res.status(400).json({
+      //     message: "Validation error",
+      //     errors: errors
+      //   });
+      // }
 
-      return res.status(500).json({
-        error: "Internal server error",
-        details: error.message
-      });
+      // return res.status(500).json({
+      //   error: "Internal server error",
+      //   details: error.message
+      // });
+
+
+  // Check if it's a Sequelize Unique Constraint error
+  if (error.name === 'SequelizeUniqueConstraintError') {
+    const errors = error?.errors?.map(err => ({
+      field: err?.path || "unknown",
+      message: err?.message || "Unique constraint failed"
+    })) || [];
+
+    return res.status(400).json({
+      message: "Validation error",
+      errors: errors.length > 0 ? errors : [
+        { field: "unknown", message: "Unique constraint failed" }
+      ]
+    });
+  }
+
+  // Fallback error
+  return res.status(500).json({
+    error: "Internal server error",
+    details: error.message || "Something went wrong"
+  });
     }
   }
 

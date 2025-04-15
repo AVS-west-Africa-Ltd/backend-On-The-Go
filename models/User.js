@@ -17,18 +17,12 @@ const User = sequelize.define(
     username: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: {
-        name: 'unique_username',
-        msg: 'Username is already taken' 
-      },
+      unique: true,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: {
-        name: 'unique_email',
-        msg: 'Email is already registered' 
-      },
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
@@ -36,10 +30,7 @@ const User = sequelize.define(
     phone_number: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: {
-        name: 'unique_phone',
-        msg: 'Phone number is already in use' 
-      },    
+      unique: true,
 
     },
     picture: {

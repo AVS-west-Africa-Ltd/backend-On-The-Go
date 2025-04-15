@@ -14,6 +14,9 @@ const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
 const processBusinessController = require("../cron/populate-business");
 const PushNotificationController = require("../controllers/PushNotificationController");
+const VoucherController = require("../controllers/VoucherController");
+
+
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
 
@@ -201,4 +204,14 @@ router.get("/process-businesses", processBusinessController.processBusinesses);
 router.post("/send-notification",catchErrors(PushNotificationController.sendNotificationToAllUsers)
 );
 
+
+// Voucher routes
+router.post("/vouchers", authMiddleware, catchErrors(VoucherController.createVoucher));
+router.post("/vouchers/:voucherId/claim", authMiddleware, catchErrors(VoucherController.claimVoucher));
+router.post("/vouchers/use/:userVoucherId", authMiddleware, catchErrors(VoucherController.useVoucher));
+router.post("/vouchers/:voucherId/gift", authMiddleware, catchErrors(VoucherController.giftVoucher));
+router.post("/vouchers/:voucherId/request-exchange", authMiddleware, catchErrors(VoucherController.requestExchange));
+router.post("/vouchers/:requestId/respond-exchange", authMiddleware, catchErrors(VoucherController.respondToExchange));
+router.get("/users/:userId/vouchers", authMiddleware, catchErrors(VoucherController.getAllUserVouchers));
+router.get("/vouchers/exchange-requests/all", authMiddleware, catchErrors(VoucherController.getAllPendingExchangeRequests));
 module.exports = router;

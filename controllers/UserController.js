@@ -59,17 +59,36 @@ class UserController {
         }
       });
 
+      // if (existingUser) {
+      //   if (existingUser.email === email) {
+      //     return res.status(400).json({ message: "Email already registered" });
+      //   }
+      //   if (existingUser.phone_number === phone_number) {
+      //     return res.status(400).json({ message: "Phone number already used" });
+      //   }
+      //   if (existingUser.username === username) {
+      //     return res.status(400).json({ message: "Username already taken" });
+      //   }
+      // }
+
       if (existingUser) {
+        const conflicts = [];
+      
         if (existingUser.email === email) {
-          return res.status(400).json({ message: "Email already registered" });
+          conflicts.push("Email already registered");
         }
         if (existingUser.phone_number === phone_number) {
-          return res.status(400).json({ message: "Phone number already used" });
+          conflicts.push("Phone number already used");
         }
         if (existingUser.username === username) {
-          return res.status(400).json({ message: "Username already taken" });
+          conflicts.push("Username already taken");
+        }
+      
+        if (conflicts.length > 0) {
+          return res.status(400).json({ message: conflicts.join(", ") , errors: `validation error:${conflicts}`});
         }
       }
+      
 
       const hashedPassword = bcrypt.hashSync(password, 10);
       const user = await userService.createUser({

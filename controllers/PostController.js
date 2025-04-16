@@ -1,6 +1,7 @@
 const PostService = require("../services/PostService");
 const ImageService = require("../services/ImageService");
 const UserService = require("../services/UserService"); // Added UserService import
+const VoucherService = require("../services/VoucherService");
 const admin = require('firebase-admin'); // Added Firebase Admin import
 const multer = require("multer");
 const path = require("path");
@@ -156,7 +157,6 @@ async function sendNotificationsToFollowers(userId, postDescription) {
 class PostController {
   static async createPost(req, res) {
     const uploadHandler = upload.array("media", 10);
-    console.log("hit")
     uploadHandler(req, res, async (err) => {
       if (err) {
         console.error("Error uploading files:", err);
@@ -188,12 +188,33 @@ class PostController {
         // Send notifications to followers
         const notificationResult = await sendNotificationsToFollowers(userId, description);
         
+        // If this post is about a business, automatically create a voucher for the user
+        let voucherResult = null;
+        if (businessId) {
+          try {
+            voucherResult = await VoucherService.createAutomaticVoucher(businessId, userId);
+            
+            // Emit socket event if needed
+            const io = req.app.get('io');
+            if (io) {
+              io.to(userId).emit('voucher_created', {
+                message: "You received a voucher for your post!",
+                voucher: voucherResult
+              });
+            }
+          } catch (voucherError) {
+            console.error("Error creating automatic voucher:", voucherError);
+            voucherResult = { error: voucherError.message };
+          }
+        }
+
         return res.status(201).json({
           message: "Post successfully created",
           post,
           notifications: notificationResult 
             ? `Notifications sent to ${notificationResult.successCount} followers` 
-            : "No notifications sent"
+            : "No notifications sent",
+          voucher: voucherResult
         });
       } catch (error) {
         console.error("Error creating post:", error);
@@ -317,6 +338,28 @@ class PostController {
       return res.status(200).json({ info: posts });
     } catch (err) {
       return res.status(500).json({ error: err.message });
+    }
+  }
+
+  static async getPostStatistics(req, res) {
+    try {
+      const { userId } = req.params;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+  
+      const statistics = await PostService.getPostStatistics(userId);
+      
+      return res.status(200).json({
+        success: true,
+        data: statistics
+      });
+    } catch (error) {
+      return res.status(500).json({ 
+        success: false,
+        error: error.message 
+      });
     }
   }
 }

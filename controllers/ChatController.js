@@ -98,8 +98,12 @@ exports.sendMessage = async (req, res) => {
         return res.status(404).json({ success: false, message: "Room not found" });
       }
 
-      if (room.broadcast_enabled && !memberInfo.is_admin) {
-        return res.status(403).json({ success: false, message: "Only administrators can send messages when broadcast mode is enabled" });
+      // Check if broadcast is enabled and if sender is not the room creator
+      if (room.broadcast_enabled && String(room.created_by) !== String(sender_id)) {
+        return res.status(403).json({ 
+          success: false, 
+          message: "Only room creator can send messages when broadcast mode is enabled" 
+        });
       }
 
       // Create and encrypt message
@@ -452,7 +456,6 @@ exports.toggleBroadcast = async (req, res) => {
 
     await room.update({
       broadcast_enabled,
-      status: broadcast_enabled ? 'Broadcast' : 'Private'
     });
 
     // Get all room members except the creator (who is toggling)

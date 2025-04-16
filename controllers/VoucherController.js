@@ -1198,6 +1198,156 @@ class VoucherController {
       });
     }
   }
+
+/**
+ * Get business voucher statistics (most exchanged, most used, least used)
+ * GET /api/vouchers/business-stats
+ */
+static async getBusinessVoucherStats(req, res) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        message: "Authentication required"
+      });
+    }
+
+    const { Op } = require('sequelize');
+    const currentDate = new Date();
+    const limit = parseInt(req.query.limit) || 10; // Get limit from query params or default to 10
+
+    // Helper function to get date ranges
+    const getDateRange = (period) => {
+      const date = new Date();
+      switch (period) {
+        case 'week':
+          const startOfWeek = new Date(date);
+          startOfWeek.setDate(date.getDate() - date.getDay());
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          return { start: startOfWeek, end: endOfWeek };
+        case 'month':
+          const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+          const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+          return { start: startOfMonth, end: endOfMonth };
+        case 'year':
+          const startOfYear = new Date(date.getFullYear(), 0, 1);
+          const endOfYear = new Date(date.getFullYear(), 11, 31);
+          return { start: startOfYear, end: endOfYear };
+        default:
+          return { start: new Date(0), end: new Date() };
+      }
+    };
+
+    // Helper function to get stats for a period
+    const getStatsForPeriod = async (period) => {
+      const { start, end } = getDateRange(period);
+
+      // 1. Get most exchanged businesses
+      const exchangeRequests = await VoucherExchangeRequest.findAll({
+        where: {
+          status: 'accepted',
+          updatedAt: { [Op.between]: [start, end] }
+        },
+        raw: true
+      });
+
+      const exchangeCounts = {};
+      for (const request of exchangeRequests) {
+        // Get voucher details manually
+        const requesterVoucher = await UserVoucher.findByPk(request.requesterVoucherId);
+        const requestedVoucher = await UserVoucher.findByPk(request.requestedVoucherId);
+        
+        if (requesterVoucher && requestedVoucher) {
+          const requesterTemplate = await VoucherTemplate.findByPk(requesterVoucher.templateId);
+          const requestedTemplate = await VoucherTemplate.findByPk(requestedVoucher.templateId);
+          
+          if (requesterTemplate) {
+            exchangeCounts[requesterTemplate.businessId] = (exchangeCounts[requesterTemplate.businessId] || 0) + 1;
+          }
+          if (requestedTemplate) {
+            exchangeCounts[requestedTemplate.businessId] = (exchangeCounts[requestedTemplate.businessId] || 0) + 1;
+          }
+        }
+      }
+
+      // 2. Get most used businesses
+      const usedVouchers = await UserVoucher.findAll({
+        where: {
+          isUsed: true,
+          usedAt: { [Op.between]: [start, end] }
+        },
+        raw: true
+      });
+
+      const usageCounts = {};
+      for (const voucher of usedVouchers) {
+        const template = await VoucherTemplate.findByPk(voucher.templateId);
+        if (template) {
+          usageCounts[template.businessId] = (usageCounts[template.businessId] || 0) + 1;
+        }
+      }
+
+      // 3. Get least used businesses (claimed but not used)
+      const unusedVouchers = await UserVoucher.findAll({
+        where: {
+          isUsed: false,
+          createdAt: { [Op.lte]: end }
+        },
+        raw: true
+      });
+
+      const unusedCounts = {};
+      for (const voucher of unusedVouchers) {
+        const template = await VoucherTemplate.findByPk(voucher.templateId);
+        if (template) {
+          unusedCounts[template.businessId] = (unusedCounts[template.businessId] || 0) + 1;
+        }
+      }
+
+      // Helper to process counts and get business details
+      const processCounts = async (counts) => {
+        const entries = Object.entries(counts);
+        entries.sort((a, b) => b[1] - a[1]);
+        
+        const results = [];
+        for (const [businessId, count] of entries.slice(0, limit)) { // Use the limit parameter here
+          const business = await Business.findByPk(businessId);
+          results.push({
+            businessId: Number(businessId),
+            businessName: business ? business.name : 'Unknown',
+            count
+          });
+        }
+        return results;
+      };
+
+      return {
+        mostExchangedBusinesses: await processCounts(exchangeCounts),
+        mostUsedBusinesses: await processCounts(usageCounts),
+        leastUsedBusinesses: await processCounts(unusedCounts)
+      };
+    };
+
+    // Get stats for all periods
+    const stats = {
+      week: await getStatsForPeriod('week'),
+      month: await getStatsForPeriod('month'),
+      year: await getStatsForPeriod('year')
+    };
+
+    return res.status(200).json({
+      message: "Business voucher statistics retrieved successfully",
+      stats
+    });
+
+  } catch (error) {
+    console.error("Error fetching business voucher stats:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+}
 }
 
 module.exports = VoucherController;

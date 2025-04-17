@@ -12,7 +12,7 @@ const setupAssociations = require("./models/associations");
 const compression = require("compression");
 const morgan = require("morgan");
 const errorHandler = require("./handlers/errorHandler");
-const socketConfig = require("./services/UserNotificationSocket");
+const admin = require('firebase-admin'); 
 
 // Import models
 const User = require("./models/User");
@@ -20,11 +20,11 @@ const Room = require("./models/Room");
 const RoomMember = require("./models/RoomMember");
 const Chat = require("./models/Chat");
 const Invitation = require("./models/Invitation");
+const Voucher = require("./models/Voucher");
 
 // Add Swagger imports
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-const admin = require('firebase-admin'); 
 
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
@@ -35,7 +35,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5002;
 const app = express();
 
 // Swagger definition
@@ -110,6 +110,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 
+// Use compression middleware
+app.use(compression());
+
 // Logging
 if (process.env.NODE_ENV === "production") {
   app.use(morgan("combined"));
@@ -134,14 +137,37 @@ app.use("/zone", zoneRouter);
 // Setup associations **before** syncing database
 setupAssociations();
 
-// Initialize Socket.IO
+// Initialize HTTP server
 const server = http.createServer(app);
-const io = setupSocketIO(server);
-socketConfig.initialize(server);
 
-app.get("/", (req, res) => {
-  res.send("<h1>Welcome Onthego server</h1>");
+// Setup Socket.IO - CHOOSE ONE METHOD ONLY
+// Option 1: Use setupSocketIO
+const io = setupSocketIO(server);
+app.set('io', io);
+
+// Add connection logging
+io.on('connection', (socket) => {
+  console.log(`[Socket] New connection: ${socket.id}`);
+  
+  // Handle user joining their room
+  socket.on('join_user_room', (userId) => {
+    console.log(`[Socket] User ${userId} joining room user_${userId}`);
+    socket.join(`user_${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`[Socket] Disconnected: ${socket.id}`);
+  });
 });
+
+// Option 2: OR use socketConfig (not both)
+// const socketConfig = require("./services/UserNotificationSocket");
+// socketConfig.initialize(server);
+
+// Remove this duplicate route as it's already defined above
+// app.get("/", (req, res) => {
+//   res.send("<h1>Welcome Onthego server</h1>");
+// });
 
 // Sync Database with Associations
 const syncDatabase = async () => {
@@ -151,6 +177,7 @@ const syncDatabase = async () => {
     await Room.sync();
     await RoomMember.sync();
     await Chat.sync();
+    await Voucher.sync();
     await Invitation.sync();
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 

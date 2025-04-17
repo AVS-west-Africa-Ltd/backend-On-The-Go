@@ -255,6 +255,46 @@ class PostService {
       throw new Error("Error fetching bookmarked posts");
     }
   }
+
+  static async getPostStatistics(userId) {
+    try {
+      // Get total posts count
+      const totalPosts = await Post.count({
+        where: { userId }
+      });
+  
+      // Get posts by rating categories
+      const highRatingPosts = await Post.count({
+        where: { 
+          userId,
+          rating: { [Op.gte]: 4 } // 4 stars and above
+        }
+      });
+  
+      const mediumRatingPosts = await Post.count({
+        where: { 
+          userId,
+          rating: { [Op.between]: [2, 3.99] } // 2-3.99 stars
+        }
+      });
+  
+      const lowRatingPosts = await Post.count({
+        where: { 
+          userId,
+          rating: { [Op.lt]: 2 } // Below 2 stars
+        }
+      });
+  
+      return {
+        totalPosts,
+        highRatingPosts,
+        mediumRatingPosts,
+        lowRatingPosts
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = PostService;

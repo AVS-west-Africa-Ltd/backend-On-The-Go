@@ -363,5 +363,111 @@ exports.sendChatNotification = async function({
 };
 
 
+/**
+ * Send post creation push notification to followers
+ * @param {Object} options - Notification configuration
+ * @param {string} options.posterId - ID of the user who created the post
+ * @param {Array} options.followerIds - Array of follower user IDs to notify
+ * @param {string} options.postDescription - Description/content of the post
+ * @param {string} [options.postId] - ID of the created post (optional)
+ * @param {string} [options.postType] - Type of post (optional)
+ * @param {Object} [options.customData] - Additional custom data (optional)
+ * @returns {Object} - Result of the notification send operation
+ */
+exports.sendPostNotification = async function({
+  posterId,
+  followerIds,
+  postDescription,
+  postId = null,
+  postType = null,
+  customData = {}
+}) {
+  console.log('[PushNotification] Preparing post notification', { 
+    posterId, 
+    followerCount: followerIds.length,
+    hasDescription: !!postDescription,
+    postType
+  });
+
+  try {
+    // Validate required parameters
+    if (!followerIds || !Array.isArray(followerIds) || followerIds.length === 0) {
+      console.log('[PushNotification] No followerIds specified or invalid format - skipping post notification');
+      return {
+        success: false,
+        message: 'No followers specified or invalid followers format'
+      };
+    }
+
+    if (!posterId || !postDescription) {
+      console.log('[PushNotification] Missing required parameters (posterId or postDescription) - skipping post notification');
+      return {
+        success: false,
+        message: 'Missing required parameters'
+      };
+    }
+
+    // Get poster info
+    const poster = await User.findByPk(posterId, {
+      attributes: ['username', 'firstName', 'lastName', 'picture']
+    });
+
+    if (!poster) {
+      console.error('[PushNotification] Poster not found');
+      return {
+        success: false,
+        message: 'Poster not found'
+      };
+    }
+
+    const posterName = poster.username || `${poster.firstName} ${poster.lastName}`.trim();
+    
+    // Prepare notification content
+    const title = `New post from ${posterName}`;
+    const shortDescription = postDescription.length > 50 
+      ? `${postDescription.substring(0, 50)}...` 
+      : postDescription;
+    const body = shortDescription;
+
+    console.log('[PushNotification] Notification content:', { title, body });
+
+    // Prepare data payload with all values as strings
+    const data = {
+      ...Object.entries(customData).reduce((acc, [key, val]) => {
+        acc[key] = String(val);
+        return acc;
+      }, {}),
+      type: 'new_post',
+      posterId: String(posterId),
+      posterName: String(posterName),
+      posterAvatar: poster.picture || '',
+      timestamp: new Date().toISOString(),
+      postType: postType ? String(postType) : '',
+      postId: postId ? String(postId) : ''
+    };
+
+    // Make sure all followerIds are strings
+    const validFollowerIds = followerIds.filter(id => id).map(id => String(id));
+
+    // Send notification to followers
+    return await sendPushNotification({
+      title,
+      body,
+      data,
+      userIds: validFollowerIds
+    });
+
+  } catch (error) {
+    console.error('[PushNotification] Error in sendPostNotification:', {
+      error: error.message,
+      stack: error.stack
+    });
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
 // Export the base function as well for reuse
 exports.sendPushNotification = sendPushNotification;

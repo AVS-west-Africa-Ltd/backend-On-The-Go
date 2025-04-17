@@ -9,3 +9,7 @@ uploads
 .env
 
 serviceAccountKey.json
+
+app.js
+server.log
+config/database.js

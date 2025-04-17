@@ -546,27 +546,18 @@ exports.requestToJoinRoom = async (req, res) => {
       }
     }
 
-    // Notify admins always
+    // Notify room creator instead of admins
     try {
-      const adminRecords = await RoomMember.findAll({
-        where: { room_id, is_admin: true },
-        raw: true
-      });
-
-      if (adminRecords.length > 0) {
-        const adminUsers = await User.findAll({
-          where: {
-            id: adminRecords.map(admin => admin.user_id),
-            pushToken: { [Op.ne]: null }
-          },
-          attributes: ['id']
+      if (room.created_by) {
+        const creator = await User.findByPk(room.created_by, {
+          attributes: ['id', 'pushToken']
         });
 
-        if (adminUsers.length > 0) {
+        if (creator && creator.pushToken) {
           try {
             const notificationResult = await sendRoomNotification({
               senderId: userIdNum,
-              receiverIds: adminUsers.map(user => user.id),
+              receiverIds: [creator.id],
               title: "New Join Request",
               body: `A user wants to join ${room.name}`,
               roomId: room_id,
@@ -582,16 +573,16 @@ exports.requestToJoinRoom = async (req, res) => {
                 `Failed: ${notificationResult.error?.message || 'Unknown error'}`
             );
           } catch (notificationError) {
-            console.error('[RoomController] Failed to send join request notification to admins:', notificationError);
+            console.error('[RoomController] Failed to send join request notification to creator:', notificationError);
           }
         } else {
-          console.log('[RoomController] No admin users with push tokens found.');
+          console.log('[RoomController] Room creator not found or has no push token.');
         }
       } else {
-        console.log('[RoomController] No admin records found for room.');
+        console.log('[RoomController] Room has no creator specified.');
       }
     } catch (e) {
-      console.error('[RoomController] Error during admin notification:', e);
+      console.error('[RoomController] Error during creator notification:', e);
     }
 
     res.status(200).json({ success: true, message: "Join request processed" });
@@ -604,8 +595,6 @@ exports.requestToJoinRoom = async (req, res) => {
     });
   }
 };
-
-
 
 // Get join requests
 exports.getJoinRequests = async (req, res) => {
@@ -925,7 +914,6 @@ exports.deleteRoom = async (req, res) => {
     });
   }
 };
-
 
 // Delete rooms by type
 exports.deleteRoomsByType = async (req, res) => {

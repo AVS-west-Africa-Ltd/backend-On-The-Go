@@ -10,19 +10,19 @@ const VoucherExchangeRequest = sequelize.define("VoucherExchangeRequest", {
   },
   requesterVoucherId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   requestedVoucherId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   requesterUserId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   requestedUserId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   status: {
     type: DataTypes.ENUM('pending', 'accepted', 'rejected'),

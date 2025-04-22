@@ -1203,7 +1203,8 @@ class VoucherController {
  * Get business voucher statistics (most exchanged, most used, least used)
  * GET /api/vouchers/business-stats
  */
-static async getBusinessVoucherStats(req, res) {
+// controllers/VoucherController.js
+static async getAllPendingExchangeRequests(req, res) {
   try {
     if (!req.userId) {
       return res.status(401).json({
@@ -1211,137 +1212,195 @@ static async getBusinessVoucherStats(req, res) {
       });
     }
 
-    const { Op } = require('sequelize');
-    const currentDate = new Date();
-    const limit = parseInt(req.query.limit) || 10; // Get limit from query params or default to 10
+    // Get all pending exchange requests (both direct exchanges and market listings)
+    const exchangeRequests = await VoucherExchangeRequest.findAll({
+      where: {
+        status: 'pending'
+      },
+      order: [['createdAt', 'DESC']]
+    });
 
-    // Helper function to get date ranges
-    const getDateRange = (period) => {
-      const date = new Date();
-      switch (period) {
-        case 'week':
-          const startOfWeek = new Date(date);
-          startOfWeek.setDate(date.getDate() - date.getDay());
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-          return { start: startOfWeek, end: endOfWeek };
-        case 'month':
-          const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-          const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-          return { start: startOfMonth, end: endOfMonth };
-        case 'year':
-          const startOfYear = new Date(date.getFullYear(), 0, 1);
-          const endOfYear = new Date(date.getFullYear(), 11, 31);
-          return { start: startOfYear, end: endOfYear };
-        default:
-          return { start: new Date(0), end: new Date() };
-      }
-    };
-
-    // Helper function to get stats for a period
-    const getStatsForPeriod = async (period) => {
-      const { start, end } = getDateRange(period);
-
-      // 1. Get most exchanged businesses
-      const exchangeRequests = await VoucherExchangeRequest.findAll({
-        where: {
-          status: 'accepted',
-          updatedAt: { [Op.between]: [start, end] }
-        },
-        raw: true
-      });
-
-      const exchangeCounts = {};
-      for (const request of exchangeRequests) {
-        // Get voucher details manually
+    // Manually fetch details for each request
+    const detailedRequests = await Promise.all(
+      exchangeRequests.map(async (request) => {
+        // Fetch the requester voucher (always exists)
         const requesterVoucher = await UserVoucher.findByPk(request.requesterVoucherId);
-        const requestedVoucher = await UserVoucher.findByPk(request.requestedVoucherId);
+        const requesterTemplate = requesterVoucher ? 
+          await VoucherTemplate.findByPk(requesterVoucher.templateId) : null;
         
-        if (requesterVoucher && requestedVoucher) {
-          const requesterTemplate = await VoucherTemplate.findByPk(requesterVoucher.templateId);
-          const requestedTemplate = await VoucherTemplate.findByPk(requestedVoucher.templateId);
-          
-          if (requesterTemplate) {
-            exchangeCounts[requesterTemplate.businessId] = (exchangeCounts[requesterTemplate.businessId] || 0) + 1;
+        // Fetch requested voucher (might not exist for market listings)
+        let requestedVoucher = null;
+        let requestedTemplate = null;
+        if (request.requestedVoucherId) {
+          requestedVoucher = await UserVoucher.findByPk(request.requestedVoucherId);
+          requestedTemplate = requestedVoucher ? 
+            await VoucherTemplate.findByPk(requestedVoucher.templateId) : null;
+        }
+
+        // Fetch user information
+        const requesterUser = await User.findByPk(request.requesterUserId);
+        const requestedUser = request.requestedUserId ? 
+          await User.findByPk(request.requestedUserId) : null;
+
+        return {
+          requestId: request.id,
+          type: request.requestedVoucherId ? 'exchange' : 'market',
+          createdAt: request.createdAt,
+          message: request.message,
+          requesterInfo: {
+            userId: requesterUser.id,
+            name: `${requesterUser.firstName} ${requesterUser.lastName}`
+          },
+          requestedInfo: requestedUser ? {
+            userId: requestedUser.id,
+            name: `${requestedUser.firstName} ${requestedUser.lastName}`
+          } : null,
+          vouchers: {
+            requesterVoucher: {
+              id: requesterVoucher.id,
+              templateId: requesterVoucher.templateId,
+              name: requesterTemplate.name,
+              businessName: requesterTemplate.businessName,
+              discountPercent: requesterTemplate.discountPercent,
+              validDays: requesterTemplate.validDays,
+              expiryDate: requesterTemplate.expiryDate,
+              businessImage: requesterTemplate.businessImage
+            },
+            requestedVoucher: requestedVoucher ? {
+              id: requestedVoucher.id,
+              templateId: requestedVoucher.templateId,
+              name: requestedTemplate.name,
+              businessName: requestedTemplate.businessName,
+              discountPercent: requestedTemplate.discountPercent,
+              validDays: requestedTemplate.validDays,
+              expiryDate: requestedTemplate.expiryDate,
+              businessImage: requestedTemplate.businessImage
+            } : null
           }
-          if (requestedTemplate) {
-            exchangeCounts[requestedTemplate.businessId] = (exchangeCounts[requestedTemplate.businessId] || 0) + 1;
-          }
-        }
-      }
-
-      // 2. Get most used businesses
-      const usedVouchers = await UserVoucher.findAll({
-        where: {
-          isUsed: true,
-          usedAt: { [Op.between]: [start, end] }
-        },
-        raw: true
-      });
-
-      const usageCounts = {};
-      for (const voucher of usedVouchers) {
-        const template = await VoucherTemplate.findByPk(voucher.templateId);
-        if (template) {
-          usageCounts[template.businessId] = (usageCounts[template.businessId] || 0) + 1;
-        }
-      }
-
-      // 3. Get least used businesses (claimed but not used)
-      const unusedVouchers = await UserVoucher.findAll({
-        where: {
-          isUsed: false,
-          createdAt: { [Op.lte]: end }
-        },
-        raw: true
-      });
-
-      const unusedCounts = {};
-      for (const voucher of unusedVouchers) {
-        const template = await VoucherTemplate.findByPk(voucher.templateId);
-        if (template) {
-          unusedCounts[template.businessId] = (unusedCounts[template.businessId] || 0) + 1;
-        }
-      }
-
-      // Helper to process counts and get business details
-      const processCounts = async (counts) => {
-        const entries = Object.entries(counts);
-        entries.sort((a, b) => b[1] - a[1]);
-        
-        const results = [];
-        for (const [businessId, count] of entries.slice(0, limit)) { // Use the limit parameter here
-          const business = await Business.findByPk(businessId);
-          results.push({
-            businessId: Number(businessId),
-            businessName: business ? business.name : 'Unknown',
-            count
-          });
-        }
-        return results;
-      };
-
-      return {
-        mostExchangedBusinesses: await processCounts(exchangeCounts),
-        mostUsedBusinesses: await processCounts(usageCounts),
-        leastUsedBusinesses: await processCounts(unusedCounts)
-      };
-    };
-
-    // Get stats for all periods
-    const stats = {
-      week: await getStatsForPeriod('week'),
-      month: await getStatsForPeriod('month'),
-      year: await getStatsForPeriod('year')
-    };
+        };
+      })
+    );
 
     return res.status(200).json({
-      message: "Business voucher statistics retrieved successfully",
-      stats
+      message: "All pending exchange requests and market listings retrieved successfully",
+      requests: detailedRequests
     });
 
   } catch (error) {
-    console.error("Error fetching business voucher stats:", error);
+    console.error("Error fetching all pending exchange requests:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+}
+
+/**
+ * Send a voucher to the market for potential exchange
+ * POST /api/vouchers/:voucherId/send-to-market
+ */
+static async sendToMarket(req, res) {
+  const transaction = await sequelize.transaction();
+  try {
+    if (!req.userId) {
+      await transaction.rollback();
+      return res.status(401).json({
+        message: "Authentication required"
+      });
+    }
+
+    const { voucherId } = req.params;
+    const { message } = req.body;
+    const userId = req.userId;
+
+    // Find the voucher
+    const userVoucher = await UserVoucher.findByPk(voucherId, { transaction });
+    if (!userVoucher) {
+      await transaction.rollback();
+      return res.status(404).json({
+        message: "Voucher not found"
+      });
+    }
+
+    // Check ownership
+    if (userVoucher.userId !== userId) {
+      await transaction.rollback();
+      return res.status(403).json({
+        message: "You don't own this voucher"
+      });
+    }
+
+    // Check if voucher is already used
+    if (userVoucher.isUsed) {
+      await transaction.rollback();
+      return res.status(400).json({
+        message: "Cannot list a used voucher on the market"
+      });
+    }
+
+    // Check if already listed
+    const existingRequest = await VoucherExchangeRequest.findOne({
+      where: {
+        requesterVoucherId: voucherId,
+        status: 'pending',
+        requestedVoucherId: null
+      },
+      transaction
+    });
+
+    if (existingRequest) {
+      await transaction.rollback();
+      return res.status(400).json({
+        message: "This voucher is already listed on the market"
+      });
+    }
+
+    // Create market listing
+    const marketListing = await VoucherExchangeRequest.create({
+      requesterVoucherId: voucherId,
+      requestedVoucherId: null, // This is what makes it a market listing
+      requesterUserId: userId,
+      requestedUserId: null, // No specific user requested
+      message: message || null,
+      status: 'pending'
+    }, { transaction });
+
+    // Get voucher details for socket event
+    const voucherTemplate = await VoucherTemplate.findByPk(userVoucher.templateId, { transaction });
+
+    // Emit socket event
+    const io = req.app.get('io');
+    socketEvents.emitMarketListing(io, {
+      listingId: marketListing.id,
+      voucher: {
+        id: userVoucher.id,
+        name: voucherTemplate ? voucherTemplate.name : 'Unknown',
+        businessName: voucherTemplate ? voucherTemplate.businessName : 'Unknown',
+        discountPercent: voucherTemplate ? voucherTemplate.discountPercent : 0,
+        validDays: voucherTemplate ? voucherTemplate.validDays : [],
+        expiryDate: voucherTemplate ? voucherTemplate.expiryDate : null,
+        businessImage: voucherTemplate ? voucherTemplate.businessImage : null
+      },
+      ownerId: userId,
+      message: message || null,
+      createdAt: marketListing.createdAt
+    });
+
+    await transaction.commit();
+
+    return res.status(201).json({
+      message: "Voucher listed on market successfully",
+      listing: {
+        id: marketListing.id,
+        voucherId: marketListing.requesterVoucherId,
+        status: marketListing.status,
+        createdAt: marketListing.createdAt
+      }
+    });
+
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Market listing error:", error);
     return res.status(500).json({
       error: "Internal server error",
       details: error.message

@@ -14,7 +14,11 @@ const ImageSchema = sequelize.define('Images', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-});
+},
+{
+    tableName: 'images' // Explicitly set table name
+  }
+);
 
 sequelize.sync().then(() => {
     console.log('Images table created successfully!');

@@ -2,18 +2,39 @@ const BusinessPost = require("../models/BusinessPost");
 const { Business } = require("../models/index");
 const multer = require("multer");
 const path = require("path");
-// const { CloudinaryStorage } = require("multer-storage-cloudinary");
-// const cloudinary = require("../config/cloudinaryConfig");
+const AWS = require("aws-sdk");
+const multerS3 = require("multer-s3");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + "-" + file.originalname;
-    cb(null, uniqueName);
-  },
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    // acl: "public-read",
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      cb(null, `business/${Date.now()}-${file.originalname}`);
+    },
+  }),
+});
+
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueName = Date.now() + "-" + file.originalname;
+//     cb(null, uniqueName);
+//   },
+// });
 
 // const storage = new CloudinaryStorage({
 //   cloudinary: cloudinary,
@@ -23,8 +44,9 @@ const storage = multer.diskStorage({
 //     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
 //   },
 // });
+//
 
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
 const businessPostsController = {
   // Create a new BusinessPost
@@ -52,10 +74,7 @@ const businessPostsController = {
         //   (file) =>
         //     `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
         // );
-        const mediaPaths = req.files.map(
-          (file) =>
-            `https://api.onthegoafrica.com/api/v1/uploads/${file.filename}`
-        );
+        const mediaPaths = req.files.map((file) => file.location);
 
         // Create a new post associated with the business
         const newPost = await BusinessPost.create({

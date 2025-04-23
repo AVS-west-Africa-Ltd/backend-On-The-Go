@@ -2,7 +2,7 @@ const Post = require("../models/Post");
 const { Op, Sequelize } = require("sequelize");
 const multer = require("multer");
 const path = require("path");
-const Comment = require('../models/Comment');
+const Comment = require("../models/Comment");
 const Business = require("../models/Business");
 const User = require("../models/User");
 
@@ -23,7 +23,7 @@ class PostService {
     try {
       return await Post.create(data);
     } catch (err) {
-      throw new Error("Error creating post");
+      throw err;
     }
   }
 
@@ -54,31 +54,90 @@ class PostService {
     }
   }
 
-  static async getPosts() {
+  static async getPostsByUserId(userId, postType) {
     try {
       return await Post.findAll({
+        where: {
+          [Op.and]: [{ userId: userId }, { postType: postType }],
+        },
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  // static async getPosts() {
+  //   try {
+  //     return await Post.findAll({
+  //       include: [
+  //         {
+  //           model: Comment,
+  //           as: 'comments', // Matches the alias defined in the association
+  //           include: [
+  //             {
+  //               model: Comment,
+  //               as: 'replies', // Nested comments (replies)
+  //             },
+  //           ],
+  //         },
+  //         {
+  //           model: Business,
+  //           as: 'business',
+  //         },
+  //         {
+  //           model: User,
+  //           as: 'user',
+  //         }
+  //       ],
+  //       order: [["createdAt", "DESC"]],
+  //     });
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
+  static async getPosts() {
+    try {
+      const posts = await Post.findAll({
         include: [
           {
             model: Comment,
-            as: 'comments', // Matches the alias defined in the association
+            as: "comments",
             include: [
               {
                 model: Comment,
-                as: 'replies', // Nested comments (replies)
+                as: "replies",
               },
             ],
           },
           {
             model: Business,
-            as: 'business',
+            as: "business",
           },
           {
             model: User,
-            as: 'user',
-          }
+            as: "user",
+          },
         ],
         order: [["createdAt", "DESC"]],
       });
+
+      // Process fields to parse JSON strings
+      return posts.map((post) => ({
+        ...post.toJSON(),
+        likes: JSON.parse(post.likes || "[]"),
+        media: JSON.parse(post.media || "[]"),
+        bookmarks: JSON.parse(post.bookmarks || "[]"),
+        business: post.business
+          ? {
+              ...post.business.toJSON(),
+              amenities: JSON.parse(post.business.amenities || "[]"),
+              social: JSON.parse(post.business.social || "[]"),
+              wifi: JSON.parse(post.business.wifi || "[]"),
+              hours: JSON.parse(post.business.hours || "{}"),
+            }
+          : null,
+      }));
     } catch (error) {
       throw error;
     }
@@ -107,7 +166,7 @@ class PostService {
   static async toggleLike(postId, userId) {
     try {
       const post = await Post.findByPk(postId, {
-        attributes: ['id', 'likes'],
+        attributes: ["id", "likes"],
       });
 
       if (!post) return false;
@@ -194,6 +253,46 @@ class PostService {
     } catch (err) {
       console.error(err);
       throw new Error("Error fetching bookmarked posts");
+    }
+  }
+
+  static async getPostStatistics(userId) {
+    try {
+      // Get total posts count
+      const totalPosts = await Post.count({
+        where: { userId }
+      });
+  
+      // Get posts by rating categories
+      const highRatingPosts = await Post.count({
+        where: { 
+          userId,
+          rating: { [Op.gte]: 4 } // 4 stars and above
+        }
+      });
+  
+      const mediumRatingPosts = await Post.count({
+        where: { 
+          userId,
+          rating: { [Op.between]: [2, 3.99] } // 2-3.99 stars
+        }
+      });
+  
+      const lowRatingPosts = await Post.count({
+        where: { 
+          userId,
+          rating: { [Op.lt]: 2 } // Below 2 stars
+        }
+      });
+  
+      return {
+        totalPosts,
+        highRatingPosts,
+        mediumRatingPosts,
+        lowRatingPosts
+      };
+    } catch (error) {
+      throw error;
     }
   }
 }

@@ -15,6 +15,8 @@ const ProfileViewController = require("../controllers/ProfleViewController");
 const processBusinessController = require("../cron/populate-business");
 const PushNotificationController = require("../controllers/PushNotificationController");
 const VoucherController = require("../controllers/VoucherController");
+const reportRoutes = require("./reportRoutes");
+
 
 
 router.use("/chat", chatRoutes);
@@ -220,5 +222,6 @@ router.get("/vouchers/exchange-requests/all", authMiddleware, catchErrors(Vouche
 router.get("/vouchers/business-stats", authMiddleware, catchErrors(VoucherController.getBusinessVoucherStats));
 router.post("/vouchers/:voucherId/send-to-market", authMiddleware,catchErrors(VoucherController.sendToMarket));
 
+router.use("/reports", reportRoutes);
 
 module.exports = router;

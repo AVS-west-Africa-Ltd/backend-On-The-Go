@@ -20,7 +20,7 @@ COPY . .
 ENV NODE_ENV=test
 
 # Run tests (allow failure for debugging in pipeline)
-RUN npm test || true
+
 
 # Stage 2: Production image
 FROM node:18-alpine

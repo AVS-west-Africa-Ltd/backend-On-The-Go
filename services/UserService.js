@@ -31,6 +31,7 @@ class UserService {
       return {
         ...userData,
         interests: JSON.parse(userData.interests || "[]"),
+        placesVisited: JSON.parse(userData.placesVisited || "[]"),
       };
     } catch (error) {
       throw new Error("Error fetching user");
@@ -65,7 +66,8 @@ class UserService {
         const userData = user.toJSON();
         return {
           ...userData,
-          interests: JSON.parse(userData.interests || "[]"), // Parse interests field
+          interests: JSON.parse(userData.interests || "[]"),
+          placesVisited: JSON.parse(userData.placesVisited || "[]"),
         };
       });
     } catch (error) {
@@ -322,9 +324,7 @@ class UserService {
   }
 
   static async getFollowers(userId) {
-    // const offset = (page - 1) * limit;
-
-    return await User.findOne({
+    const result = await User.findOne({
       where: { id: userId },
       include: [
         {
@@ -342,11 +342,50 @@ class UserService {
             "placesVisited",
             "interests",
           ],
-          // limit,
-          // offset,
         },
       ],
+      attributes: {
+        exclude: [
+          "password",
+          "resetPasswordOTP",
+          "resetPasswordExpires",
+          "pushToken",
+        ],
+      },
     });
+
+    if (!result) return null;
+
+    // Convert to plain object and parse JSON fields
+    const followersData = result.get({ plain: true });
+
+    // Process each follower
+    followersData.Followers = followersData.Followers.map((follower) => {
+      // Parse JSON strings to arrays
+      if (follower.placesVisited) {
+        try {
+          follower.placesVisited = JSON.parse(follower.placesVisited);
+        } catch (e) {
+          follower.placesVisited = [];
+        }
+      } else {
+        follower.placesVisited = [];
+      }
+
+      if (follower.interests) {
+        try {
+          follower.interests = JSON.parse(follower.interests);
+        } catch (e) {
+          follower.interests = [];
+        }
+      } else {
+        follower.interests = [];
+      }
+
+      return follower;
+    });
+
+    return followersData;
   }
 
   static async getFollowing(userId) {

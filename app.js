@@ -35,7 +35,8 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+const HOST ='0.0.0.0';
 const app = express();
 
 // Swagger definition
@@ -184,7 +185,7 @@ const syncDatabase = async () => {
     console.log("Database synced successfully!");
 
     // Start server after sync
-    server.listen(PORT, () => {
+    server.listen(PORT, HOST,() => {
       console.log(
         `Server running on http://localhost:${PORT}, PID: ${process.pid}`
       );

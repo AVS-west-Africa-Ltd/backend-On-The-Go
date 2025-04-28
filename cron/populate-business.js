@@ -12,7 +12,7 @@ const processBusinessController = {
   processBusinesses: async (req, res) => {
     const results = [];
 
-    fs.createReadStream("cron/others_with_coordinates.csv")
+    fs.createReadStream("cron/businesses_with_logos.csv")
       .pipe(csv())
       .on("data", (data) => results.push(data))
       .on("end", async () => {
@@ -38,7 +38,7 @@ const processBusinessController = {
               firstName: business.name,
               username: business.username || generateUsername(business.name),
               email: business.email || generateEmail(business.name, results),
-              phone_number: business.phone,
+              phone_number: business.phone || "",
               password: "otgafrica",
             });
 
@@ -50,7 +50,7 @@ const processBusinessController = {
               longitude: business.longitude,
               latitude: business.latitude,
               zone: business.zone,
-              logo: business.google_logo_url || null, // Add logo from CSV
+              logo: business.google_logo_url || null,
             });
 
             console.log(

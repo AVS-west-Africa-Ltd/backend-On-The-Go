@@ -13,13 +13,32 @@ const RepeatedCustomer = require("../models/RepeatedCustomers");
 
 class UserService {
   // Create a new user
-  static async createUser(data) {
-    try {
-      return await User.create(data);
-    } catch (error) {
-      throw new Error(error);
+  // static async createUser(data) {
+  //   try {
+  //     return await User.create(data);
+  //   } catch (error) {
+  //     throw new Error(error);
+  //     // throw error; 
+  //   }
+
+  
+  // }
+
+  // In your UserService
+static async createUser(data) {
+  try {
+    return await User.create(data);
+  } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      const errors = error.errors.map(err => ({
+        field: err.path,
+        message: err.message
+      }));
+      throw { status: 400, errors };
     }
+    throw error;
   }
+}
 
   static async getUserById(userId) {
     try {

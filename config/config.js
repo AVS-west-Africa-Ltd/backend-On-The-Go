@@ -20,8 +20,8 @@ module.exports = {
         production: {
             username: "admin",
             password: "Justkeepitsimple",
-            database:"on-the-go-db",
-            host:"on-the-go-db.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
+            database:"on-the-go-db-prod",
+            host:"on-the-go-db-prod.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
             port: 3306,
             dialect: 'mysql',
         },
@@ -36,6 +36,6 @@ module.exports = {
     APIKEY: '26a3281bfc65b39527447691941d6a707357a1278b1b2ec91742faec9de53ac8',
     EMAIL_HOST: 'smtp.gmail.com',
     EMAIL_ADDRESS: 'otgapplagos@gmail.com',
-    EMAIL_PASSWORD: 'tnee zhwb uayy vsuu'
+    EMAIL_PASSWORD: 'hsuo xafq gvvc mgrw'
 };
 

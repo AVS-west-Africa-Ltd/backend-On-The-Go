@@ -16,22 +16,32 @@ const User = sequelize.define(
     },
     username: {
       type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
     },
     phone_number: {
       type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+
     },
     picture: {
       type: DataTypes.TEXT,
     },
     bio: {
       type: DataTypes.TEXT,
+    },
+    pushToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     interests: {
       type: DataTypes.JSON,

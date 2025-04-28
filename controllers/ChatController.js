@@ -10,9 +10,10 @@ const path = require("path");
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const crypto = require('crypto');
+const { sendChatNotification } = require('./PushNotificationController');
 
 // Encryption configuration
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY 
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY
   ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex').slice(0, 32) // Convert hex to buffer and ensure 32 bytes
   : crypto.randomBytes(32); // Generate random 32 bytes if no key provided
 const IV_LENGTH = 16;
@@ -97,8 +98,12 @@ exports.sendMessage = async (req, res) => {
         return res.status(404).json({ success: false, message: "Room not found" });
       }
 
-      if (room.broadcast_enabled && !memberInfo.is_admin) {
-        return res.status(403).json({ success: false, message: "Only administrators can send messages when broadcast mode is enabled" });
+      // Check if broadcast is enabled and if sender is not the room creator
+      if (room.broadcast_enabled && String(room.created_by) !== String(sender_id)) {
+        return res.status(403).json({ 
+          success: false, 
+          message: "Only room creator can send messages when broadcast mode is enabled" 
+        });
       }
 
       // Create and encrypt message
@@ -122,6 +127,48 @@ exports.sendMessage = async (req, res) => {
       // Emit to socket if available
       if (io) {
         io.emit(`room_${room_id}`, messageForSocket);
+      }
+
+      // Send push notifications to other room members (excluding sender)
+      try {
+        // Get all room members except sender
+        const roomMembers = await RoomMember.findAll({
+          where: {
+            room_id,
+            user_id: { [Op.ne]: sender_id } // Exclude sender
+          },
+          include: [{
+            model: User,
+            as: 'user',
+            attributes: ['id', 'pushToken']
+          }]
+        });
+
+        // Filter members who have push tokens
+        const recipients = roomMembers
+          .filter(member => member.user.pushToken)
+          .map(member => member.user.id);
+
+        if (recipients.length > 0) {
+          const mediaType = req.file ?
+            req.file.mimetype.split('/')[0] === 'image' ? 'image' :
+              req.file.mimetype.split('/')[1] : null;
+
+          await sendChatNotification({
+            senderId: sender_id,
+            recipientIds: recipients,
+            roomId: room_id,
+            message: content,
+            mediaType,
+            customData: {
+              messageId: message.id,
+              isRequest: request
+            }
+          });
+        }
+      } catch (notificationError) {
+        console.error('Error sending push notifications:', notificationError);
+        // Don't fail the message send operation if notifications fail
       }
 
       res.status(201).json({
@@ -376,7 +423,10 @@ exports.toggleBroadcast = async (req, res) => {
   const { room_id, user_id, broadcast_enabled } = req.body;
 
   try {
+    console.log(`Attempting to toggle broadcast for room ${room_id} by user ${user_id}`);
+
     if (!room_id || !user_id) {
+      console.error('Missing parameters:', { room_id, user_id });
       return res.status(400).json({
         success: false,
         message: "Missing required parameters"
@@ -385,39 +435,94 @@ exports.toggleBroadcast = async (req, res) => {
 
     const room = await Room.findByPk(room_id);
     if (!room) {
+      console.error(`Room ${room_id} not found`);
       return res.status(404).json({
         success: false,
         message: "Room not found"
       });
     }
 
-    // Verify admin status
-    const memberInfo = await RoomMember.findOne({
-      where: { room_id, user_id, is_admin: true }
-    });
+    // Verify user is the room creator
+    const isCreator = Number(room.created_by) === Number(user_id);
+    console.log(`Admin verification result:`, { isCreator });
 
-    if (!memberInfo) {
+    if (!isCreator) {
+      console.error(`User ${user_id} is not authorized to toggle broadcast for room ${room_id}`);
       return res.status(403).json({
         success: false,
-        message: "Only admins can toggle broadcast mode"
+        message: "Only room creator can toggle broadcast mode"
       });
     }
 
-    await room.update({ broadcast_enabled });
+    await room.update({
+      broadcast_enabled,
+    });
+
+    // Get all room members except the creator (who is toggling)
+    const roomMembers = await RoomMember.findAll({
+      where: {
+        room_id,
+        user_id: { [Op.ne]: user_id } // Exclude the creator
+      },
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'pushToken']
+      }]
+    });
+
+    // Filter members who have push tokens
+    const recipients = roomMembers
+      .filter(member => member.user.pushToken)
+      .map(member => member.user.id);
+
+    // Send push notification if there are recipients
+    if (recipients.length > 0) {
+      try {
+        const creator = await User.findByPk(user_id, {
+          attributes: ['username', 'firstName', 'lastName']
+        });
+        const creatorName = creator.username || `${creator.firstName} ${creator.lastName}`.trim();
+
+        await sendChatNotification({
+          senderId: user_id,
+          recipientIds: recipients,
+          roomId: room_id,
+          message: `Broadcast mode has been ${broadcast_enabled ? 'enabled' : 'disabled'} by ${creatorName}`,
+          customData: {
+            type: 'broadcast_status_change',
+            broadcast_enabled,
+            changed_by: user_id
+          }
+        });
+      } catch (notificationError) {
+        console.error('Error sending broadcast status notifications:', notificationError);
+        // Don't fail the operation if notifications fail
+      }
+    }
 
     // Emit broadcast status change
     if (io) {
       io.emit(`room_${room_id}_broadcast`, { broadcast_enabled });
+      io.emit(`room_${room_id}_updated`, room);
     }
 
+    console.log(`Broadcast mode toggled successfully to ${broadcast_enabled}`);
     res.status(200).json({
       success: true,
       message: `Broadcast mode ${broadcast_enabled ? 'enabled' : 'disabled'}`,
       data: room
     });
   } catch (error) {
-    console.error("Error toggling broadcast:", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error("Error toggling broadcast:", {
+      error: error.message,
+      stack: error.stack,
+      requestBody: req.body
+    });
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 };
 

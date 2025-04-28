@@ -68,6 +68,22 @@ const Business = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
+     legalName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    cacDocumentUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    optionalDocumentUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM('pending_verification', 'verified', 'rejected'),
+      defaultValue: 'pending_verification'
+    },
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

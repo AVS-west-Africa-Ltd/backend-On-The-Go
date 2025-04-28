@@ -16,11 +16,43 @@ const processBusinessController = require("../cron/populate-business");
 const PushNotificationController = require("../controllers/PushNotificationController");
 const VoucherController = require("../controllers/VoucherController");
 const reportRoutes = require("./reportRoutes");
-
-
+const BusinessClaimController = require("../controllers/BusinessClaimController");
+const businessClaimUpload = require("../utils/businessClaimUpload");
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
+
+// Updated Business Claim routes
+router.post(
+  "/claim-business",
+  businessClaimUpload.fields([
+    { name: 'cacDocument', maxCount: 1 },
+    { name: 'optionalDocument', maxCount: 1 }
+  ]), 
+  catchErrors(BusinessClaimController.submitClaim)
+);
+
+router.get(
+  "/claim-status/:claimId",
+  catchErrors(BusinessClaimController.getClaimStatus)
+);
+
+router.get(
+  "/user-claims/:userId",
+  catchErrors(BusinessClaimController.getUserClaims)
+);
+
+router.post(
+  "/approve-claim/:claimId",
+  authMiddleware,
+  catchErrors(BusinessClaimController.approveClaim)
+);
+
+router.post(
+  "/reject-claim/:claimId",
+  authMiddleware,
+  catchErrors(BusinessClaimController.rejectClaim)
+);
 
 // User routes
 router.post("/register", catchErrors(UserController.CreateUser));

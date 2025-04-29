@@ -49,7 +49,7 @@ const processBusinessController = {
               type: business.type,
               longitude: business.longitude,
               latitude: business.latitude,
-              zone: business.zone || null,
+              // zone: business.zone || null,
               logo: business.google_logo_url || null,
             });
 

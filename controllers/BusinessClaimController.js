@@ -4,7 +4,11 @@ const BusinessClaim = require("../models/BusinessClaim");
 const User = require("../models/User");
 const AWS = require("aws-sdk");
 const admin = require('firebase-admin');
-
+const {
+  EMAIL_HOST,
+  EMAIL_ADDRESS,
+  EMAIL_PASSWORD,
+} = require("../config/config");
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -13,74 +17,194 @@ const s3 = new AWS.S3({
 
 
 // This makes them compatible with the catchErrors wrapper
+const nodemailer = require('nodemailer');
+
 exports.submitClaim = async (req, res) => {
-    const { businessName, legalName, businessEmail, userId } = req.body;
-    
-    if (!businessName || !legalName || !businessEmail || !userId) {
-        return res.status(400).json({ 
-            success: false,
-            message: "All required fields must be provided" 
-        });
-    }
+  const { businessName, legalName, businessEmail, userId } = req.body;
 
-    // Upload documents to S3 if they exist
-    let cacDocumentUrl = null;
-    let optionalDocumentUrl = null;
+  if (!businessName || !legalName || !businessEmail || !userId) {
+    return res.status(400).json({ 
+      success: false,
+      message: "All required fields must be provided" 
+    });
+  }
 
-    if (req.files?.cacDocument) {
-        const cacFile = req.files.cacDocument[0];
-        cacDocumentUrl = cacFile.location;
-    }
+  // Upload documents to S3 if they exist
+  let cacDocumentUrl = null;
+  let optionalDocumentUrl = null;
 
-    if (req.files?.optionalDocument) {
-        const optionalFile = req.files.optionalDocument[0];
-        optionalDocumentUrl = optionalFile.location;
-    }
+  if (req.files?.cacDocument) {
+    const cacFile = req.files.cacDocument[0];
+    cacDocumentUrl = cacFile.location;
+  }
 
-    if (!cacDocumentUrl) {
-        return res.status(400).json({ 
-            success: false,
-            message: "CAC document is required" 
-        });
-    }
+  if (req.files?.optionalDocument) {
+    const optionalFile = req.files.optionalDocument[0];
+    optionalDocumentUrl = optionalFile.location;
+  }
 
-    // Create a new business claim record
+  if (!cacDocumentUrl) {
+    return res.status(400).json({ 
+      success: false,
+      message: "CAC document is required" 
+    });
+  }
+
+  try {
+    // 1. Save the business claim to DB
     const newClaim = await BusinessClaim.create({
-        businessName,
-        legalName,
-        email: businessEmail,
-        userId,
-        cacDocumentUrl,
-        optionalDocumentUrl,
-        status: 'pending_verification'
+      businessName,
+      legalName,
+      email: businessEmail,
+      userId,
+      cacDocumentUrl,
+      optionalDocumentUrl,
+      status: 'pending_verification'
     });
 
-    // Send notification to admin
+    // 2. Send notification to admin (Firebase or any messaging service)
     try {
-        const message = {
-            notification: {
-                title: 'New Business Claim Request',
-                body: `${businessName} has submitted a claim request`
-            },
-            data: {
-                type: 'business_claim',
-                claimId: newClaim.id.toString(),
-                timestamp: Date.now().toString()
-            },
-            topic: 'admin_notifications' // or specific admin device tokens
-        };
+      const message = {
+        notification: {
+          title: 'New Business Claim Request',
+          body: `${businessName} has submitted a claim request`
+        },
+        data: {
+          type: 'business_claim',
+          claimId: newClaim.id.toString(),
+          timestamp: Date.now().toString()
+        },
+        topic: 'admin_notifications'
+      };
 
-        await admin.messaging().send(message);
+      await admin.messaging().send(message);
     } catch (notificationError) {
-        console.error('Error sending notification:', notificationError);
+      console.error('Error sending notification:', notificationError);
+      // continue without failing
     }
 
+    // 3. Send Email to Admin using Nodemailer
+    try {
+      const claimEmailTemplate = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #5cb85c;">New Business Claim Request</h2>
+          <p><strong>Business Name:</strong> ${businessName}</p>
+          <p><strong>Legal Name:</strong> ${legalName}</p>
+          <p><strong>Business Email:</strong> ${businessEmail}</p>
+          <p><strong>User ID:</strong> ${userId}</p>
+          <p><strong>CAC Document:</strong> <a href="${cacDocumentUrl}" target="_blank">View Document</a></p>
+          ${optionalDocumentUrl ? `<p><strong>Optional Document:</strong> <a href="${optionalDocumentUrl}" target="_blank">View Document</a></p>` : ''}
+          <p style="margin-top: 20px;">Please review and verify the claim request in the admin dashboard.</p>
+        </div>
+      `;
+
+      const transporter = nodemailer.createTransport({
+        host: EMAIL_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+          user: EMAIL_ADDRESS,
+          pass: EMAIL_PASSWORD,
+        },
+      });
+
+      await transporter.sendMail({
+        to: EMAIL_ADDRESS, // send to admin email
+        from: EMAIL_ADDRESS, // system email
+        subject: "New Business Claim Request Submitted",
+        html: claimEmailTemplate,
+      });
+
+    } catch (emailError) {
+      console.error('Error sending claim email:', emailError);
+      // continue without failing
+    }
+
+    // 4. Final success response
     return res.status(201).json({
-        success: true,
-        message: "Business claim submitted successfully. It will be reviewed shortly.",
-        claim: newClaim
+      success: true,
+      message: "Business claim submitted successfully. It will be reviewed shortly.",
+      claim: newClaim
     });
+
+  } catch (error) {
+    console.error('Error creating business claim:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error submitting business claim',
+      error: error.message
+    });
+  }
 };
+
+// exports.submitClaim = async (req, res) => {
+//     const { businessName, legalName, businessEmail, userId } = req.body;
+    
+//     if (!businessName || !legalName || !businessEmail || !userId) {
+//         return res.status(400).json({ 
+//             success: false,
+//             message: "All required fields must be provided" 
+//         });
+//     }
+
+//     // Upload documents to S3 if they exist
+//     let cacDocumentUrl = null;
+//     let optionalDocumentUrl = null;
+
+//     if (req.files?.cacDocument) {
+//         const cacFile = req.files.cacDocument[0];
+//         cacDocumentUrl = cacFile.location;
+//     }
+
+//     if (req.files?.optionalDocument) {
+//         const optionalFile = req.files.optionalDocument[0];
+//         optionalDocumentUrl = optionalFile.location;
+//     }
+
+//     if (!cacDocumentUrl) {
+//         return res.status(400).json({ 
+//             success: false,
+//             message: "CAC document is required" 
+//         });
+//     }
+
+//     // Create a new business claim record
+//     const newClaim = await BusinessClaim.create({
+//         businessName,
+//         legalName,
+//         email: businessEmail,
+//         userId,
+//         cacDocumentUrl,
+//         optionalDocumentUrl,
+//         status: 'pending_verification'
+//     });
+
+//     // Send notification to admin
+//     try {
+//         const message = {
+//             notification: {
+//                 title: 'New Business Claim Request',
+//                 body: `${businessName} has submitted a claim request`
+//             },
+//             data: {
+//                 type: 'business_claim',
+//                 claimId: newClaim.id.toString(),
+//                 timestamp: Date.now().toString()
+//             },
+//             topic: 'admin_notifications' // or specific admin device tokens
+//         };
+
+//         await admin.messaging().send(message);
+//     } catch (notificationError) {
+//         console.error('Error sending notification:', notificationError);
+//     }
+
+//     return res.status(201).json({
+//         success: true,
+//         message: "Business claim submitted successfully. It will be reviewed shortly.",
+//         claim: newClaim
+//     });
+// };
 
 exports.getClaimStatus = async (req, res) => {
   const { claimId } = req.params;

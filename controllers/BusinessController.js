@@ -105,6 +105,20 @@ const businessController = {
     }
   },
 
+  // Get all Defibrillator
+  getAllDefibrillator: async (req, res) => {
+    try {
+      const defibrillators = await BusinessService.getAllDefibrillator();
+
+      return res.status(200).json(defibrillators);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to retrieve defibrillators",
+        error: error.message,
+      });
+    }
+  },
+
   // Get a user business
   getBusinessByUserId: async (req, res) => {
     try {

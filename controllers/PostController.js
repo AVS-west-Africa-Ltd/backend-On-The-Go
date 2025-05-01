@@ -154,6 +154,84 @@ async function sendNotificationsToFollowers(userId, postDescription) {
   }
 }
 
+
+// send push to all users
+// Helper function to send push notifications to ALL users
+async function sendNotificationsToAllUsers(userId, postDescription) {
+  try {
+    // Get user details (the person who made the post)
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      console.error('User not found for sending notifications');
+      return;
+    }
+
+    // Get ALL users from database
+    const allUsers = await UserService.getUsers();
+    if (!allUsers || allUsers.length === 0) {
+      console.log('No users found to notify');
+      return;
+    }
+
+    // Filter users who have push tokens
+    const usersWithTokens = allUsers.filter(u => 
+      u && u.pushToken && u.pushToken.trim() !== ''
+    );
+
+    if (usersWithTokens.length === 0) {
+      console.log('No users with push tokens');
+      return;
+    }
+
+    console.log(`Sending notifications to ${usersWithTokens.length} users`);
+
+    // Create short post description
+    const shortDescription = postDescription.length > 50 
+      ? `${postDescription.substring(0, 50)}...` 
+      : postDescription;
+
+    // Send notification to each user
+    const sendPromises = usersWithTokens.map(async (receiver) => {
+      try {
+        const message = {
+          notification: {
+            title: `${user.username || 'Someone'} shared a new post`,
+            body: shortDescription
+          },
+          data: {
+            type: 'new_post',
+            posterId: userId.toString(),
+            posterName: user.username || '',
+            timestamp: Date.now().toString()
+          },
+          token: receiver.pushToken
+        };
+
+        await admin.messaging().send(message);
+        console.log(`Notification sent to user: ${receiver.id}`);
+        return { userId: receiver.id, status: 'success' };
+      } catch (error) {
+        console.error(`Failed to send notification to user ${receiver.id}:`, error);
+        return { userId: receiver.id, status: 'failed', error: error.message };
+      }
+    });
+
+    const results = await Promise.all(sendPromises);
+    const successCount = results.filter(r => r.status === 'success').length;
+    console.log(`Successfully sent ${successCount} notifications out of ${usersWithTokens.length}`);
+    
+    return {
+      totalUsers: allUsers.length,
+      usersWithTokens: usersWithTokens.length,
+      successCount,
+      failureCount: usersWithTokens.length - successCount
+    };
+  } catch (error) {
+    console.error('Error sending notifications to users:', error);
+    return null;
+  }
+}
+
 class PostController {
   static async createPost(req, res) {
     const uploadHandler = upload.array("media", 10);
@@ -186,8 +264,10 @@ class PostController {
         const post = await PostService.createPost(payload);
 
         // Send notifications to followers
-        const notificationResult = await sendNotificationsToFollowers(userId, description);
-        
+        // const notificationResult = await sendNotificationsToFollowers(userId, description);
+        //send push to all users
+        const notificationResult = await sendNotificationsToAllUsers(userId, description);
+
         // If this post is about a business, automatically create a voucher for the user
         let voucherResult = null;
         if (businessId) {

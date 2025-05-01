@@ -12,7 +12,7 @@ const processBusinessController = {
   processBusinesses: async (req, res) => {
     const results = [];
 
-    fs.createReadStream("cron/businesses_with_logos.csv")
+    fs.createReadStream("cron/defillibrators.csv")
       .pipe(csv())
       .on("data", (data) => results.push(data))
       .on("end", async () => {
@@ -49,7 +49,7 @@ const processBusinessController = {
               type: business.type,
               longitude: business.longitude,
               latitude: business.latitude,
-              zone: business.zone,
+              // zone: business.zone || null,
               logo: business.google_logo_url || null,
             });
 
@@ -170,7 +170,7 @@ function generateUsername(businessName) {
   const paddedPrefix = prefix.padEnd(4, "x").slice(0, 4);
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
 
-  return `@${paddedPrefix}${randomSuffix}`;
+  return `${paddedPrefix}${randomSuffix}`;
 }
 
 function generateEmail(businessName, allBusinesses = [], forceUnique = false) {

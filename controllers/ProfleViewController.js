@@ -4,8 +4,7 @@ class ProfileViewController {
     // Track profile views when a profile is accessed
     static async viewProfile(req, res) {
         try {
-            const { profileOwnerId, viewerId } = req.params; // Get user whose profile is viewed
-
+            const { profileOwnerId, viewerId } = req.params;
 
             await ProfileViewService.logProfileView(viewerId, profileOwnerId);
 

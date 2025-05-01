@@ -17,14 +17,14 @@ module.exports = {
             port: process.env.DB_PORT || 3306,
             dialect: 'mysql',
         },
-        // production: {
-        //     username: "admin",
-        //     password: "Justkeepitsimple",
-        //     database:"on-the-go-db-prod",
-        //     host:"on-the-go-db-prod.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
-        //     port: 3306,
-        //     dialect: 'mysql',
-        // },
+        production: {
+            username: "admin",
+            password: "Justkeepitsimple",
+            database:"on-the-go-db-prod",
+            host:"on-the-go-db-prod.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
+            port: 3306,
+            dialect: 'mysql',
+        },
 
         // production: {
         //     username: "admin",
@@ -35,14 +35,14 @@ module.exports = {
         //     dialect: 'mysql',
         // },
 
-        production: {
-            username: "admin",
-            password: "Justkeepitsimple",
-            database:"on-the-go-db",
-            host:"on-the-go-db.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
-            port: 3306,
-            dialect: 'mysql',
-        },
+        // production: {
+        //     username: "admin",
+        //     password: "Justkeepitsimple",
+        //     database:"on-the-go-db",
+        //     host:"on-the-go-db.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
+        //     port: 3306,
+        //     dialect: 'mysql',
+        // },
         // production: {
         //     username: "onthelbo_afrocode2k",
         //     password: "Justkeepitsimple",

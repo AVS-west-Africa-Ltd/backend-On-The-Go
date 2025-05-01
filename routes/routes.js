@@ -26,9 +26,9 @@ router.use("/auth", authRoutes);
 router.post(
   "/claim-business",
   businessClaimUpload.fields([
-    { name: 'cacDocument', maxCount: 1 },
-    { name: 'optionalDocument', maxCount: 1 }
-  ]), 
+    { name: "cacDocument", maxCount: 1 },
+    { name: "optionalDocument", maxCount: 1 },
+  ]),
   catchErrors(BusinessClaimController.submitClaim)
 );
 
@@ -137,15 +137,23 @@ router.get(
 // Post routes
 router.post("/user/post", catchErrors(PostController.createPost));
 router.get("/user/post/:postId", catchErrors(PostController.getPostById));
-router.get("/posts/user/:userId/:postType", catchErrors(PostController.GetPostsByUserId));
-router.put("/user/:userId/push-token", catchErrors(UserController.updatePushToken));
+router.get(
+  "/posts/user/:userId/:postType",
+  catchErrors(PostController.GetPostsByUserId)
+);
+router.put(
+  "/user/:userId/push-token",
+  catchErrors(UserController.updatePushToken)
+);
 router.get("/posts/user", catchErrors(PostController.getPosts));
 router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
 router.post("/:userId/likes/:postId", catchErrors(PostController.toggleLike));
 router.post("/:postId/rating", catchErrors(PostController.ratePost));
-router.get("/posts/statistics/:userId",catchErrors(PostController.getPostStatistics));
-
+router.get(
+  "/posts/statistics/:userId",
+  catchErrors(PostController.getPostStatistics)
+);
 
 router.post(
   "/:userId/bookmark/:postId",
@@ -196,6 +204,8 @@ router.get("/businesses/:userId", businessController.getBusinessByUserId);
 router.get("/business/:businessId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business", businessController.getAllBusiness);
+router.get("/all-defibrillator", businessController.getAllDefibrillator);
+
 // router.get("/business/:userId/user", businessController.getUserBusinesses);
 // router.get("/business/:businessId/following", businessController.getFollowing);
 router.put("/businesses/:id", businessController.updateBusiness);
@@ -238,21 +248,62 @@ router.get("/search/business", businessController.searchBusinessesByName);
 router.get("/process-businesses", processBusinessController.processBusinesses);
 
 // Push Notification routes
-router.post("/send-notification", catchErrors(PushNotificationController.sendNotificationToAllUsers)
+router.post(
+  "/send-notification",
+  catchErrors(PushNotificationController.sendNotificationToAllUsers)
 );
 
-
 // Voucher routes
-router.post("/vouchers", authMiddleware, catchErrors(VoucherController.createVoucher));
-router.post("/vouchers/:voucherId/claim", authMiddleware, catchErrors(VoucherController.claimVoucher));
-router.post("/vouchers/use/:userVoucherId", authMiddleware, catchErrors(VoucherController.useVoucher));
-router.post("/vouchers/:voucherId/gift", authMiddleware, catchErrors(VoucherController.giftVoucher));
-router.post("/vouchers/:voucherId/request-exchange", authMiddleware, catchErrors(VoucherController.requestExchange));
-router.post("/vouchers/:requestId/respond-exchange", authMiddleware, catchErrors(VoucherController.respondToExchange));
-router.get("/users/:userId/vouchers", authMiddleware, catchErrors(VoucherController.getAllUserVouchers));
-router.get("/vouchers/exchange-requests/all", authMiddleware, catchErrors(VoucherController.getAllPendingExchangeRequests));
-router.get("/vouchers/business-stats", authMiddleware, catchErrors(VoucherController.getBusinessVoucherStats));
-router.post("/vouchers/:voucherId/send-to-market", authMiddleware,catchErrors(VoucherController.sendToMarket));
+router.post(
+  "/vouchers",
+  authMiddleware,
+  catchErrors(VoucherController.createVoucher)
+);
+router.post(
+  "/vouchers/:voucherId/claim",
+  authMiddleware,
+  catchErrors(VoucherController.claimVoucher)
+);
+router.post(
+  "/vouchers/use/:userVoucherId",
+  authMiddleware,
+  catchErrors(VoucherController.useVoucher)
+);
+router.post(
+  "/vouchers/:voucherId/gift",
+  authMiddleware,
+  catchErrors(VoucherController.giftVoucher)
+);
+router.post(
+  "/vouchers/:voucherId/request-exchange",
+  authMiddleware,
+  catchErrors(VoucherController.requestExchange)
+);
+router.post(
+  "/vouchers/:requestId/respond-exchange",
+  authMiddleware,
+  catchErrors(VoucherController.respondToExchange)
+);
+router.get(
+  "/users/:userId/vouchers",
+  authMiddleware,
+  catchErrors(VoucherController.getAllUserVouchers)
+);
+router.get(
+  "/vouchers/exchange-requests/all",
+  authMiddleware,
+  catchErrors(VoucherController.getAllPendingExchangeRequests)
+);
+router.get(
+  "/vouchers/business-stats",
+  authMiddleware,
+  catchErrors(VoucherController.getBusinessVoucherStats)
+);
+router.post(
+  "/vouchers/:voucherId/send-to-market",
+  authMiddleware,
+  catchErrors(VoucherController.sendToMarket)
+);
 
 router.use("/reports", reportRoutes);
 

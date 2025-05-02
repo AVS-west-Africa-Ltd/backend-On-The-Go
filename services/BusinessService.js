@@ -72,32 +72,38 @@ class BusinessService {
 
   static async getAllDefibrillator() {
     try {
-      const businesses = await Business.findAll({
-        where: { type: "defibrillator" },
+      const users = await User.findAll({
+        where: { userType: "business" },
+        include: [
+          {
+            model: Business,
+            where: { type: "defibrillator" },
+          },
+        ],
       });
 
-      if (!businesses || businesses.length === 0) return false;
+      if (!users || users.length === 0) return false;
 
-      const parsedBusinesses = businesses.map((business) => {
-        const amenities = business.amenities
-          ? JSON.parse(business.amenities)
-          : null;
-        const hours = business.hours ? JSON.parse(business.hours) : null;
-        const social = business.social ? JSON.parse(business.social) : null;
-        const wifi = business.wifi ? JSON.parse(business.wifi) : null;
+      const parsedUsers = users.map((user) => {
+        const parsedBusinesses = user.Businesses.map((business) => ({
+          ...business.toJSON(),
+          amenities: business.amenities ? JSON.parse(business.amenities) : null,
+          hours: business.hours ? JSON.parse(business.hours) : null,
+          social: business.social ? JSON.parse(business.social) : null,
+          wifi: business.wifi ? JSON.parse(business.wifi) : null,
+        }));
 
         return {
-          ...business.toJSON(),
-          amenities,
-          hours,
-          social,
-          wifi,
+          ...user.toJSON(),
+          Businesses: parsedBusinesses,
         };
       });
 
-      return parsedBusinesses;
+      return parsedUsers;
     } catch (error) {
-      throw new Error("Error fetching businesses: " + error.message);
+      throw new Error(
+        "Error fetching defibrillator businesses: " + error.message
+      );
     }
   }
 
@@ -347,9 +353,16 @@ class BusinessService {
     try {
       const businesses = await Business.findAll({
         where: {
-          name: {
-            [Op.like]: `%${searchTerm}%`, // Using LIKE with case-sensitive collation
-          },
+          [Op.or]: [
+            {
+              name: {
+                [Op.like]: `%${searchTerm}%`,
+              },
+            },
+            {
+              type: "defibrillator",
+            },
+          ],
         },
         limit: parseInt(limit),
         order: [["name", "ASC"]],

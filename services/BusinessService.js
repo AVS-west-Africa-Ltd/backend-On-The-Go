@@ -41,34 +41,77 @@ class BusinessService {
     }
   }
 
+  // static async getAllBusiness() {
+  //   try {
+  //     const businesses = await Business.findAll();
+
+  //     if (!businesses || businesses.length === 0) return false;
+
+  //     const parsedBusinesses = businesses.map((business) => {
+  //       const amenities = business.amenities
+  //         ? JSON.parse(business.amenities)
+  //         : null;
+  //       const hours = business.hours ? JSON.parse(business.hours) : null;
+  //       const social = business.social ? JSON.parse(business.social) : null;
+  //       const wifi = business.wifi ? JSON.parse(business.wifi) : null;
+
+  //       return {
+  //         ...business.toJSON(),
+  //         amenities,
+  //         hours,
+  //         social,
+  //         wifi,
+  //       };
+  //     });
+
+  //     return parsedBusinesses;
+  //   } catch (error) {
+  //     throw new Error("Error fetching businesses: " + error.message);
+  //   }
+  // }
+
   static async getAllBusiness() {
-    try {
-      const businesses = await Business.findAll();
+  try {
+    const businesses = await Business.findAll();
 
-      if (!businesses || businesses.length === 0) return false;
+    if (!businesses || businesses.length === 0) return false;
 
-      const parsedBusinesses = businesses.map((business) => {
-        const amenities = business.amenities
+    const parsedBusinesses = businesses.map((business) => {
+      const amenities =
+        typeof business.amenities === 'string'
           ? JSON.parse(business.amenities)
-          : null;
-        const hours = business.hours ? JSON.parse(business.hours) : null;
-        const social = business.social ? JSON.parse(business.social) : null;
-        const wifi = business.wifi ? JSON.parse(business.wifi) : null;
+          : business.amenities;
 
-        return {
-          ...business.toJSON(),
-          amenities,
-          hours,
-          social,
-          wifi,
-        };
-      });
+      const hours =
+        typeof business.hours === 'string'
+          ? JSON.parse(business.hours)
+          : business.hours;
 
-      return parsedBusinesses;
-    } catch (error) {
-      throw new Error("Error fetching businesses: " + error.message);
-    }
+      const social =
+        typeof business.social === 'string'
+          ? JSON.parse(business.social)
+          : business.social;
+
+      const wifi =
+        typeof business.wifi === 'string'
+          ? JSON.parse(business.wifi)
+          : business.wifi;
+
+      return {
+        ...business.toJSON(),
+        amenities,
+        hours,
+        social,
+        wifi,
+      };
+    });
+
+    return parsedBusinesses;
+  } catch (error) {
+    throw new Error("Error fetching businesses: " + error.message);
   }
+}
+
 
   static async getAllDefibrillator() {
     try {

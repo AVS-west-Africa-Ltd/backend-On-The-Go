@@ -190,56 +190,117 @@ class BusinessService {
     }
   }
 
+  // static async getBusinessByUserId(userId) {
+  //   try {
+  //     // Find the user by primary key (userId) and include their associated Businesses
+  //     const user = await User.findByPk(userId, {
+  //       include: [
+  //         {
+  //           model: Business, // Include the associated Business model
+  //         },
+  //       ],
+  //     });
+
+  //     // If no user is found, return null or an appropriate response
+  //     if (!user) return null;
+
+  //     // Parse JSON strings into objects for the user's businesses
+  //     const parsedBusinesses = user.Businesses.map((business) => ({
+  //       ...business.toJSON(),
+  //       amenities: JSON.parse(business.amenities),
+  //       hours: JSON.parse(business.hours),
+  //       social: JSON.parse(business.social),
+  //       wifi: JSON.parse(business.wifi),
+  //     }));
+
+  //     // Return the user with parsed businesses
+  //     return {
+  //       ...user.toJSON(),
+  //       Businesses: parsedBusinesses,
+  //     };
+  //   } catch (error) {
+  //     throw new Error("Error fetching user: " + error.message);
+  //   }
+  // }
+
   static async getBusinessByUserId(userId) {
-    try {
-      // Find the user by primary key (userId) and include their associated Businesses
-      const user = await User.findByPk(userId, {
-        include: [
-          {
-            model: Business, // Include the associated Business model
-          },
-        ],
-      });
+  try {
+    const user = await User.findByPk(userId, {
+      include: [{ model: Business }],
+    });
 
-      // If no user is found, return null or an appropriate response
-      if (!user) return null;
+    if (!user) return null;
 
-      // Parse JSON strings into objects for the user's businesses
-      const parsedBusinesses = user.Businesses.map((business) => ({
-        ...business.toJSON(),
-        amenities: JSON.parse(business.amenities),
-        hours: JSON.parse(business.hours),
-        social: JSON.parse(business.social),
-        wifi: JSON.parse(business.wifi),
-      }));
+    const safeParse = (str) => {
+      try {
+        return JSON.parse(str);
+      } catch {
+        return str; // return as-is if not JSON
+      }
+    };
 
-      // Return the user with parsed businesses
-      return {
-        ...user.toJSON(),
-        Businesses: parsedBusinesses,
-      };
-    } catch (error) {
-      throw new Error("Error fetching user: " + error.message);
-    }
+    const parsedBusinesses = user.Businesses.map((business) => ({
+      ...business.toJSON(),
+      amenities: safeParse(business.amenities),
+      hours: safeParse(business.hours),
+      social: safeParse(business.social),
+      wifi: safeParse(business.wifi),
+    }));
+
+    return {
+      ...user.toJSON(),
+      Businesses: parsedBusinesses,
+    };
+  } catch (error) {
+    throw new Error("Error fetching user: " + error.message);
   }
+}
 
-  static async getBusinessById(businessId) {
-    try {
-      const business = await Business.findByPk(businessId);
 
-      if (!business) return null;
+  // static async getBusinessById(businessId) {
+  //   try {
+  //     const business = await Business.findByPk(businessId);
 
-      return {
-        ...business.toJSON(),
-        amenities: JSON.parse(business.amenities),
-        hours: JSON.parse(business.hours),
-        social: JSON.parse(business.social),
-        wifi: JSON.parse(business.wifi),
-      };
-    } catch (error) {
-      throw new Error("Error fetching user: " + error.message);
-    }
+  //     if (!business) return null;
+
+  //     return {
+  //       ...business.toJSON(),
+  //       amenities: JSON.parse(business.amenities),
+  //       hours: JSON.parse(business.hours),
+  //       social: JSON.parse(business.social),
+  //       wifi: JSON.parse(business.wifi),
+  //     };
+  //   } catch (error) {
+  //     throw new Error("Error fetching user: " + error.message);
+  //   }
+  // }
+
+static async getBusinessById(businessId) {
+  try {
+    const business = await Business.findByPk(businessId);
+
+    if (!business) return null;
+
+    const safeParse = (str) => {
+      try {
+        return JSON.parse(str);
+      } catch {
+        return str; // Return the original value if parsing fails
+      }
+    };
+
+    return {
+      ...business.toJSON(),
+      amenities: safeParse(business.amenities),
+      hours: safeParse(business.hours),
+      social: safeParse(business.social),
+      wifi: safeParse(business.wifi),
+    };
+  } catch (error) {
+    throw new Error("Error fetching business: " + error.message);
   }
+}
+
 
   // static async addWifiScanner(userId, businessId, location,wifiName) {
   //   try {

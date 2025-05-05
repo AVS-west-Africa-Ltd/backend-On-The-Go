@@ -6,40 +6,86 @@ const { Op } = require("sequelize");
 
 class BusinessService {
   // Get user by ID
+  // static async getAllBusinesses() {
+  //   try {
+  //     const users = await User.findAll({
+  //       where: { userType: "business" },
+  //       include: [
+  //         {
+  //           model: Business,
+  //         },
+  //       ],
+  //     });
+
+  //     if (!users) return false;
+
+  //     // Parse JSON strings into objects for each user and their businesses
+  //     const parsedUsers = users.map((user) => {
+  //       const parsedBusinesses = user.Businesses.map((business) => ({
+  //         ...business.toJSON(),
+  //         amenities: JSON.parse(business.amenities),
+  //         hours: JSON.parse(business.hours),
+  //         social: JSON.parse(business.social),
+  //         wifi: JSON.parse(business.wifi),
+  //       }));
+
+  //       return {
+  //         ...user.toJSON(),
+  //         Businesses: parsedBusinesses,
+  //       };
+  //     });
+
+  //     return parsedUsers;
+  //   } catch (error) {
+  //     throw new Error("Error fetching user: " + error.message);
+  //   }
+  // }
   static async getAllBusinesses() {
-    try {
-      const users = await User.findAll({
-        where: { userType: "business" },
-        include: [
-          {
-            model: Business,
-          },
-        ],
-      });
+  try {
+    const users = await User.findAll({
+      where: { userType: "business" },
+      include: [
+        {
+          model: Business,
+        },
+      ],
+    });
 
-      if (!users) return false;
+    if (!users) return false;
 
-      // Parse JSON strings into objects for each user and their businesses
-      const parsedUsers = users.map((user) => {
-        const parsedBusinesses = user.Businesses.map((business) => ({
-          ...business.toJSON(),
-          amenities: JSON.parse(business.amenities),
-          hours: JSON.parse(business.hours),
-          social: JSON.parse(business.social),
-          wifi: JSON.parse(business.wifi),
-        }));
+    const parsedUsers = users.map((user) => {
+      const parsedBusinesses = user.Businesses.map((business) => ({
+        ...business.toJSON(),
+        amenities:
+          typeof business.amenities === 'string'
+            ? JSON.parse(business.amenities)
+            : business.amenities,
+        hours:
+          typeof business.hours === 'string'
+            ? JSON.parse(business.hours)
+            : business.hours,
+        social:
+          typeof business.social === 'string'
+            ? JSON.parse(business.social)
+            : business.social,
+        wifi:
+          typeof business.wifi === 'string'
+            ? JSON.parse(business.wifi)
+            : business.wifi,
+      }));
 
-        return {
-          ...user.toJSON(),
-          Businesses: parsedBusinesses,
-        };
-      });
+      return {
+        ...user.toJSON(),
+        Businesses: parsedBusinesses,
+      };
+    });
 
-      return parsedUsers;
-    } catch (error) {
-      throw new Error("Error fetching user: " + error.message);
-    }
+    return parsedUsers;
+  } catch (error) {
+    throw new Error("Error fetching user: " + error.message);
   }
+}
+
 
   // static async getAllBusiness() {
   //   try {

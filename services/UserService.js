@@ -79,16 +79,16 @@ static async createUser(data) {
   static async getUsers(props) {
     try {
       const users = await User.findAll(props || {});
-
-      // Convert Sequelize instances to plain objects and parse JSON fields
-      return users.map((user) => {
-        const userData = user.toJSON();
-        return {
-          ...userData,
-          interests: JSON.parse(userData.interests || "[]"),
-          placesVisited: JSON.parse(userData.placesVisited || "[]"),
-        };
-      });
+return users
+      // // Convert Sequelize instances to plain objects and parse JSON fields
+      // return users.map((user) => {
+      //   const userData = user.toJSON();
+      //   return {
+      //     ...userData,
+      //     interests: JSON.parse(userData.interests || "[]"),
+      //     placesVisited: JSON.parse(userData.placesVisited || "[]"),
+      //   };
+      // });
     } catch (error) {
       throw error;
     }

@@ -321,7 +321,7 @@ class UserController {
         return res.status(404).json({ message: "No record", info: [] });
       return res.status(200).json({ info: users });
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: error});
     }
   }
 

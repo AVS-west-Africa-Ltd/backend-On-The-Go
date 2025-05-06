@@ -3,6 +3,8 @@ const RepeatedCustomer = require("../models/RepeatedCustomers");
 const User = require("../models/User");
 const WifiScan = require("../models/WifiScan");
 const { Op } = require("sequelize");
+const { safeJSONParse } = require("../utils/safeJSON");
+
 
 class BusinessService {
   // Get user by ID
@@ -390,7 +392,7 @@ static async getBusinessById(businessId) {
         // Parse the location field if it's a string
         const location =
           typeof scan.location === "string"
-            ? JSON.parse(scan.location)
+            ? safeJSONParse(scan.location)
             : scan.location;
 
         return {
@@ -425,7 +427,7 @@ static async getBusinessById(businessId) {
           // Parse the location field if it's a string
           const location =
             typeof customer.location === "string"
-              ? JSON.parse(customer.location)
+              ? safeJSONParse(customer.location)
               : customer.location;
           return {
             ...customer.toJSON(),
@@ -451,7 +453,7 @@ static async getBusinessById(businessId) {
     const filteredBusinesses = allBusinesses.filter((business) => {
       let amenities = [];
       try {
-        amenities = JSON.parse(business.amenities || "[]");
+        amenities = safeJSONParse(business.amenities || "[]");
       } catch (e) {
         console.error("Invalid amenities JSON:", business.amenities);
         return false;
@@ -481,10 +483,10 @@ static async getBusinessById(businessId) {
     // 4. Remove escape characters from the response
     const cleanBusinesses = filteredBusinesses.map((business) => ({
       ...business.get({ plain: true }),
-      amenities: JSON.parse(business.amenities), // Properly parsed array
-      hours: JSON.parse(business.hours),
-      social: JSON.parse(business.social),
-      wifi: JSON.parse(business.wifi),
+      amenities: safeJSONParse(business.amenities), // Properly parsed array
+      hours: safeJSONParse(business.hours),
+      social: safeJSONParse(business.social),
+      wifi: safeJSONParse(business.wifi),
     }));
 
     return {
@@ -514,7 +516,7 @@ static async getBusinessById(businessId) {
         jsonFields.forEach((field) => {
           try {
             parsedBusiness[field] = parsedBusiness[field]
-              ? JSON.parse(parsedBusiness[field])
+              ? safeJSONParse(parsedBusiness[field])
               : null;
           } catch (e) {
             console.error(`Error parsing ${field}:`, e);
@@ -570,7 +572,7 @@ static async getBusinessById(businessId) {
         jsonFields.forEach((field) => {
           try {
             parsedBusiness[field] = parsedBusiness[field]
-              ? JSON.parse(parsedBusiness[field])
+              ? safeJSONParse(parsedBusiness[field])
               : null;
           } catch (e) {
             console.error(`Error parsing ${field}:`, e);

@@ -5,6 +5,7 @@ const path = require("path");
 const Comment = require("../models/Comment");
 const Business = require("../models/Business");
 const User = require("../models/User");
+const { safeJSONParse } = require("../utils/safeJSON");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -125,16 +126,16 @@ class PostService {
       // Process fields to parse JSON strings
       return posts.map((post) => ({
         ...post.toJSON(),
-        likes: JSON.parse(post.likes || "[]"),
-        media: JSON.parse(post.media || "[]"),
-        bookmarks: JSON.parse(post.bookmarks || "[]"),
+        likes: safeJSONParse(post.likes || "[]"),
+        media: safeJSONParse(post.media || "[]"),
+        bookmarks: safeJSONParse(post.bookmarks || "[]"),
         business: post.business
           ? {
               ...post.business.toJSON(),
-              amenities: JSON.parse(post.business.amenities || "[]"),
-              social: JSON.parse(post.business.social || "[]"),
-              wifi: JSON.parse(post.business.wifi || "[]"),
-              hours: JSON.parse(post.business.hours || "{}"),
+              amenities: safeJSONParse(post.business.amenities || "[]"),
+              social: safeJSONParse(post.business.social || "[]"),
+              wifi: safeJSONParse(post.business.wifi || "[]"),
+              hours: safeJSONParse(post.business.hours || "{}"),
             }
           : null,
       }));

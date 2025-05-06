@@ -7,6 +7,7 @@ const Comment = require("../models/Comment");
 const PostSchema = require("../models/Post");
 const WifiScan = require("../models/WifiScan");
 const RepeatedCustomer = require("../models/RepeatedCustomers");
+const { safeJSONParse } = require("../utils/safeJSON");
 // const NotificationService = require("./NotificationService");
 // const RepeatedCustomer = require("../models/RepeatedCustomers");
 // const WifiScan = require("../models/WifiScan");
@@ -49,8 +50,8 @@ static async createUser(data) {
       const userData = user.toJSON();
       return {
         ...userData,
-        interests: JSON.parse(userData.interests || "[]"),
-        placesVisited: JSON.parse(userData.placesVisited || "[]"),
+        interests: safeJSONParse(userData.interests || "[]"),
+        placesVisited: safeJSONParse(userData.placesVisited || "[]"),
       };
     } catch (error) {
       throw new Error("Error fetching user");
@@ -85,8 +86,8 @@ static async createUser(data) {
         const userData = user.toJSON();
         return {
           ...userData,
-          interests: JSON.parse(userData.interests || "[]"),
-          placesVisited: JSON.parse(userData.placesVisited || "[]"),
+          interests: safeJSONParse(userData.interests || "[]"),
+          placesVisited: safeJSONParse(userData.placesVisited || "[]"),
         };
       });
     } catch (error) {
@@ -383,7 +384,7 @@ static async createUser(data) {
       // Parse JSON strings to arrays
       if (follower.placesVisited) {
         try {
-          follower.placesVisited = JSON.parse(follower.placesVisited);
+          follower.placesVisited = safeJSONParse(follower.placesVisited);
         } catch (e) {
           follower.placesVisited = [];
         }
@@ -393,7 +394,7 @@ static async createUser(data) {
 
       if (follower.interests) {
         try {
-          follower.interests = JSON.parse(follower.interests);
+          follower.interests = safeJSONParse(follower.interests);
         } catch (e) {
           follower.interests = [];
         }

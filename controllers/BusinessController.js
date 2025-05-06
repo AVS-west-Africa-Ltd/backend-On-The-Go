@@ -4,7 +4,7 @@ const Business = require("../models/Business");
 const { BusinessPosts } = require("../models/index");
 const BusinessService = require("../services/BusinessService");
 const { uploadGenericFiles } = require("../utils/upload");
-
+const {safeJSONParse} = require('../utils/safeJSON')
 const businessController = {
   // Create a new Business
   createBusiness: async (req, res) => {
@@ -41,10 +41,10 @@ const businessController = {
       const cacDocUrl = req.files?.cacDoc?.[0]?.location || null;
 
       // Parse JSON strings if they exist
-      const socialArray = social ? JSON.parse(social) : null;
-      const wifiArray = wifi ? JSON.parse(wifi) : null;
-      const hoursArray = hours ? JSON.parse(hours) : null;
-      const amenitiesArray = amenities ? JSON.parse(amenities) : null;
+      const socialArray = social ? safeJSONParse(social) : null;
+      const wifiArray = wifi ? safeJSONParse(wifi) : null;
+      const hoursArray = hours ? safeJSONParse(hours) : null;
+      const amenitiesArray = amenities ? safeJSONParse(amenities) : null;
 
       // Create the business
       const business = await Business.create({
@@ -222,18 +222,21 @@ const businessController = {
         description: description || business.description,
         logo: req.files?.logo?.[0]?.location || business.logo,
         cacDoc: req.files?.cacDoc?.[0]?.location || business.cacDoc,
-        amenities: amenities ? JSON.parse(amenities) : business.amenities,
-        hours: hours ? JSON.parse(hours) : business.hours,
-        social: social ? JSON.parse(social) : business.social,
-        wifi: wifi ? JSON.parse(wifi) : business.wifi,
+        amenities: amenities ? safeJSONParse(amenities) : business.amenities,
+        hours: hours ? safeJSONParse(hours) : business.hours,
+        social: social ? safeJSONParse(social) : business.social,
+        wifi: wifi ? safeJSONParse(wifi) : business.wifi,
       };
 
       // Update business
       await business.update(updateData);
 
       // Format response data
+      // const formatJsonField = (field) =>
+      //   typeof field === "string" ? JSON.parse(field) : field;
       const formatJsonField = (field) =>
-        typeof field === "string" ? JSON.parse(field) : field;
+        safeJSONParse(field, field); // fallback to original if parsing fails
+      
 
       const responseData = {
         ...business.toJSON(),

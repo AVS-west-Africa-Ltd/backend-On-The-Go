@@ -305,6 +305,9 @@ router.post(
   catchErrors(VoucherController.sendToMarket)
 );
 
+// Add these with the other voucher routes
+router.get("/vouchers/pending", authMiddleware, catchErrors(VoucherController.getAllPendingVouchers));
+router.get("/businesses/:businessId/pending-vouchers", authMiddleware, catchErrors(VoucherController.getBusinessPendingVouchers));
 router.use("/reports", reportRoutes);
 
 module.exports = router;

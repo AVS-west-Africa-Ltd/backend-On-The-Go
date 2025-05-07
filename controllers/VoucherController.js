@@ -1557,6 +1557,85 @@ static async getBusinessVoucherStats(req, res) {
     });
   }
 }
+
+/**
+ * Get all pending vouchers (without validity days)
+ * GET /api/vouchers/pending
+ */
+static async getAllPendingVouchers(req, res) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        message: "Authentication required"
+      });
+    }
+
+    const pendingVouchers = await VoucherTemplate.findAll({
+      where: {
+        validDays: JSON.stringify([]) // Vouchers with no valid days specified
+      },
+      order: [['createdAt', 'DESC']]
+    });
+
+    return res.status(200).json({
+      message: "Pending vouchers retrieved successfully",
+      vouchers: pendingVouchers
+    });
+
+  } catch (error) {
+    console.error("Error fetching pending vouchers:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+}
+
+/**
+ * Get pending vouchers for a specific business
+ * GET /api/businesses/:businessId/pending-vouchers
+ */
+static async getBusinessPendingVouchers(req, res) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        message: "Authentication required"
+      });
+    }
+
+    const { businessId } = req.params;
+
+    // Verify business exists
+    const business = await Business.findByPk(businessId);
+    if (!business) {
+      return res.status(404).json({
+        message: "Business not found"
+      });
+    }
+
+    const pendingVouchers = await VoucherTemplate.findAll({
+      where: {
+        businessId,
+        validDays: JSON.stringify([]) // Vouchers with no valid days specified
+      },
+      order: [['createdAt', 'DESC']]
+    });
+
+    return res.status(200).json({
+      message: "Business pending vouchers retrieved successfully",
+      businessId: business.id,
+      businessName: business.name,
+      vouchers: pendingVouchers
+    });
+
+  } catch (error) {
+    console.error("Error fetching business pending vouchers:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+}
 }
 
 module.exports = VoucherController;

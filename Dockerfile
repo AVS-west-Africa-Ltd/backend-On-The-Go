@@ -1,5 +1,5 @@
 # Stage 1: Build and test
-FROM node:18-alpine AS builder
+FROM node:20.18.2-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -21,9 +21,8 @@ ENV NODE_ENV=test
 
 # Run tests (allow failure for debugging in pipeline)
 
-
 # Stage 2: Production image
-FROM node:18-alpine
+FROM node:20.18.2-alpine
 
 # Set working directory
 WORKDIR /app

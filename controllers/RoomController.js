@@ -415,9 +415,18 @@ exports.acceptJoinRequest = async (req, res) => {
       return res.status(404).json({ success: false, message: "Room not found" });
     }
 
-    const joinRequests = Array.isArray(room.join_requests)
-      ? room.join_requests
-      : JSON.parse(room.join_requests || '[]');
+    let joinRequests = [];
+    try {
+      joinRequests = Array.isArray(room.join_requests)
+        ? room.join_requests
+        : JSON.parse(room.join_requests || '[]');
+    } catch (parseErr) {
+      console.error("Failed to parse join_requests:", parseErr);
+      joinRequests = []; // fallback to empty array
+    }
+    // const joinRequests = Array.isArray(room.join_requests)
+    //   ? room.join_requests
+    //   : JSON.parse(room.join_requests || '[]');
 
     if (!joinRequests.includes(user_id)) {
       return res.status(400).json({ success: false, message: "No join request found for this user" });

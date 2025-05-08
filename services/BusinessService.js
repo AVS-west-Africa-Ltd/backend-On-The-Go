@@ -3,72 +3,163 @@ const RepeatedCustomer = require("../models/RepeatedCustomers");
 const User = require("../models/User");
 const WifiScan = require("../models/WifiScan");
 const { Op } = require("sequelize");
+const { safeJSONParse } = require("../utils/safeJSON");
+
 
 class BusinessService {
   // Get user by ID
+  // static async getAllBusinesses() {
+  //   try {
+  //     const users = await User.findAll({
+  //       where: { userType: "business" },
+  //       include: [
+  //         {
+  //           model: Business,
+  //         },
+  //       ],
+  //     });
+
+  //     if (!users) return false;
+
+  //     // Parse JSON strings into objects for each user and their businesses
+  //     const parsedUsers = users.map((user) => {
+  //       const parsedBusinesses = user.Businesses.map((business) => ({
+  //         ...business.toJSON(),
+  //         amenities: JSON.parse(business.amenities),
+  //         hours: JSON.parse(business.hours),
+  //         social: JSON.parse(business.social),
+  //         wifi: JSON.parse(business.wifi),
+  //       }));
+
+  //       return {
+  //         ...user.toJSON(),
+  //         Businesses: parsedBusinesses,
+  //       };
+  //     });
+
+  //     return parsedUsers;
+  //   } catch (error) {
+  //     throw new Error("Error fetching user: " + error.message);
+  //   }
+  // }
   static async getAllBusinesses() {
-    try {
-      const users = await User.findAll({
-        where: { userType: "business" },
-        include: [
-          {
-            model: Business,
-          },
-        ],
-      });
+  try {
+    const users = await User.findAll({
+      where: { userType: "business" },
+      include: [
+        {
+          model: Business,
+        },
+      ],
+    });
 
-      if (!users) return false;
+    if (!users) return false;
 
-      // Parse JSON strings into objects for each user and their businesses
-      const parsedUsers = users.map((user) => {
-        const parsedBusinesses = user.Businesses.map((business) => ({
-          ...business.toJSON(),
-          amenities: JSON.parse(business.amenities),
-          hours: JSON.parse(business.hours),
-          social: JSON.parse(business.social),
-          wifi: JSON.parse(business.wifi),
-        }));
+    const parsedUsers = users.map((user) => {
+      const parsedBusinesses = user.Businesses.map((business) => ({
+        ...business.toJSON(),
+        amenities:
+          typeof business.amenities === 'string'
+            ? JSON.parse(business.amenities)
+            : business.amenities,
+        hours:
+          typeof business.hours === 'string'
+            ? JSON.parse(business.hours)
+            : business.hours,
+        social:
+          typeof business.social === 'string'
+            ? JSON.parse(business.social)
+            : business.social,
+        wifi:
+          typeof business.wifi === 'string'
+            ? JSON.parse(business.wifi)
+            : business.wifi,
+      }));
 
-        return {
-          ...user.toJSON(),
-          Businesses: parsedBusinesses,
-        };
-      });
+      return {
+        ...user.toJSON(),
+        Businesses: parsedBusinesses,
+      };
+    });
 
-      return parsedUsers;
-    } catch (error) {
-      throw new Error("Error fetching user: " + error.message);
-    }
+    return parsedUsers;
+  } catch (error) {
+    throw new Error("Error fetching user: " + error.message);
   }
+}
+
+
+  // static async getAllBusiness() {
+  //   try {
+  //     const businesses = await Business.findAll();
+
+  //     if (!businesses || businesses.length === 0) return false;
+
+  //     const parsedBusinesses = businesses.map((business) => {
+  //       const amenities = business.amenities
+  //         ? JSON.parse(business.amenities)
+  //         : null;
+  //       const hours = business.hours ? JSON.parse(business.hours) : null;
+  //       const social = business.social ? JSON.parse(business.social) : null;
+  //       const wifi = business.wifi ? JSON.parse(business.wifi) : null;
+
+  //       return {
+  //         ...business.toJSON(),
+  //         amenities,
+  //         hours,
+  //         social,
+  //         wifi,
+  //       };
+  //     });
+
+  //     return parsedBusinesses;
+  //   } catch (error) {
+  //     throw new Error("Error fetching businesses: " + error.message);
+  //   }
+  // }
 
   static async getAllBusiness() {
-    try {
-      const businesses = await Business.findAll();
+  try {
+    const businesses = await Business.findAll();
 
-      if (!businesses || businesses.length === 0) return false;
+    if (!businesses || businesses.length === 0) return false;
 
-      const parsedBusinesses = businesses.map((business) => {
-        const amenities = business.amenities
+    const parsedBusinesses = businesses.map((business) => {
+      const amenities =
+        typeof business.amenities === 'string'
           ? JSON.parse(business.amenities)
-          : null;
-        const hours = business.hours ? JSON.parse(business.hours) : null;
-        const social = business.social ? JSON.parse(business.social) : null;
-        const wifi = business.wifi ? JSON.parse(business.wifi) : null;
+          : business.amenities;
 
-        return {
-          ...business.toJSON(),
-          amenities,
-          hours,
-          social,
-          wifi,
-        };
-      });
+      const hours =
+        typeof business.hours === 'string'
+          ? JSON.parse(business.hours)
+          : business.hours;
 
-      return parsedBusinesses;
-    } catch (error) {
-      throw new Error("Error fetching businesses: " + error.message);
-    }
+      const social =
+        typeof business.social === 'string'
+          ? JSON.parse(business.social)
+          : business.social;
+
+      const wifi =
+        typeof business.wifi === 'string'
+          ? JSON.parse(business.wifi)
+          : business.wifi;
+
+      return {
+        ...business.toJSON(),
+        amenities,
+        hours,
+        social,
+        wifi,
+      };
+    });
+
+    return parsedBusinesses;
+  } catch (error) {
+    throw new Error("Error fetching businesses: " + error.message);
   }
+}
+
 
   static async getAllDefibrillator() {
     try {
@@ -101,56 +192,117 @@ class BusinessService {
     }
   }
 
+  // static async getBusinessByUserId(userId) {
+  //   try {
+  //     // Find the user by primary key (userId) and include their associated Businesses
+  //     const user = await User.findByPk(userId, {
+  //       include: [
+  //         {
+  //           model: Business, // Include the associated Business model
+  //         },
+  //       ],
+  //     });
+
+  //     // If no user is found, return null or an appropriate response
+  //     if (!user) return null;
+
+  //     // Parse JSON strings into objects for the user's businesses
+  //     const parsedBusinesses = user.Businesses.map((business) => ({
+  //       ...business.toJSON(),
+  //       amenities: JSON.parse(business.amenities),
+  //       hours: JSON.parse(business.hours),
+  //       social: JSON.parse(business.social),
+  //       wifi: JSON.parse(business.wifi),
+  //     }));
+
+  //     // Return the user with parsed businesses
+  //     return {
+  //       ...user.toJSON(),
+  //       Businesses: parsedBusinesses,
+  //     };
+  //   } catch (error) {
+  //     throw new Error("Error fetching user: " + error.message);
+  //   }
+  // }
+
   static async getBusinessByUserId(userId) {
-    try {
-      // Find the user by primary key (userId) and include their associated Businesses
-      const user = await User.findByPk(userId, {
-        include: [
-          {
-            model: Business, // Include the associated Business model
-          },
-        ],
-      });
+  try {
+    const user = await User.findByPk(userId, {
+      include: [{ model: Business }],
+    });
 
-      // If no user is found, return null or an appropriate response
-      if (!user) return null;
+    if (!user) return null;
 
-      // Parse JSON strings into objects for the user's businesses
-      const parsedBusinesses = user.Businesses.map((business) => ({
-        ...business.toJSON(),
-        amenities: JSON.parse(business.amenities),
-        hours: JSON.parse(business.hours),
-        social: JSON.parse(business.social),
-        wifi: JSON.parse(business.wifi),
-      }));
+    const safeParse = (str) => {
+      try {
+        return JSON.parse(str);
+      } catch {
+        return str; // return as-is if not JSON
+      }
+    };
 
-      // Return the user with parsed businesses
-      return {
-        ...user.toJSON(),
-        Businesses: parsedBusinesses,
-      };
-    } catch (error) {
-      throw new Error("Error fetching user: " + error.message);
-    }
+    const parsedBusinesses = user.Businesses.map((business) => ({
+      ...business.toJSON(),
+      amenities: safeParse(business.amenities),
+      hours: safeParse(business.hours),
+      social: safeParse(business.social),
+      wifi: safeParse(business.wifi),
+    }));
+
+    return {
+      ...user.toJSON(),
+      Businesses: parsedBusinesses,
+    };
+  } catch (error) {
+    throw new Error("Error fetching user: " + error.message);
   }
+}
 
-  static async getBusinessById(businessId) {
-    try {
-      const business = await Business.findByPk(businessId);
 
-      if (!business) return null;
+  // static async getBusinessById(businessId) {
+  //   try {
+  //     const business = await Business.findByPk(businessId);
 
-      return {
-        ...business.toJSON(),
-        amenities: JSON.parse(business.amenities),
-        hours: JSON.parse(business.hours),
-        social: JSON.parse(business.social),
-        wifi: JSON.parse(business.wifi),
-      };
-    } catch (error) {
-      throw new Error("Error fetching user: " + error.message);
-    }
+  //     if (!business) return null;
+
+  //     return {
+  //       ...business.toJSON(),
+  //       amenities: JSON.parse(business.amenities),
+  //       hours: JSON.parse(business.hours),
+  //       social: JSON.parse(business.social),
+  //       wifi: JSON.parse(business.wifi),
+  //     };
+  //   } catch (error) {
+  //     throw new Error("Error fetching user: " + error.message);
+  //   }
+  // }
+
+static async getBusinessById(businessId) {
+  try {
+    const business = await Business.findByPk(businessId);
+
+    if (!business) return null;
+
+    const safeParse = (str) => {
+      try {
+        return JSON.parse(str);
+      } catch {
+        return str; // Return the original value if parsing fails
+      }
+    };
+
+    return {
+      ...business.toJSON(),
+      amenities: safeParse(business.amenities),
+      hours: safeParse(business.hours),
+      social: safeParse(business.social),
+      wifi: safeParse(business.wifi),
+    };
+  } catch (error) {
+    throw new Error("Error fetching business: " + error.message);
   }
+}
+
 
   // static async addWifiScanner(userId, businessId, location,wifiName) {
   //   try {
@@ -240,7 +392,7 @@ class BusinessService {
         // Parse the location field if it's a string
         const location =
           typeof scan.location === "string"
-            ? JSON.parse(scan.location)
+            ? safeJSONParse(scan.location)
             : scan.location;
 
         return {
@@ -275,7 +427,7 @@ class BusinessService {
           // Parse the location field if it's a string
           const location =
             typeof customer.location === "string"
-              ? JSON.parse(customer.location)
+              ? safeJSONParse(customer.location)
               : customer.location;
           return {
             ...customer.toJSON(),
@@ -301,7 +453,7 @@ class BusinessService {
     const filteredBusinesses = allBusinesses.filter((business) => {
       let amenities = [];
       try {
-        amenities = JSON.parse(business.amenities || "[]");
+        amenities = safeJSONParse(business.amenities || "[]");
       } catch (e) {
         console.error("Invalid amenities JSON:", business.amenities);
         return false;
@@ -331,10 +483,10 @@ class BusinessService {
     // 4. Remove escape characters from the response
     const cleanBusinesses = filteredBusinesses.map((business) => ({
       ...business.get({ plain: true }),
-      amenities: JSON.parse(business.amenities), // Properly parsed array
-      hours: JSON.parse(business.hours),
-      social: JSON.parse(business.social),
-      wifi: JSON.parse(business.wifi),
+      amenities: safeJSONParse(business.amenities), // Properly parsed array
+      hours: safeJSONParse(business.hours),
+      social: safeJSONParse(business.social),
+      wifi: safeJSONParse(business.wifi),
     }));
 
     return {
@@ -364,7 +516,7 @@ class BusinessService {
         jsonFields.forEach((field) => {
           try {
             parsedBusiness[field] = parsedBusiness[field]
-              ? JSON.parse(parsedBusiness[field])
+              ? safeJSONParse(parsedBusiness[field])
               : null;
           } catch (e) {
             console.error(`Error parsing ${field}:`, e);
@@ -420,7 +572,7 @@ class BusinessService {
         jsonFields.forEach((field) => {
           try {
             parsedBusiness[field] = parsedBusiness[field]
-              ? JSON.parse(parsedBusiness[field])
+              ? safeJSONParse(parsedBusiness[field])
               : null;
           } catch (e) {
             console.error(`Error parsing ${field}:`, e);

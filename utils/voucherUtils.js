@@ -86,14 +86,36 @@ function canVoucherBeTraded(voucher) {
   return { canTrade: true };
 }
 
+// function formatVoucherForResponse(voucher) {
+//   if (!voucher) return null;
+  
+//   return {
+//     ...voucher.toJSON ? voucher.toJSON() : voucher,
+//     validDays: Array.isArray(voucher.validDays) ? voucher.validDays : JSON.parse(voucher.validDays),
+//     previousOwners: Array.isArray(voucher.previousOwners) ? voucher.previousOwners : JSON.parse(voucher.previousOwners),
+//     usageHistory: Array.isArray(voucher.usageHistory) ? voucher.usageHistory : JSON.parse(voucher.usageHistory)
+//   };
+// }
+
+function safeParseArray(value) {
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function formatVoucherForResponse(voucher) {
   if (!voucher) return null;
-  
+
+  const data = voucher.toJSON ? voucher.toJSON() : voucher;
+
   return {
-    ...voucher.toJSON ? voucher.toJSON() : voucher,
-    validDays: Array.isArray(voucher.validDays) ? voucher.validDays : JSON.parse(voucher.validDays),
-    previousOwners: Array.isArray(voucher.previousOwners) ? voucher.previousOwners : JSON.parse(voucher.previousOwners),
-    usageHistory: Array.isArray(voucher.usageHistory) ? voucher.usageHistory : JSON.parse(voucher.usageHistory)
+    ...data,
+    validDays: safeParseArray(data.validDays),
+    previousOwners: safeParseArray(data.previousOwners),
+    usageHistory: safeParseArray(data.usageHistory),
   };
 }
 

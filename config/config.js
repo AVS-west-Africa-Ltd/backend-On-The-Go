@@ -20,8 +20,8 @@ module.exports = {
         production: {
             username: "admin",
             password: "Justkeepitsimple",
-            database:"on-the-go-db-prod",
-            host:"on-the-go-db-prod.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
+            database:"otgafrica",
+            host:"otgafrica.cfsmk2awusco.eu-north-1.rds.amazonaws.com",
             port: 3306,
             dialect: 'mysql',
         },

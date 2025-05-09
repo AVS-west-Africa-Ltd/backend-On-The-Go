@@ -1636,6 +1636,488 @@ static async getBusinessPendingVouchers(req, res) {
     });
   }
 }
+
+static async addVoucherValidity(req, res) {
+  try {
+    const { voucherId } = req.params;
+    const { validDaysAndTimes } = req.body; // Changed back to validDaysAndTimes
+    const userId = req.userId;
+
+    console.log("[addVoucherValidity] Request received with params:", { voucherId, validDaysAndTimes, userId });
+
+    // Validate input
+    if (!validDaysAndTimes || !Array.isArray(validDaysAndTimes)) {
+      console.log("[addVoucherValidity] Invalid validDaysAndTimes format");
+      return res.status(400).json({
+        message: "validDaysAndTimes must be an array of day/time objects"
+      });
+    }
+
+    // Validate each day/time entry
+    for (const entry of validDaysAndTimes) {
+      if (!entry.day || !entry.startTime || !entry.endTime) {
+        console.log("[addVoucherValidity] Missing required fields in day/time entry");
+        return res.status(400).json({
+          message: "Each entry must have day, startTime, and endTime"
+        });
+      }
+
+      // Validate day is a valid weekday
+      const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      if (!validDays.includes(entry.day)) {
+        console.log("[addVoucherValidity] Invalid day specified:", entry.day);
+        return res.status(400).json({
+          message: `Invalid day: ${entry.day}. Must be one of: ${validDays.join(', ')}`
+        });
+      }
+
+      // Validate time format (simple regex check for HH:MM)
+      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(entry.startTime) || !timeRegex.test(entry.endTime)) {
+        console.log("[addVoucherValidity] Invalid time format");
+        return res.status(400).json({
+          message: "Time must be in HH:MM format (24-hour)"
+        });
+      }
+    }
+
+    // First find the business owned by this user
+    const business = await Business.findOne({
+      where: { userId }
+    });
+
+    if (!business) {
+      console.log("[addVoucherValidity] No business found for user:", userId);
+      return res.status(404).json({
+        message: "No business found for this user"
+      });
+    }
+
+    console.log("[addVoucherValidity] Business found:", business);
+
+    // Find the voucher template
+    const voucher = await VoucherTemplate.findOne({
+      where: {
+        id: voucherId,
+        businessId: business.id
+      }
+    });
+
+    if (!voucher) {
+      console.log("[addVoucherValidity] Voucher not found or user doesn't have permission:", { voucherId, businessId: business.id });
+      return res.status(404).json({
+        message: "Voucher not found or you don't have permission to modify it"
+      });
+    }
+
+    console.log("[addVoucherValidity] Voucher found:", voucher);
+
+    // Update the voucher with the new validity days and times
+    await voucher.update({
+      validDays: JSON.stringify(validDaysAndTimes) // Store as JSON string
+    });
+
+    console.log("[addVoucherValidity] Voucher validity updated successfully:", { voucherId, validDaysAndTimes });
+
+    return res.status(200).json({
+      message: "Voucher validity updated successfully",
+      voucher: {
+        id: voucher.id,
+        name: voucher.name,
+        validDaysAndTimes: JSON.parse(voucher.validDays) // Return parsed JSON
+      }
+    });
+
+  } catch (error) {
+    console.error("[addVoucherValidity] Error updating voucher validity:", error);
+    return res.status(500).json({
+      message: "Failed to update voucher validity",
+      error: error.message
+    });
+  }
+}
+
+/**
+ * Get all voucher templates with validity for the authenticated business
+ * GET /api/vouchers/business-validity
+ */
+static async getAllVoucherValidity(req, res) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({
+        message: "Authentication required"
+      });
+    }
+
+    console.log("[getAllVoucherValidity] Fetching business voucher validities for user:", req.userId);
+    
+    // First find all businesses owned by this user
+    const businesses = await Business.findAll({
+      where: { userId: req.userId },
+      attributes: ['id']
+    });
+
+    if (!businesses || businesses.length === 0) {
+      return res.status(404).json({
+        message: "No businesses found for this user"
+      });
+    }
+
+    const businessIds = businesses.map(b => b.id);
+
+    // Get all vouchers for these businesses - using validDays instead of validDaysAndTimes
+    const vouchers = await VoucherTemplate.findAll({
+      where: {
+        businessId: businessIds
+      },
+      attributes: ['id', 'name', 'businessId', 'validDays', 'isActive', 'expiryDate', 'createdAt'],
+      order: [['createdAt', 'DESC']]
+    });
+
+    console.log(`[getAllVoucherValidity] Retrieved ${vouchers.length} vouchers for businesses:`, businessIds);
+
+    // Group vouchers by business for better organization
+    const businessVouchers = {};
+    for (const voucher of vouchers) {
+      if (!businessVouchers[voucher.businessId]) {
+        const business = await Business.findByPk(voucher.businessId);
+        businessVouchers[voucher.businessId] = {
+          businessId: voucher.businessId,
+          businessName: business ? business.name : 'Unknown',
+          vouchers: []
+        };
+      }
+      businessVouchers[voucher.businessId].vouchers.push(voucher);
+    }
+
+    const result = Object.values(businessVouchers);
+
+    return res.status(200).json({
+      message: "Business voucher validities retrieved successfully",
+      data: result
+    });
+  } catch (error) {
+    console.error("[getAllVoucherValidity] Error fetching business voucher validities:", error);
+    return res.status(500).json({
+      message: "Failed to fetch business voucher validities",
+      error: error.message
+    });
+  }
+}
+
+// Delete validity for a specific voucher
+static async deleteVoucherValidity(req, res) {
+  try {
+    const { voucherId } = req.params;
+    const userId = req.userId; // Get userId from auth middleware
+
+    console.log("[deleteVoucherValidity] Attempting to delete validity for voucher:", voucherId, "by user:", userId);
+
+    // First find the business owned by this user
+    const business = await Business.findOne({
+      where: { userId }
+    });
+
+    if (!business) {
+      console.log("[deleteVoucherValidity] No business found for user:", userId);
+      return res.status(404).json({
+        message: "No business found for this user"
+      });
+    }
+
+    console.log("[deleteVoucherValidity] Business found:", business.id);
+
+    // Find the voucher template owned by this business
+    const voucher = await VoucherTemplate.findOne({
+      where: {
+        id: voucherId,
+        businessId: business.id
+      }
+    });
+
+    if (!voucher) {
+      console.log("[deleteVoucherValidity] Voucher not found or not owned by business:", { voucherId, businessId: business.id });
+      return res.status(404).json({
+        message: "Voucher not found or you don't have permission to modify it"
+      });
+    }
+
+    // Reset the validity to empty array
+    await voucher.update({
+      validDays: JSON.stringify([]) // Reset to empty array
+    });
+
+    console.log("[deleteVoucherValidity] Voucher validity deleted successfully for voucher:", voucherId);
+
+    return res.status(200).json({
+      message: "Voucher validity deleted successfully",
+      voucher: {
+        id: voucher.id,
+        name: voucher.name,
+        validDays: []
+      }
+    });
+  } catch (error) {
+    console.error("[deleteVoucherValidity] Error deleting voucher validity:", error);
+    return res.status(500).json({
+      message: "Failed to delete voucher validity",
+      error: error.message
+    });
+  }
+}
+
+/**
+ * Remove specific days from voucher validity
+ * DELETE /api/vouchers/:voucherId/validity/days
+ */
+static async removeVoucherValidityDays(req, res) {
+  try {
+    const { voucherId } = req.params;
+    const { daysToRemove } = req.body;
+    const userId = req.userId;
+
+    console.log("[removeVoucherValidityDays] Request received with params:", { voucherId, daysToRemove, userId });
+
+    // Validate input
+    if (!daysToRemove || !Array.isArray(daysToRemove) || daysToRemove.length === 0) {
+      console.log("[removeVoucherValidityDays] Invalid daysToRemove format");
+      return res.status(400).json({
+        message: "daysToRemove must be a non-empty array of day strings"
+      });
+    }
+
+    // Validate each day
+    const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    for (const day of daysToRemove) {
+      if (!validDays.includes(day)) {
+        console.log("[removeVoucherValidityDays] Invalid day specified:", day);
+        return res.status(400).json({
+          message: `Invalid day: ${day}. Must be one of: ${validDays.join(', ')}`
+        });
+      }
+    }
+
+    // Find the business owned by this user
+    const business = await Business.findOne({
+      where: { userId }
+    });
+
+    if (!business) {
+      console.log("[removeVoucherValidityDays] No business found for user:", userId);
+      return res.status(404).json({
+        message: "No business found for this user"
+      });
+    }
+
+    // Find the voucher template
+    const voucher = await VoucherTemplate.findOne({
+      where: {
+        id: voucherId,
+        businessId: business.id
+      }
+    });
+
+    if (!voucher) {
+      console.log("[removeVoucherValidityDays] Voucher not found or user doesn't have permission");
+      return res.status(404).json({
+        message: "Voucher not found or you don't have permission to modify it"
+      });
+    }
+
+    // Get current validity days with proper parsing
+    let currentValidity = [];
+    try {
+      // Handle the double-encoded JSON string
+      if (typeof voucher.validDays === 'string') {
+        // First parse the outer string to get the inner string
+        const innerString = JSON.parse(voucher.validDays);
+        // Then parse the inner string to get the actual array
+        if (typeof innerString === 'string') {
+          currentValidity = JSON.parse(innerString);
+        } else {
+          currentValidity = innerString;
+        }
+      } else if (Array.isArray(voucher.validDays)) {
+        currentValidity = voucher.validDays;
+      }
+      
+      if (!Array.isArray(currentValidity)) {
+        currentValidity = [];
+      }
+    } catch (e) {
+      console.log("[removeVoucherValidityDays] Error parsing validDays:", e.message);
+      currentValidity = [];
+    }
+
+    console.log("[removeVoucherValidityDays] Current validity before removal:", currentValidity);
+
+    // If there are no validity days set
+    if (currentValidity.length === 0) {
+      console.log("[removeVoucherValidityDays] No validity days to remove");
+      return res.status(400).json({
+        message: "This voucher doesn't have any validity days set to remove",
+        voucher: {
+          id: voucher.id,
+          name: voucher.name,
+          validDays: currentValidity
+        }
+      });
+    }
+
+    // Track which days were actually removed
+    const removedDays = [];
+    
+    // Remove the specified days while preserving time information
+    const updatedValidity = currentValidity.filter(dayTime => {
+      if (daysToRemove.includes(dayTime.day)) {
+        removedDays.push(dayTime);
+        return false;
+      }
+      return true;
+    });
+
+    console.log("[removeVoucherValidityDays] Updated validity after removal:", updatedValidity);
+
+    // If no days were actually removed
+    if (removedDays.length === 0) {
+      console.log("[removeVoucherValidityDays] No matching days found to remove");
+      return res.status(400).json({
+        message: "None of the specified days were found in the voucher's validity",
+        voucher: {
+          id: voucher.id,
+          name: voucher.name,
+          validDays: currentValidity
+        }
+      });
+    }
+
+    // Update the voucher with properly stringified data
+    await voucher.update({
+      validDays: JSON.stringify(updatedValidity) // Store as single JSON string
+    });
+
+    return res.status(200).json({
+      message: "Days removed from voucher validity successfully",
+      removedDays: removedDays,
+      voucher: {
+        id: voucher.id,
+        name: voucher.name,
+        validDays: updatedValidity
+      }
+    });
+
+  } catch (error) {
+    console.error("[removeVoucherValidityDays] Error removing days from voucher validity:", error);
+    return res.status(500).json({
+      message: "Failed to remove days from voucher validity",
+      error: error.message
+    });
+  }
+}
+
+static async getBusinessVoucherAnalytics(req, res) {
+  try {
+    const { Op } = require('sequelize');
+
+    if (!req.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    console.log("User ID making request:", req.userId);
+
+    // Log all businesses
+    const allBusinesses = await Business.findAll();
+    console.log("All Businesses:", allBusinesses.map(b => b.toJSON()));
+
+    // Find the business belonging to this user
+    const business = await Business.findOne({
+      where: { userId: req.userId },
+      attributes: ['id', 'name']
+    });
+
+    if (!business) {
+      return res.status(404).json({ message: "No business found for this user" });
+    }
+
+    const voucherTemplates = await VoucherTemplate.findAll({
+      where: { businessId: business.id },
+      attributes: ['id', 'name', 'businessId']
+    });
+
+    const templateIds = voucherTemplates.map(v => v.id);
+
+    const userVouchers = await UserVoucher.findAll({
+      where: { templateId: templateIds }
+    });
+
+    const userVouchersWithTemplates = await Promise.all(
+      userVouchers.map(async (voucher) => {
+        const template = voucherTemplates.find(t => t.id === voucher.templateId);
+        return {
+          ...voucher.toJSON(),
+          template: template ? template.toJSON() : null
+        };
+      })
+    );
+
+    const exchangeRequests = await VoucherExchangeRequest.findAll({
+      where: {
+        [Op.or]: [
+          { requesterVoucherId: userVouchers.map(v => v.id) },
+          { requestedVoucherId: userVouchers.map(v => v.id) }
+        ]
+      }
+    });
+
+    const templateStats = voucherTemplates.map(template => {
+      const templateVouchers = userVouchersWithTemplates.filter(v => v.templateId === template.id);
+      const templateExchanges = exchangeRequests.filter(r =>
+        templateVouchers.some(v =>
+          v.id === r.requesterVoucherId || v.id === r.requestedVoucherId
+        )
+      );
+
+      return {
+        templateId: template.id,
+        templateName: template.name,
+        totalIssued: templateVouchers.length,
+        totalUsed: templateVouchers.filter(v => v.isUsed).length,
+        totalUnused: templateVouchers.filter(v => !v.isUsed).length,
+        totalGifted: templateVouchers.filter(v => v.giftedFrom !== null).length,
+        totalExchanged: templateExchanges.filter(r => r.status === 'accepted').length,
+        pendingExchanges: templateExchanges.filter(r => r.status === 'pending').length
+      };
+    });
+
+    const businessStats = {
+      businessId: business.id,
+      businessName: business.name,
+      totalVouchers: userVouchersWithTemplates.length,
+      totalUsed: userVouchersWithTemplates.filter(v => v.isUsed).length,
+      totalUnused: userVouchersWithTemplates.filter(v => !v.isUsed).length,
+      totalGifted: userVouchersWithTemplates.filter(v => v.giftedFrom !== null).length,
+      totalTransferred: exchangeRequests.filter(r => r.status === 'accepted').length,
+      totalExchangeRequests: exchangeRequests.length,
+      pendingExchangeRequests: exchangeRequests.filter(r => r.status === 'pending').length,
+      rejectedExchangeRequests: exchangeRequests.filter(r => r.status === 'rejected').length,
+      voucherTemplates: templateStats
+    };
+
+    return res.status(200).json({
+      message: "Business voucher analytics retrieved successfully",
+      stats: businessStats
+    });
+
+  } catch (error) {
+    console.error("Error fetching business voucher analytics:", error);
+    return res.status(500).json({
+      error: "Internal server error",
+      details: error.message
+    });
+  }
+}
+
+
 }
 
 module.exports = VoucherController;

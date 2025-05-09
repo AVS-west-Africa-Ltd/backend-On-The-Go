@@ -310,4 +310,15 @@ router.get("/vouchers/pending", authMiddleware, catchErrors(VoucherController.ge
 router.get("/businesses/:businessId/pending-vouchers", authMiddleware, catchErrors(VoucherController.getBusinessPendingVouchers));
 router.use("/reports", reportRoutes);
 
+
+router.put("/vouchers/:voucherId/validity",authMiddleware,catchErrors(VoucherController.addVoucherValidity));
+router.get("/businesses/:businessId/vouchers/validity",authMiddleware,catchErrors(VoucherController.getAllVoucherValidity));
+router.delete("/vouchers/:voucherId/validity",authMiddleware,catchErrors(VoucherController.deleteVoucherValidity));
+router.delete("/vouchers/:voucherId/validity/days",authMiddleware,catchErrors(VoucherController.removeVoucherValidityDays));
+router.get(
+  "/voucher-analytics",
+  authMiddleware,
+  catchErrors(VoucherController.getBusinessVoucherAnalytics)
+);
+
 module.exports = router;

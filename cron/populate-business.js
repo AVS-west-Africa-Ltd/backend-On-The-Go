@@ -12,7 +12,7 @@ const processBusinessController = {
   processBusinesses: async (req, res) => {
     const results = [];
 
-    fs.createReadStream("cron/defillibrators.csv")
+    fs.createReadStream("cron/others_with_coordinates.csv")
       .pipe(csv())
       .on("data", (data) => results.push(data))
       .on("end", async () => {

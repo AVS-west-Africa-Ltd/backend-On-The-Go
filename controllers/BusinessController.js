@@ -92,18 +92,24 @@ const businessController = {
   },
 
   // Get all Businesses
-  getAllBusiness: async (req, res) => {
-    try {
-      const businesses = await BusinessService.getAllBusiness();
+getAllBusiness: async (req, res) => {
+  try {
+    console.log("➡️ getAllBusiness called");
 
-      return res.status(200).json(businesses);
-    } catch (error) {
-      return res.status(500).json({
-        message: "Failed to retrieve businesses",
-        error: error.message,
-      });
-    }
-  },
+    const businesses = await BusinessService.getAllBusiness();
+
+    console.log("✅ Businesses retrieved:", businesses);
+
+    return res.status(200).json(businesses);
+  } catch (error) {
+    console.error("❌ Error retrieving businesses:", error);
+
+    return res.status(500).json({
+      message: "Failed to retrieve businesses",
+      error: error.message,
+    });
+  }
+},
 
   // Get all Defibrillator
   getAllDefibrillator: async (req, res) => {
@@ -179,83 +185,124 @@ const businessController = {
   // },
 
   // Update a Business
-  updateBusiness: async (req, res) => {
-    try {
-      // First handle the file uploads
-      await new Promise((resolve, reject) => {
-        uploadGenericFiles.fields([
-          { name: "logo", maxCount: 1 },
-          { name: "cacDoc", maxCount: 1 },
-        ])(req, res, (err) => {
-          if (err) {
-            console.error("File upload error:", err);
-            reject(new Error(`File upload failed: ${err.message}`));
-          } else {
-            resolve();
-          }
-        });
+  
+updateBusiness: async (req, res) => {
+  try {
+    console.log("➡️ updateBusiness called");
+    console.log("📝 Params:", req.params);
+    console.log("📝 Body before file processing:", req.body);
+
+    await new Promise((resolve, reject) => {
+      uploadGenericFiles.fields([])(req, res, (err) => {
+        if (err) {
+          console.error("❌ File upload error:", err);
+          reject(new Error(`File upload failed: ${err.message}`));
+        } else {
+          console.log("✅ File upload completed successfully.");
+          console.log("📎 Uploaded Files:", req.files);
+          resolve();
+        }
       });
+    });
 
-      const { id } = req.params;
-      const {
-        name,
-        type,
-        address,
-        description,
-        amenities,
-        hours,
-        social,
-        wifi,
-      } = req.body;
+    const { id } = req.params;
+    const {
+      name,
+      type,
+      address,
+      description,
+      amenities,
+      hours,
+      social,
+      wifi,
+      wifiPlans,
+      bankName,
+      accountName,
+      accountNumber
+    } = req.body;
 
-      // Find the business to update
-      const business = await Business.findByPk(id);
-      if (!business) {
-        return res.status(404).json({ message: "Business not found" });
-      }
+    console.log("🔍 Fetching business by ID:", id);
+    const business = await Business.findByPk(id);
 
-      // Prepare update data
-      const updateData = {
-        name: name || business.name,
-        type: type || business.type,
-        address: address || business.address,
-        description: description || business.description,
-        logo: req.files?.logo?.[0]?.location || business.logo,
-        cacDoc: req.files?.cacDoc?.[0]?.location || business.cacDoc,
-        amenities: amenities ? JSON.parse(amenities) : business.amenities,
-        hours: hours ? JSON.parse(hours) : business.hours,
-        social: social ? JSON.parse(social) : business.social,
-        wifi: wifi ? JSON.parse(wifi) : business.wifi,
-      };
-
-      // Update business
-      await business.update(updateData);
-
-      // Format response data
-      const formatJsonField = (field) =>
-        typeof field === "string" ? JSON.parse(field) : field;
-
-      const responseData = {
-        ...business.toJSON(),
-        social: formatJsonField(business.social),
-        wifi: formatJsonField(business.wifi),
-        amenities: formatJsonField(business.amenities),
-        hours: formatJsonField(business.hours),
-      };
-
-      res.status(200).json({
-        message: "Business updated successfully",
-        data: responseData,
-      });
-    } catch (error) {
-      console.error("Error in updateBusiness:", error);
-      const statusCode = error.message.includes("upload") ? 400 : 500;
-      res.status(statusCode).json({
-        message: "Error updating business",
-        error: error.message.replace("File upload failed: ", ""),
-      });
+    if (!business) {
+      console.warn("⚠️ Business not found with ID:", id);
+      return res.status(404).json({ message: "Business not found" });
     }
-  },
+
+    // Parse amenities safely
+    let parsedAmenities = business.amenities; // default to existing
+    if (amenities) {
+      try {
+        parsedAmenities = typeof amenities === 'string' ? JSON.parse(amenities) : amenities;
+      } catch (e) {
+        console.error("❌ Error parsing amenities:", e);
+        parsedAmenities = business.amenities; // fallback to existing
+      }
+    }
+
+    // Check if any bank detail is being uploaded or changed
+    const bankDetailsChanged =
+      (bankName && bankName !== business.bankName) ||
+      (accountName && accountName !== business.accountName) ||
+      (accountNumber && accountNumber !== business.accountNumber);
+
+    const updateData = {
+      name: name || business.name,
+      type: type || business.type,
+      address: address || business.address,
+      description: description || business.description,
+      logo: req.files?.logo?.[0]?.location || business.logo,
+      cacDoc: req.files?.cacDoc?.[0]?.location || business.cacDoc,
+      amenities: parsedAmenities,
+      hours: hours ? JSON.parse(hours) : business.hours,
+      social: social ? JSON.parse(social) : business.social,
+      wifi: wifi ? JSON.parse(wifi) : business.wifi,
+      wifiPlans: wifiPlans ? JSON.parse(wifiPlans) : business.wifiPlans,
+      bankName: bankName === "" ? null : (bankName || business.bankName),
+      accountName: accountName === "" ? null : (accountName || business.accountName),
+      accountNumber: accountNumber === "" ? null : (accountNumber || business.accountNumber),
+    };
+
+    if (bankDetailsChanged) {
+      updateData.splitCode = null;
+      console.log("🔄 Bank details changed — splitCode cleared.");
+    }
+
+    console.log("🛠️ Update Data Prepared:", updateData);
+
+    await business.update(updateData);
+    console.log("✅ Business updated successfully.");
+
+    const formatJsonField = (field) =>
+      typeof field === "string" ? JSON.parse(field) : field;
+
+    const responseData = {
+      ...business.toJSON(),
+      social: formatJsonField(business.social),
+      wifi: formatJsonField(business.wifi),
+      wifiPlans: formatJsonField(business.wifiPlans),
+      amenities: formatJsonField(business.amenities),
+      hours: formatJsonField(business.hours),
+    };
+
+    console.log("📦 Final Response Data:", responseData);
+
+    res.status(200).json({
+      message: "Business updated successfully",
+      data: responseData,
+    });
+  } catch (error) {
+    console.error("🔥 Error in updateBusiness:", error);
+    const statusCode = error.message.includes("upload") ? 400 : 500;
+    res.status(statusCode).json({
+      message: "Error updating business",
+      error: error.message.replace("File upload failed: ", ""),
+    });
+  }
+}
+
+  ,
+
 
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;

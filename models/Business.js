@@ -29,10 +29,17 @@ const Business = sequelize.define(
     logo: {
       type: DataTypes.STRING,
     },
-    amenities: {
-      type: DataTypes.JSON,
-      defaultValue: [],
-    },
+amenities: {
+  type: DataTypes.JSON,
+  defaultValue: {},
+  get() {
+    const rawValue = this.getDataValue('amenities');
+    return typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+  },
+  set(value) {
+    this.setDataValue('amenities', typeof value === 'string' ? value : JSON.stringify(value));
+  }
+},
     cacDoc: {
       type: DataTypes.STRING,
     },
@@ -56,6 +63,11 @@ const Business = sequelize.define(
       allowNull: true,
       defaultValue: [],
     },
+    wifiPlans: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+    },
     latitude: {
       type: DataTypes.DOUBLE,
       allowNull: true,
@@ -71,6 +83,26 @@ const Business = sequelize.define(
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    splitCode: {
+       type: DataTypes.STRING,
+      allowNull: true,
+      field: 'split_code'
+    },
+    bankName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'bank_name' // Explicit mapping to snake_case column
+    },
+    accountName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'account_name'
+    },
+    accountNumber: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'account_number'
     },
   },
   {

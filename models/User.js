@@ -7,7 +7,6 @@ const Notification = require("./Notification");
 const User = sequelize.define(
   "User",
   {
-    // Change from 'Users' to 'User'
     firstName: {
       type: DataTypes.STRING,
     },
@@ -31,7 +30,6 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-
     },
     picture: {
       type: DataTypes.TEXT,
@@ -78,16 +76,55 @@ const User = sequelize.define(
     placesVisited: {
       type: DataTypes.JSON,
     },
+    // New fields for plan tracking
+    currentPlanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+      comment: "ID of the currently active plan"
+    },
+    currentBusinessPlanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+    },
+    planExpirationDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+      comment: "When the current plan expires"
+    },
+    planStatus: {
+      type: DataTypes.ENUM('active', 'expired', 'none'),
+      defaultValue: 'none',
+      comment: "Current status of the user's plan"
+    },
   },
   {
-    tableName: "users", // Explicitly set table name
+    tableName: "users",
     indexes: [
       { unique: true, fields: ["email"] },
       { unique: true, fields: ["username"] },
+      { fields: ["currentPlanId"] },
+      { fields: ["currentBusinessPlanId"] },
+      { fields: ["planStatus"] },
     ],
+    hooks: {
+      beforeSave: async (user, options) => {
+        // Update planStatus based on expiration date
+        if (user.planExpirationDate) {
+          user.planStatus = new Date(user.planExpirationDate) > new Date() 
+            ? 'active' 
+            : 'expired';
+        } else {
+          user.planStatus = 'none';
+        }
+      }
+    }
   }
 );
 
+// Associations
 User.belongsToMany(User, {
   as: "Followers",
   through: UserFollowers,
@@ -116,20 +153,22 @@ Notification.belongsTo(User, {
   foreignKey: "senderId",
   as: "Sender",
 });
+
 Notification.belongsTo(User, {
   foreignKey: "recipientId",
   as: "Recipient",
 });
 
-// User.hasMany(Notification, {
-//     foreignKey: 'senderId',
-//     as: 'SentNotifications'
-// });
-// User.hasMany(Notification, {
-//     foreignKey: 'recipientId',
-//     as: 'ReceivedNotifications'
-// });
+User.hasMany(BusinessSchema, { 
+  foreignKey: "userId", 
+  onDelete: "CASCADE" 
+});
 
-User.hasMany(BusinessSchema, { foreignKey: "userId", onDelete: "CASCADE" });
+// New association for current business
+User.belongsTo(BusinessSchema, {
+  foreignKey: "currentBusinessPlanId",
+  as: "currentBusiness",
+  constraints: false // In case the business gets deleted
+});
 
-module.exports = User; // Export as 'User'
+module.exports = User;

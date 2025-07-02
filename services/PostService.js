@@ -96,52 +96,53 @@ class PostService {
   //   }
   // }
 
-  static async getPosts() {
-    try {
-      const posts = await Post.findAll({
-        include: [
-          {
-            model: Comment,
-            as: "comments",
-            include: [
-              {
-                model: Comment,
-                as: "replies",
-              },
-            ],
-          },
-          {
-            model: Business,
-            as: "business",
-          },
-          {
-            model: User,
-            as: "user",
-          },
-        ],
-        order: [["createdAt", "DESC"]],
-      });
+static async getPosts() {
+  try {
+    const posts = await Post.findAll({
+      include: [
+        {
+          model: Comment,
+          as: "comments",
+          include: [{ model: Comment, as: "replies" }],
+        },
+        { model: Business, as: "business" },
+        { model: User, as: "user" },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
 
-      // Process fields to parse JSON strings
-      return posts.map((post) => ({
-        ...post.toJSON(),
-        likes: JSON.parse(post.likes || "[]"),
-        media: JSON.parse(post.media || "[]"),
-        bookmarks: JSON.parse(post.bookmarks || "[]"),
-        business: post.business
+    return posts.map((post) => {
+      const raw = post.toJSON();
+
+      const safeParse = (value, fallback = []) => {
+        try {
+          return JSON.parse(value || JSON.stringify(fallback));
+        } catch (err) {
+          console.error("Failed to parse JSON:", value);
+          return fallback;
+        }
+      };
+
+      return {
+        ...raw,
+        likes: safeParse(raw.likes),
+        media: safeParse(raw.media),
+        bookmarks: safeParse(raw.bookmarks),
+        business: raw.business
           ? {
-              ...post.business.toJSON(),
-              amenities: JSON.parse(post.business.amenities || "[]"),
-              social: JSON.parse(post.business.social || "[]"),
-              wifi: JSON.parse(post.business.wifi || "[]"),
-              hours: JSON.parse(post.business.hours || "{}"),
+              ...raw.business,
+              amenities: safeParse(raw.business.amenities),
+              social: safeParse(raw.business.social),
+              wifi: safeParse(raw.business.wifi),
+              hours: safeParse(raw.business.hours, {}), // fallback is object
             }
           : null,
-      }));
-    } catch (error) {
-      throw error;
-    }
+      };
+    });
+  } catch (error) {
+    throw error;
   }
+}
 
   static async updatePost(postId, updates) {
     try {

@@ -40,22 +40,33 @@ static async createUser(data) {
   }
 }
 
-  static async getUserById(userId) {
-    try {
-      const user = await User.findByPk(userId);
-      if (!user) return false;
+static async getUserById(userId) {
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return false;
 
-      // Convert Sequelize instance to plain object and parse JSON fields
-      const userData = user.toJSON();
-      return {
-        ...userData,
-        interests: JSON.parse(userData.interests || "[]"),
-        placesVisited: JSON.parse(userData.placesVisited || "[]"),
-      };
-    } catch (error) {
-      throw new Error("Error fetching user");
-    }
+    // Convert Sequelize instance to plain object
+    const userData = user.get({ plain: true });
+    
+    // Safely parse JSON fields with proper error handling
+    const parseJsonField = (field) => {
+      try {
+        return field ? (typeof field === 'string' ? JSON.parse(field) : field) : [];
+      } catch (e) {
+        return [];
+      }
+    };
+
+    return {
+      ...userData,
+      interests: parseJsonField(userData.interests),
+      placesVisited: parseJsonField(userData.placesVisited)
+    };
+  } catch (error) {
+    console.error('Error in getUserById:', error);
+    throw new Error("Error fetching user details");
   }
+}
 
   // Get user by email/username
   static async getUserByEmailOrUsername(props) {
@@ -95,16 +106,47 @@ static async createUser(data) {
   }
 
   // Update user information
-  static async updateUser(userId, data) {
-    try {
-      const user = await User.findByPk(userId);
-      if (!user) return false;
-      return await user.update(data);
-    } catch (error) {
-      throw new Error("Error updating user");
+static async updateUser(userId, data) {
+  const transaction = await sequelize.transaction();
+  try {
+    console.log(`[UserService] Updating user ${userId} with data:`, data);
+    
+    const user = await User.findByPk(userId, { transaction });
+    if (!user) {
+      await transaction.rollback();
+      throw new Error(`User with ID ${userId} not found`);
     }
-  }
 
+    // Handle JSON fields if they exist in the data
+    if (data.interests && typeof data.interests === 'string') {
+      try {
+        data.interests = JSON.parse(data.interests);
+      } catch (e) {
+        await transaction.rollback();
+        throw new Error('Invalid interests format. Must be valid JSON');
+      }
+    }
+
+    if (data.placesVisited && typeof data.placesVisited === 'string') {
+      try {
+        data.placesVisited = JSON.parse(data.placesVisited);
+      } catch (e) {
+        await transaction.rollback();
+        throw new Error('Invalid placesVisited format. Must be valid JSON');
+      }
+    }
+
+    const updatedUser = await user.update(data, { transaction });
+    await transaction.commit();
+    
+    console.log(`[UserService] Successfully updated user ${userId}`);
+    return updatedUser;
+  } catch (error) {
+    await transaction.rollback();
+    console.error(`[UserService] Error updating user ${userId}:`, error);
+    throw new Error(`Failed to update user: ${error.message}`);
+  }
+}
   // Delete a user
   static async deleteUser(userId) {
     // Get the sequelize instance from your User model

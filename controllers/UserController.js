@@ -325,18 +325,58 @@ class UserController {
     }
   }
 
-  static async getUserById(req, res) {
-    try {
-      const { userId } = req.params;
+static async getUserById(req, res) {
+  try {
+    const { userId } = req.params;
 
-      const user = await userService.getUserById(userId);
-      if (!user)
-        return res.status(404).json({ message: "User not found", info: {} });
-      return res.status(200).json({ info: user });
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
+    // Validate userId exists and is a positive integer
+    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid user ID format",
+        error: "User ID must be a positive integer"
+      });
     }
+
+    const user = await userService.getUserById(Number(userId));
+    
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found",
+        error: `No user found with ID ${userId}`
+      });
+    }
+
+    // Remove sensitive information before sending response
+    delete user.password;
+    delete user.resetPasswordOTP;
+    delete user.resetPasswordExpires;
+
+    return res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      data: user
+    });
+
+  } catch (error) {
+    console.error('Detailed error in getUserById:', {
+      error: error.message,
+      stack: error.stack,
+      params: req.params,
+      timestamp: new Date().toISOString()
+    });
+
+    const statusCode = error.message.includes('not found') ? 404 : 500;
+    
+    return res.status(statusCode).json({
+      success: false,
+      message: "Error processing your request",
+      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
   }
+}
 
   static async deleteUser(req, res) {
     try {
@@ -350,19 +390,64 @@ class UserController {
     }
   }
 
-  static async updateUser(req, res) {
-    try {
-      const { userId } = req.params;
+static async updateUser(req, res) {
+  try {
+    const { userId } = req.params;
+    console.log(`[updateUser] Called with userId: ${userId}`);
+    console.log(`[updateUser] Request body:`, req.body);
 
-      const user = await userService.updateUser(userId, req.body);
-      if (!user) return res.status(404).json({ message: "User not found" });
-      return res
-        .status(200)
-        .json({ message: "User updated successfully", info: user });
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
+    // Validate userId is a positive integer
+    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid user ID format",
+        error: "User ID must be a positive integer"
+      });
     }
+
+    const user = await userService.updateUser(userId, req.body);
+    
+    if (!user) {
+      console.warn(`[updateUser] No user found with ID: ${userId}`);
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found",
+        error: `No user found with ID ${userId}`
+      });
+    }
+
+    // Remove sensitive information before sending response
+    const userData = user.get ? user.get({ plain: true }) : user;
+    delete userData.password;
+    delete userData.resetPasswordOTP;
+    delete userData.resetPasswordExpires;
+
+    console.log(`[updateUser] User updated successfully:`, userData);
+    return res.status(200).json({ 
+      success: true,
+      message: "User updated successfully", 
+      data: userData 
+    });
+  } catch (error) {
+    console.error(`[updateUser] Error updating user with ID ${req.params.userId}:`, {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+      timestamp: new Date().toISOString()
+    });
+
+    const statusCode = error.message.includes('not found') ? 404 : 
+                      error.message.includes('Invalid') ? 400 : 500;
+    
+    return res.status(statusCode).json({
+      success: false,
+      message: "Error updating user",
+      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
   }
+}
+
 
   static async addFollower(req, res) {
     try {

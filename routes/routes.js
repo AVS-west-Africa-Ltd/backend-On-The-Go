@@ -18,9 +18,13 @@ const VoucherController = require("../controllers/VoucherController");
 const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
+const WaitlistController = require("../controllers/WaitlistController");
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
+
+router.post("/join-waitlist", WaitlistController.joinWaitlist);
+router.get("/waitlist", WaitlistController.getWaitlist);
 
 // Updated Business Claim routes
 router.post(

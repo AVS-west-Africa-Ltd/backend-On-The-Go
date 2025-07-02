@@ -40,7 +40,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 const app = express();
 

@@ -73,6 +73,9 @@ const User = sequelize.define(
     location: {
       type: DataTypes.TEXT,
     },
+    referalcode: {
+      type: DataTypes.TEXT,
+    },
     placesVisited: {
       type: DataTypes.JSON,
     },

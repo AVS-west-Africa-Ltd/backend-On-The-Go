@@ -73,7 +73,7 @@ const User = sequelize.define(
     location: {
       type: DataTypes.TEXT,
     },
-    referalcode: {
+    referralCode: {
       type: DataTypes.TEXT,
     },
     placesVisited: {
@@ -106,8 +106,6 @@ const User = sequelize.define(
   {
     tableName: "users",
     indexes: [
-      { unique: true, fields: ["email"] },
-      { unique: true, fields: ["username"] },
       { fields: ["currentPlanId"] },
       { fields: ["currentBusinessPlanId"] },
       { fields: ["planStatus"] },

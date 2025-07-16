@@ -19,6 +19,14 @@ const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
+const MikrotikController = require("../controllers/MikrotikController");
+
+// Mikrotik Route
+router.post("/mikrotik/add-router",  authMiddleware, MikrotikController.addRouter);
+router.post("/mikrotik/sync-profile",  authMiddleware, MikrotikController.syncProfiles);
+router.post("/mikrotik/add-ticket-price",  authMiddleware, MikrotikController.addTicketPrice);
+router.post("/mikrotik/change-ticket-status",  authMiddleware, MikrotikController.changeTicketStatus);
+router.get("/mikrotik/fetch-profile",  authMiddleware, MikrotikController.fetchTicketProfile);
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);

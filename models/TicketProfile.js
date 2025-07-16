@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Mikrotik = require("./Mikrotik");
+const User = require("./User");
 
 const TicketProfile = sequelize.define('TicketProfile', {
     name: {
@@ -9,11 +10,22 @@ const TicketProfile = sequelize.define('TicketProfile', {
     },
     price: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      defaultValue: 0
     },
     isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        allowNull: false,
+        defaultValue: false
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id'
+      },
+      onDelete: 'CASCADE'
     },
     mikrotikId: {
       type: DataTypes.INTEGER,
@@ -27,8 +39,13 @@ const TicketProfile = sequelize.define('TicketProfile', {
 });
 
 TicketProfile.belongsTo(Mikrotik, {
-    foreignKey: "businessId",
+    foreignKey: "mikrotikId",
     onDelete: "CASCADE",
 });
 
-module.exports = Mikrotik;
+TicketProfile.belongsTo(User, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+});
+
+module.exports = TicketProfile;

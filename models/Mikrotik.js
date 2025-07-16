@@ -1,8 +1,9 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Business = require("./Business");
+const User = require("./User");
 
 const Mikrotik = sequelize.define('Mikrotik', {
+  
     host: {
       type: DataTypes.STRING,
       allowNull: false
@@ -25,23 +26,30 @@ const Mikrotik = sequelize.define('Mikrotik', {
       defaultValue: false
     },
     metadata: {
-       type: Schema.Types.Mixed,
-       defaultValue: {}
+      type: DataTypes.JSON,
+      defaultValue: {
+        status: 'new',
+        items: []
+      }
     },
-    businessId: {
+    userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique:true,
       references: {
-        model: 'Businesses', // or the actual table name
+        model: 'Users', // or the actual table name
         key: 'id'
       },
       onDelete: 'CASCADE'
     }
 });
 
-Mikrotik.belongsTo(Business, {
-    foreignKey: "businessId",
-    onDelete: "CASCADE",
-});
+
+Mikrotik.associate = (models) => {
+    Mikrotik.belongsTo(User, {
+        foreignKey: "userId",
+        onDelete: "CASCADE",
+    });
+};
 
 module.exports = Mikrotik;

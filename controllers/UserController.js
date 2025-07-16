@@ -211,172 +211,174 @@ class UserController {
   //     }
   //   });
   // }
-  static async UpdateUserImage(req, res) {
-    try {
-      // First handle the file upload
-      await new Promise((resolve, reject) => {
-        uploadProfileImage.single("profileImage")(req, res, (err) => {
-          if (err) {
-            console.error("Profile image upload error:", err);
-            reject(new Error(`Image upload failed: ${err.message}`));
-          } else {
-            resolve();
-          }
+    static async UpdateUserImage(req, res) {
+      try {
+        // First handle the file upload
+        await new Promise((resolve, reject) => {
+          uploadProfileImage.single("profileImage")(req, res, (err) => {
+            if (err) {
+              console.error("Profile image upload error:", err);
+              reject(new Error(`Image upload failed: ${err.message}`));
+            } else {
+              resolve();
+            }
+          });
         });
-      });
 
+        const { userId } = req.params;
+
+        if (!req.file) {
+          return res.status(400).json({
+            message: "No profile image provided",
+          });
+        }
+
+        const user = await userService.updateUser(userId, {
+          picture: req.file.location,
+        });
+
+        if (!user) {
+          return res.status(404).json({
+            message: "User not found",
+          });
+        }
+
+        return res.status(200).json({
+          message: "Profile picture updated successfully",
+          info: user.picture,
+          // data: {
+          //   userId: user.id,
+          //   profileImageUrl: user.picture,
+          // },
+        });
+      } catch (error) {
+        console.error("Error in UpdateUserImage:", error);
+        const statusCode = error.message.includes("upload") ? 400 : 500;
+        res.status(statusCode).json({
+          message: "Error updating profile picture",
+          error: error.message.replace("Image upload failed: ", ""),
+        });
+      }
+    }
+
+    static async Login(req, res) {
+      try {
+        const { email, password, pushToken } = req.body;
+
+        if (!email || !password)
+          return res.status(400).json({ message: "All fields are required" });
+
+        let payload = { where: { email: email } };
+        const user = await userService.getUserByEmailOrUsername(payload);
+
+        if (!user)
+          return res.status(400).json({ message: "Invalid email or password" });
+
+        const isPasswordMatch = await bcrypt.compareSync(password, user.password);
+        if (!isPasswordMatch)
+          return res.status(401).json({ message: "Invalid email or password" });
+
+        // Update push token if provided
+        if (pushToken) {
+          user.pushToken = pushToken;
+          await user.save();
+        }
+
+        const token = jwtUtil.generateToken(user);
+        return res.status(200).json({ token: token, user: user });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: error.message });
+      }
+    }
+
+    static async updatePushToken(req, res) {
+      try {
+        const { userId } = req.params;
+        const { pushToken } = req.body;
+
+        if (!pushToken) {
+          return res.status(400).json({ message: "Push token is required" });
+        }
+
+        const user = await userService.updateUser(userId, { pushToken });
+
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({
+          message: "Push token updated successfully",
+          info: { userId: user.id, pushToken: user.pushToken }
+        });
+      } catch (error) {
+        return res.status(500).json({ error: error.message });
+      }
+    }
+
+    static async getUsers(req, res) {
+      try {
+        const users = await userService.getUsers();
+        if (!users || users.length === 0)
+          return res.status(404).json({ message: "No record", info: [] });
+        return res.status(200).json({ info: users });
+      } catch (error) {
+        return res.status(500).json({ error: error.message });
+      }
+    }
+
+  static async getUserById(req, res) {
+    try {
       const { userId } = req.params;
 
-      if (!req.file) {
-        return res.status(400).json({
-          message: "No profile image provided",
+      // Validate userId exists and is a positive integer
+      if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid user ID format",
+          error: "User ID must be a positive integer"
         });
       }
 
-      const user = await userService.updateUser(userId, {
-        picture: req.file.location,
-      });
-
+      const user = await userService.getUserById(Number(userId));
+      
       if (!user) {
-        return res.status(404).json({
+        return res.status(404).json({ 
+          success: false,
           message: "User not found",
+          error: `No user found with ID ${userId}`
         });
       }
 
-      return res.status(200).json({
-        message: "Profile picture updated successfully",
-        info: user.picture,
-        // data: {
-        //   userId: user.id,
-        //   profileImageUrl: user.picture,
-        // },
-      });
-    } catch (error) {
-      console.error("Error in UpdateUserImage:", error);
-      const statusCode = error.message.includes("upload") ? 400 : 500;
-      res.status(statusCode).json({
-        message: "Error updating profile picture",
-        error: error.message.replace("Image upload failed: ", ""),
-      });
-    }
-  }
-
-  static async Login(req, res) {
-    try {
-      const { email, password, pushToken } = req.body;
-
-      if (!email || !password)
-        return res.status(400).json({ message: "All fields are required" });
-
-      let payload = { where: { email: email } };
-      const user = await userService.getUserByEmailOrUsername(payload);
-
-      if (!user)
-        return res.status(400).json({ message: "Invalid email or password" });
-
-      const isPasswordMatch = await bcrypt.compareSync(password, user.password);
-      if (!isPasswordMatch)
-        return res.status(401).json({ message: "Invalid email or password" });
-
-      // Update push token if provided
-      if (pushToken) {
-        user.pushToken = pushToken;
-        await user.save();
-      }
-
-      const token = jwtUtil.generateToken(user);
-      return res.status(200).json({ token: token, user: user });
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
-    }
-  }
-
-  static async updatePushToken(req, res) {
-    try {
-      const { userId } = req.params;
-      const { pushToken } = req.body;
-
-      if (!pushToken) {
-        return res.status(400).json({ message: "Push token is required" });
-      }
-
-      const user = await userService.updateUser(userId, { pushToken });
-
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      // Remove sensitive information before sending response
+      delete user.password;
+      delete user.resetPasswordOTP;
+      delete user.resetPasswordExpires;
 
       return res.status(200).json({
-        message: "Push token updated successfully",
-        info: { userId: user.id, pushToken: user.pushToken }
+        success: true,
+        message: "User retrieved successfully",
+        data: user
       });
+
     } catch (error) {
-      return res.status(500).json({ error: error.message });
-    }
-  }
-  static async getUsers(req, res) {
-    try {
-      const users = await userService.getUsers();
-      if (!users || users.length === 0)
-        return res.status(404).json({ message: "No record", info: [] });
-      return res.status(200).json({ info: users });
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
-    }
-  }
+      console.error('Detailed error in getUserById:', {
+        error: error.message,
+        stack: error.stack,
+        params: req.params,
+        timestamp: new Date().toISOString()
+      });
 
-static async getUserById(req, res) {
-  try {
-    const { userId } = req.params;
-
-    // Validate userId exists and is a positive integer
-    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-      return res.status(400).json({ 
+      const statusCode = error.message.includes('not found') ? 404 : 500;
+      
+      return res.status(statusCode).json({
         success: false,
-        message: "Invalid user ID format",
-        error: "User ID must be a positive integer"
+        message: "Error processing your request",
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
       });
     }
-
-    const user = await userService.getUserById(Number(userId));
-    
-    if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found",
-        error: `No user found with ID ${userId}`
-      });
-    }
-
-    // Remove sensitive information before sending response
-    delete user.password;
-    delete user.resetPasswordOTP;
-    delete user.resetPasswordExpires;
-
-    return res.status(200).json({
-      success: true,
-      message: "User retrieved successfully",
-      data: user
-    });
-
-  } catch (error) {
-    console.error('Detailed error in getUserById:', {
-      error: error.message,
-      stack: error.stack,
-      params: req.params,
-      timestamp: new Date().toISOString()
-    });
-
-    const statusCode = error.message.includes('not found') ? 404 : 500;
-    
-    return res.status(statusCode).json({
-      success: false,
-      message: "Error processing your request",
-      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
   }
-}
 
   static async deleteUser(req, res) {
     try {
@@ -390,63 +392,63 @@ static async getUserById(req, res) {
     }
   }
 
-static async updateUser(req, res) {
-  try {
-    const { userId } = req.params;
-    console.log(`[updateUser] Called with userId: ${userId}`);
-    console.log(`[updateUser] Request body:`, req.body);
+  static async updateUser(req, res) {
+    try {
+      const { userId } = req.params;
+      console.log(`[updateUser] Called with userId: ${userId}`);
+      console.log(`[updateUser] Request body:`, req.body);
 
-    // Validate userId is a positive integer
-    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-      return res.status(400).json({ 
+      // Validate userId is a positive integer
+      if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid user ID format",
+          error: "User ID must be a positive integer"
+        });
+      }
+
+      const user = await userService.updateUser(userId, req.body);
+      
+      if (!user) {
+        console.warn(`[updateUser] No user found with ID: ${userId}`);
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found",
+          error: `No user found with ID ${userId}`
+        });
+      }
+
+      // Remove sensitive information before sending response
+      const userData = user.get ? user.get({ plain: true }) : user;
+      delete userData.password;
+      delete userData.resetPasswordOTP;
+      delete userData.resetPasswordExpires;
+
+      console.log(`[updateUser] User updated successfully:`, userData);
+      return res.status(200).json({ 
+        success: true,
+        message: "User updated successfully", 
+        data: userData 
+      });
+    } catch (error) {
+      console.error(`[updateUser] Error updating user with ID ${req.params.userId}:`, {
+        error: error.message,
+        stack: error.stack,
+        body: req.body,
+        timestamp: new Date().toISOString()
+      });
+
+      const statusCode = error.message.includes('not found') ? 404 : 
+                        error.message.includes('Invalid') ? 400 : 500;
+      
+      return res.status(statusCode).json({
         success: false,
-        message: "Invalid user ID format",
-        error: "User ID must be a positive integer"
+        message: "Error updating user",
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
       });
     }
-
-    const user = await userService.updateUser(userId, req.body);
-    
-    if (!user) {
-      console.warn(`[updateUser] No user found with ID: ${userId}`);
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found",
-        error: `No user found with ID ${userId}`
-      });
-    }
-
-    // Remove sensitive information before sending response
-    const userData = user.get ? user.get({ plain: true }) : user;
-    delete userData.password;
-    delete userData.resetPasswordOTP;
-    delete userData.resetPasswordExpires;
-
-    console.log(`[updateUser] User updated successfully:`, userData);
-    return res.status(200).json({ 
-      success: true,
-      message: "User updated successfully", 
-      data: userData 
-    });
-  } catch (error) {
-    console.error(`[updateUser] Error updating user with ID ${req.params.userId}:`, {
-      error: error.message,
-      stack: error.stack,
-      body: req.body,
-      timestamp: new Date().toISOString()
-    });
-
-    const statusCode = error.message.includes('not found') ? 404 : 
-                      error.message.includes('Invalid') ? 400 : 500;
-    
-    return res.status(statusCode).json({
-      success: false,
-      message: "Error updating user",
-      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
   }
-}
 
 
   static async addFollower(req, res) {

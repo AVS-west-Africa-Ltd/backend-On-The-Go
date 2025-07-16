@@ -34,11 +34,11 @@ const swaggerUi = require("swagger-ui-express");
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
 
-const serviceAccount = require('./serviceAccountKey.json');
+//const serviceAccount = require('./serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
@@ -111,7 +111,7 @@ app.use((req, res, next) => {
 });
 
 // Apply middleware
-app.use(validateApiKey);
+//app.use(validateApiKey);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
@@ -172,17 +172,17 @@ const syncDatabase = async () => {
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
     
     // Sync all models in correct order to respect foreign key constraints
-    await User.sync();
-    await Room.sync();
-    await RoomMember.sync();
-    await Chat.sync();
-    await Invitation.sync();
-    await WifiScan.sync();
-    await VoucherTemplate.sync();
-    await Voucher.sync();
-    await UserVoucher.sync({ alter: true });
-    await VoucherExchangeRequest.sync();
-    await RepeatedCustomer.sync();
+    // await User.sync();
+    // await Room.sync();
+    // await RoomMember.sync();
+    // await Chat.sync();
+    // await Invitation.sync();
+    // await WifiScan.sync();
+    // await VoucherTemplate.sync();
+    // await Voucher.sync();
+    // await UserVoucher.sync({ alter: true });
+    // await VoucherExchangeRequest.sync();
+    // await RepeatedCustomer.sync();
     
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 

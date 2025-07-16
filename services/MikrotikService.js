@@ -9,11 +9,10 @@ const connector = async ( credentials )=>{
     });
     try {
         const router = await api.connect();
-        return { router, api} ;
+        return { router, api };
     } catch (error) {
-        console.log(error);
-        throw new Error("Failed to connect to router");
-        
+        api.close();
+        throw new Error("Failed to connect to router.");
     }
     
 }

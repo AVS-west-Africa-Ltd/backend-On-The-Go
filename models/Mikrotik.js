@@ -37,19 +37,16 @@ const Mikrotik = sequelize.define('Mikrotik', {
       allowNull: false,
       unique:true,
       references: {
-        model: 'Users', // or the actual table name
+        model: 'users', // or the actual table name
         key: 'id'
       },
       onDelete: 'CASCADE'
     }
 });
 
-
-Mikrotik.associate = (models) => {
-    Mikrotik.belongsTo(User, {
-        foreignKey: "userId",
-        onDelete: "CASCADE",
-    });
-};
+Mikrotik.belongsTo(User, {
+    foreignKey: "userId",
+    onDelete: "CASCADE",
+});
 
 module.exports = Mikrotik;

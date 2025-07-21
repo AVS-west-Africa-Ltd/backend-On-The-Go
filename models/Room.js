@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const RoomMember = require('./RoomMember');
 
 const Room = sequelize.define('Room', {
   id: {
@@ -65,7 +66,12 @@ const Room = sequelize.define('Room', {
 Room.associate = (models) => {
   Room.hasMany(models.Chat, {
     foreignKey: 'room_id',
-    as: 'Chats', // Changed to match the error message
+    as: 'Chats',
   });
 };
+
+Room.hasMany(RoomMember, {
+  foreignKey: "room_id",
+});
+
 module.exports = Room;

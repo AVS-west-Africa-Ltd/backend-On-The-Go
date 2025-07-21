@@ -65,13 +65,6 @@ PostSchema.hasMany(ImageSchema, {
 });
 ImageSchema.belongsTo(PostSchema, { foreignKey: "postId", as: "images" });
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log("Posts table created successfully!");
-  })
-  .catch((error) => {
-    console.error("Unable to create table : ", error);
-  });
+
 
 module.exports = PostSchema;

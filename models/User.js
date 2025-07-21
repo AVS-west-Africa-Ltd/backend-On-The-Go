@@ -3,6 +3,7 @@ const sequelize = require("../config/database");
 const UserFollowers = require("./UserFollowers");
 const BusinessSchema = require("./Business");
 const Notification = require("./Notification");
+const Mikrotik = require('./Mikrotik');
 
 const User = sequelize.define(
   "User",
@@ -170,6 +171,10 @@ User.belongsTo(BusinessSchema, {
   foreignKey: "currentBusinessPlanId",
   as: "currentBusiness",
   constraints: false // In case the business gets deleted
+});
+
+User.hasOne(Mikrotik, {
+  foreignKey: "userId",
 });
 
 module.exports = User;

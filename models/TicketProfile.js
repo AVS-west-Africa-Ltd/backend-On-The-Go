@@ -22,7 +22,7 @@ const TicketProfile = sequelize.define('TicketProfile', {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Users',
+        model: 'users',
         key: 'id'
       },
       onDelete: 'CASCADE'
@@ -31,7 +31,7 @@ const TicketProfile = sequelize.define('TicketProfile', {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'Mikrotiks',
+        model: 'mikrotiks',
         key: 'id'
       },
       onDelete: 'CASCADE'

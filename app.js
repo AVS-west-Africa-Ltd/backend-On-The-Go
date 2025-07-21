@@ -15,17 +15,8 @@ const errorHandler = require("./handlers/errorHandler");
 const admin = require('firebase-admin'); 
 
 // Import models
-const User = require("./models/User");
-const Room = require("./models/Room");
-const RoomMember = require("./models/RoomMember");
-const Chat = require("./models/Chat");
-const Invitation = require("./models/Invitation");
-const Voucher = require("./models/Voucher");
-const UserVoucher = require("./models/UserVoucher");
-const VoucherTemplate = require("./models/VoucherTemplate");
-const VoucherExchangeRequest = require("./models/VoucherExchangeRequest");
-const RepeatedCustomer = require("./models/RepeatedCustomers");
-const WifiScan = require("./models/WifiScan");
+const Mikrotik = require("./models/Mikrotik");
+const TicketProfile = require("./models/TicketProfile");
 
 // Add Swagger imports
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -170,20 +161,8 @@ io.on('connection', (socket) => {
 const syncDatabase = async () => {
   try {
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    
-    // Sync all models in correct order to respect foreign key constraints
-    // await User.sync();
-    // await Room.sync();
-    // await RoomMember.sync();
-    // await Chat.sync();
-    // await Invitation.sync();
-    // await WifiScan.sync();
-    // await VoucherTemplate.sync();
-    // await Voucher.sync();
-    // await UserVoucher.sync({ alter: true });
-    // await VoucherExchangeRequest.sync();
-    // await RepeatedCustomer.sync();
-    
+    await Mikrotik.sync();
+    await TicketProfile.sync();
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 
     console.log("Database synced successfully!");

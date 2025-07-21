@@ -64,6 +64,14 @@ const User = sequelize.define(
     gender: {
       type: DataTypes.STRING,
     },
+    isStudent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    university: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     resetPasswordOTP: {
       type: DataTypes.INTEGER,
     },
@@ -73,10 +81,18 @@ const User = sequelize.define(
     location: {
       type: DataTypes.TEXT,
     },
+    referralCode: {
+      type: DataTypes.STRING(8),
+      unique: true,
+      allowNull: true
+    },
+    successfulReferrals: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
     placesVisited: {
       type: DataTypes.JSON,
     },
-    // New fields for plan tracking
     currentPlanId: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -108,13 +124,14 @@ const User = sequelize.define(
       { fields: ["currentPlanId"] },
       { fields: ["currentBusinessPlanId"] },
       { fields: ["planStatus"] },
+      { fields: ["isStudent"] },
+      { fields: ["university"] },
     ],
     hooks: {
       beforeSave: async (user, options) => {
-        // Update planStatus based on expiration date
         if (user.planExpirationDate) {
-          user.planStatus = new Date(user.planExpirationDate) > new Date() 
-            ? 'active' 
+          user.planStatus = new Date(user.planExpirationDate) > new Date()
+            ? 'active'
             : 'expired';
         } else {
           user.planStatus = 'none';
@@ -123,6 +140,7 @@ const User = sequelize.define(
     }
   }
 );
+
 
 // Associations
 User.belongsToMany(User, {
@@ -159,9 +177,9 @@ Notification.belongsTo(User, {
   as: "Recipient",
 });
 
-User.hasMany(BusinessSchema, { 
-  foreignKey: "userId", 
-  onDelete: "CASCADE" 
+User.hasMany(BusinessSchema, {
+  foreignKey: "userId",
+  onDelete: "CASCADE"
 });
 
 // New association for current business

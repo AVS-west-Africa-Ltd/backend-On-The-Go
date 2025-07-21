@@ -1,4 +1,4 @@
-const { User, UserFollower, Notification, Comment, Post, WifiScan, RepeatedCustomer, UserFollower }= require("../models");
+const { User, UserFollower, Notification, Comment, Post, WifiScan, RepeatedCustomer }= require("../models");
 
 class UserService {
   

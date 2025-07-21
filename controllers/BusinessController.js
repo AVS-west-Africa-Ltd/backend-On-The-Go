@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { Business, BusinessPosts } = require('./models');
+const { Business, BusinessPosts } = require('../models');
 const BusinessService = require("../services/BusinessService");
 const { uploadGenericFiles } = require("../utils/upload");
 

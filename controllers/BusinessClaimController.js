@@ -1,4 +1,4 @@
-const { Business, BusinessClaim, User } = require('./models');
+const { Business, BusinessClaim, User } = require('../models');
 const AWS = require("aws-sdk");
 const admin = require('firebase-admin');
 const {

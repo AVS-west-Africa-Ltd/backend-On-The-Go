@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-    const Image = sequelize.define('Images', {
+    const Image = sequelize.define('Image', {
         postId: {
             type: DataTypes.INTEGER,
             allowNull: false,

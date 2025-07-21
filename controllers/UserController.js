@@ -13,8 +13,7 @@ const {
 } = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const UserModel = require("../models/User");
-const DeleteRequestModel = require("../models/DeleteRequest");
+const { User, DeleteRequest } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
 
 class UserController {
@@ -651,7 +650,7 @@ class UserController {
     try {
       const { userId, reason } = req.body;
 
-      const user = await UserModel.findByPk(userId);
+      const user = await User.findByPk(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
 
       // Set auto-delete time (e.g., 7 days from request)
@@ -659,7 +658,7 @@ class UserController {
       expiresAt.setDate(expiresAt.getDate() + 7);
 
       // Create delete request
-      await DeleteRequestModel.create({ userId, reason, expiresAt });
+      await DeleteRequest.create({ userId, reason, expiresAt });
 
       // Send email to admin
       const deletionEmailTemplate = `
@@ -721,11 +720,11 @@ class UserController {
 
   static async ApproveUserDeletionRequest(req, res) {
     try {
-      const request = await DeleteRequestModel.findByPk(req.params.requestId);
+      const request = await DeleteRequest.findByPk(req.params.requestId);
       if (!request)
         return res.status(404).json({ message: "Request not found" });
 
-      await UserModel.destroy({ where: { id: request.userId } });
+      await User.destroy({ where: { id: request.userId } });
       await request.destroy();
 
       res.status(200).json({ message: "User account deleted successfully." });
@@ -736,7 +735,7 @@ class UserController {
 
   static async DenyUserDeletionRequest(req, res) {
     try {
-      const request = await DeleteRequestModel.findByPk(req.params.requestId);
+      const request = await DeleteRequest.findByPk(req.params.requestId);
       if (!request)
         return res.status(404).json({ message: "Request not found" });
 

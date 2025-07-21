@@ -1,4 +1,4 @@
-const { Business, BusinessPost } = require('./models');
+const { Business, BusinessPost } = require('../models');
 const multer = require("multer");
 const path = require("path");
 const AWS = require("aws-sdk");

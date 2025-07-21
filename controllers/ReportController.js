@@ -1,5 +1,5 @@
 // controllers/ReportController.js
-const { Report } = require('./models');
+const { Report } = require('../models');
 const {
   EMAIL_HOST,
   EMAIL_ADDRESS,

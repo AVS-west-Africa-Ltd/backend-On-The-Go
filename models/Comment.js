@@ -1,13 +1,13 @@
 
 module.exports = (sequelize, DataTypes) => {
   const Comment = sequelize.define(
-    "Comments",
+    "Comment",
     {
       postId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: Post,
+          model: "posts",
           key: "id",
         },
       },

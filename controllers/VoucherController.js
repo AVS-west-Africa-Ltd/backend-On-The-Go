@@ -1,5 +1,5 @@
 // controllers/VoucherController.js
-const { User, VoucherTemplate, UserVoucher, Business, VoucherExchangeRequest, sequelize } = require('./models');
+const { User, VoucherTemplate, UserVoucher, Business, VoucherExchangeRequest, sequelize } = require('../models');
 const {
   generateUniqueCode,
   validateVoucherDays,

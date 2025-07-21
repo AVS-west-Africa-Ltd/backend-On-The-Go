@@ -1,5 +1,4 @@
-const Waitlist = require("../models/Waitlist");
-const { Waitlist } = require('./models');
+const { Waitlist } = require('../models');
 class WaitlistController {
   static async joinWaitlist(req, res) {
     const { email } = req.body;

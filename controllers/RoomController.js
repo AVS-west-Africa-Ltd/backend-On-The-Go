@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { Room, RoomMember, User, Chat, sequelize } = require('./models');
+const { Room, RoomMember, User, Chat, sequelize } = require('../models');
 const path = require("path");
 const multer = require("multer");
 const InvitationController = require("./InvitationController");

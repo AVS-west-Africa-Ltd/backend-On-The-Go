@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Post = sequelize.define(
-    "Posts",
+    "Post",
     {
       userId: {
         type: DataTypes.INTEGER,
@@ -53,9 +53,8 @@ module.exports = (sequelize, DataTypes) => {
   Post.associate = (models) => {
 
       Post.belongsTo(models.Business, { foreignKey: "businessId", as: "business" });
-      Post.belongsTo(models.Business, { foreignKey: "businessId", as: "business" });
       Post.belongsTo(models.User, { foreignKey: "userId", as: "user" });
-      Post.hasMany(models.ImageSchema, {
+      Post.hasMany(models.Image, {
         foreignKey: "postId",
         as: "images",
         onDelete: "CASCADE",

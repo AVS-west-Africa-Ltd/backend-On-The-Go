@@ -124,14 +124,14 @@ module.exports = (sequelize, DataTypes) => {
   User.associate = (models) => {
       User.belongsToMany(models.User, {
         as: "Followers",
-        through: models.UserFollowers,
+        through: models.UserFollower,
         foreignKey: "followedId",
         otherKey: "followerId",
       });
 
       User.belongsToMany(models.User, {
         as: "Following",
-        through: models.UserFollowers,
+        through: models.UserFollower,
         foreignKey: "followerId",
         otherKey: "followedId",
       });
@@ -146,12 +146,12 @@ module.exports = (sequelize, DataTypes) => {
         as: "SentNotifications",
       });
 
-      User.hasMany(models.BusinessSchema, { 
+      User.hasMany(models.Business, { 
         foreignKey: "userId", 
         onDelete: "CASCADE" 
       });
 
-      User.belongsTo(models.BusinessSchema, {
+      User.belongsTo(models.Business, {
         foreignKey: "currentBusinessPlanId",
         as: "currentBusiness",
         constraints: false // In case the business gets deleted

@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
-const User = require('../models/User');
-const PushNotification = require('../models/PushNotification');
+const { User, PushNotification } = require('./models');
 const { catchErrors } = require('../handlers/errorHandler');
 const { Op } = require('sequelize');
 

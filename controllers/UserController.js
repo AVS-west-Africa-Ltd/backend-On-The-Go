@@ -17,27 +17,6 @@ const UserModel = require("../models/User");
 const DeleteRequestModel = require("../models/DeleteRequest");
 const { uploadProfileImage } = require("../utils/upload");
 
-// const s3 = new AWS.S3({
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   region: process.env.AWS_REGION,
-// });
-
-// const upload = multer({
-//   storage: multerS3({
-//     s3: s3,
-//     bucket: process.env.AWS_BUCKET_NAME,
-//     // acl: "public-read",
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     metadata: function (req, file, cb) {
-//       cb(null, { fieldName: file.fieldname });
-//     },
-//     key: function (req, file, cb) {
-//       cb(null, `profiles/${Date.now()}-${file.originalname}`);
-//     },
-//   }),
-// });
-
 class UserController {
   static async CreateUser(req, res) {
     try {
@@ -80,32 +59,7 @@ class UserController {
       }
     }
 
-      // Check for both email and username existence
-      // const existingUser = await userService.getUserByEmailOrUsername({
-      //   where: {
-      //     [Op.or]: [
-      //       { email: email },
-      //       { username: username },
-      //       { phone_number:  phone_number }
-
-      //     ]
-      //   }
-      // });
-
-      // if (existingUser) {
-      //   if (existingUser.email === email) {
-      //     return res.status(400).json({ message: "Email already registered" });
-      //   }
-      //   if (existingUser.phone_number === phone_number) {
-      //     return res.status(400).json({ message: "Phone number already used" });
-      //   }
-      //   if (existingUser.username === username) {
-      //     return res.status(400).json({ message: "Username already taken" });
-      //   }
-      // }
-
-      
-
+    
       const hashedPassword = bcrypt.hashSync(password, 10);
       const user = await userService.createUser({
         ...req.body,
@@ -126,21 +80,6 @@ class UserController {
     } catch (error) {
       console.error('Error in CreateUser:', error);
 
-      // if (error.name === 'SequelizeUniqueConstraintError') {
-      //   const errors = error.errors.map(err => ({
-      //     field: err.path,
-      //     message: err.message
-      //   }));
-      //   return res.status(400).json({
-      //     message: "Validation error",
-      //     errors: errors
-      //   });
-      // }
-
-      // return res.status(500).json({
-      //   error: "Internal server error",
-      //   details: error.message
-      // });
 
 
   // Check if it's a Sequelize Unique Constraint error
@@ -179,153 +118,122 @@ class UserController {
   });
     }
   }
-
-  // static async UpdateUserImage(req, res) {
-  //   const uploadHandler = upload.single("profileImage");
-  //   uploadHandler(req, res, async (err) => {
-  //     if (err) {
-  //       console.error("Error uploading files:", err);
-  //       return res
-  //         .status(501)
-  //         .json({ message: "Error uploading files", error: err.message });
-  //     }
-
-  //     const { userId } = req.params;
-
-  //     try {
-  //       const mediaPaths = req.file.location.toString();
-
-  //       const user = await userService.updateUser(userId, {
-  //         picture: mediaPaths,
-  //       });
-  //       if (!user) return res.status(404).json({ message: "User not found" });
-  //       return res.status(200).json({
-  //         message: "Profile picture updated successfully",
-  //         info: user,
-  //       });
-  //     } catch (error) {
-  //       res.status(500).json({
-  //         message: "Error uploading picture",
-  //         error: error.message,
-  //       });
-  //     }
-  //   });
-  // }
-    static async UpdateUserImage(req, res) {
-      try {
-        // First handle the file upload
-        await new Promise((resolve, reject) => {
-          uploadProfileImage.single("profileImage")(req, res, (err) => {
-            if (err) {
-              console.error("Profile image upload error:", err);
-              reject(new Error(`Image upload failed: ${err.message}`));
-            } else {
-              resolve();
-            }
-          });
+  
+  static async UpdateUserImage(req, res) {
+    try {
+      // First handle the file upload
+      await new Promise((resolve, reject) => {
+        uploadProfileImage.single("profileImage")(req, res, (err) => {
+          if (err) {
+            console.error("Profile image upload error:", err);
+            reject(new Error(`Image upload failed: ${err.message}`));
+          } else {
+            resolve();
+          }
         });
+      });
 
-        const { userId } = req.params;
+      const { userId } = req.params;
 
-        if (!req.file) {
-          return res.status(400).json({
-            message: "No profile image provided",
-          });
-        }
-
-        const user = await userService.updateUser(userId, {
-          picture: req.file.location,
-        });
-
-        if (!user) {
-          return res.status(404).json({
-            message: "User not found",
-          });
-        }
-
-        return res.status(200).json({
-          message: "Profile picture updated successfully",
-          info: user.picture,
-          // data: {
-          //   userId: user.id,
-          //   profileImageUrl: user.picture,
-          // },
-        });
-      } catch (error) {
-        console.error("Error in UpdateUserImage:", error);
-        const statusCode = error.message.includes("upload") ? 400 : 500;
-        res.status(statusCode).json({
-          message: "Error updating profile picture",
-          error: error.message.replace("Image upload failed: ", ""),
+      if (!req.file) {
+        return res.status(400).json({
+          message: "No profile image provided",
         });
       }
-    }
 
-    static async Login(req, res) {
-      try {
-        const { email, password, pushToken } = req.body;
+      const user = await userService.updateUser(userId, {
+        picture: req.file.location,
+      });
 
-        if (!email || !password)
-          return res.status(400).json({ message: "All fields are required" });
-
-        let payload = { where: { email: email } };
-        const user = await userService.getUserByEmailOrUsername(payload);
-
-        if (!user)
-          return res.status(400).json({ message: "Invalid email or password" });
-
-        const isPasswordMatch = await bcrypt.compareSync(password, user.password);
-        if (!isPasswordMatch)
-          return res.status(401).json({ message: "Invalid email or password" });
-
-        // Update push token if provided
-        if (pushToken) {
-          user.pushToken = pushToken;
-          await user.save();
-        }
-
-        const token = jwtUtil.generateToken(user);
-        return res.status(200).json({ token: token, user: user });
-      } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: error.message });
-      }
-    }
-
-    static async updatePushToken(req, res) {
-      try {
-        const { userId } = req.params;
-        const { pushToken } = req.body;
-
-        if (!pushToken) {
-          return res.status(400).json({ message: "Push token is required" });
-        }
-
-        const user = await userService.updateUser(userId, { pushToken });
-
-        if (!user) {
-          return res.status(404).json({ message: "User not found" });
-        }
-
-        return res.status(200).json({
-          message: "Push token updated successfully",
-          info: { userId: user.id, pushToken: user.pushToken }
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
         });
-      } catch (error) {
-        return res.status(500).json({ error: error.message });
       }
-    }
 
-    static async getUsers(req, res) {
-      try {
-        const users = await userService.getUsers();
-        if (!users || users.length === 0)
-          return res.status(404).json({ message: "No record", info: [] });
-        return res.status(200).json({ info: users });
-      } catch (error) {
-        return res.status(500).json({ error: error.message });
-      }
+      return res.status(200).json({
+        message: "Profile picture updated successfully",
+        info: user.picture,
+        // data: {
+        //   userId: user.id,
+        //   profileImageUrl: user.picture,
+        // },
+      });
+    } catch (error) {
+      console.error("Error in UpdateUserImage:", error);
+      const statusCode = error.message.includes("upload") ? 400 : 500;
+      res.status(statusCode).json({
+        message: "Error updating profile picture",
+        error: error.message.replace("Image upload failed: ", ""),
+      });
     }
+  }
+
+  static async Login(req, res) {
+    try {
+      const { email, password, pushToken } = req.body;
+
+      if (!email || !password)
+        return res.status(400).json({ message: "All fields are required" });
+
+      let payload = { where: { email: email } };
+      const user = await userService.getUserByEmailOrUsername(payload);
+
+      if (!user)
+        return res.status(400).json({ message: "Invalid email or password" });
+
+      const isPasswordMatch = await bcrypt.compareSync(password, user.password);
+      if (!isPasswordMatch)
+        return res.status(401).json({ message: "Invalid email or password" });
+
+      // Update push token if provided
+      if (pushToken) {
+        user.pushToken = pushToken;
+        await user.save();
+      }
+
+      const token = jwtUtil.generateToken(user);
+      return res.status(200).json({ token: token, user: user });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async updatePushToken(req, res) {
+    try {
+      const { userId } = req.params;
+      const { pushToken } = req.body;
+
+      if (!pushToken) {
+        return res.status(400).json({ message: "Push token is required" });
+      }
+
+      const user = await userService.updateUser(userId, { pushToken });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({
+        message: "Push token updated successfully",
+        info: { userId: user.id, pushToken: user.pushToken }
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getUsers(req, res) {
+    try {
+      const users = await userService.getUsers();
+      if (!users || users.length === 0)
+        return res.status(404).json({ message: "No record", info: [] });
+      return res.status(200).json({ info: users });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 
   static async getUserById(req, res) {
     try {
@@ -544,18 +452,6 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
-
-  // static async getUserWithFollowers(req, res) {
-  //   try {
-  //     const { userId } = req.params;
-  //
-  //     const user = await userService.getUserWithFollowers(userId);
-  //     if (!user) return res.status(404).json({ message: "User not found" });
-  //     return res.status(200).json({ info: user });
-  //   } catch (e) {
-  //     return res.status(500).json({ error: e });
-  //   }
-  // }
 
   static async addInterests(req, res) {
     try {

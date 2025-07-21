@@ -1,8 +1,5 @@
 // controllers/InvitationController.js
-const Invitation = require('../models/Invitation');
-const Room = require('../models/Room');
-const RoomMember = require('../models/RoomMember');
-const { sequelize } = require('../models/Invitation');
+const { Invitation, Room, RoomMember, sequelize } = require('./models');
 // Create an invitation
 exports.createInvitation = async (req, res) => {
   const { inviter_id, room_id, invitees } = req.body;

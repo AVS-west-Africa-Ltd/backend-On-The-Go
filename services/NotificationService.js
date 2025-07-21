@@ -1,4 +1,4 @@
-const Notification = require("../models/Notification");
+const { Notification } = require("../models");
 const socketService = require('./UserNotificationSocket').getInstance();
 
 class NotificationService {

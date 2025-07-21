@@ -1,7 +1,5 @@
-const Comment = require('../models/Comment');
-const Post = require('../models/Post');
-const User = require("../models/User");
 
+const { User, Post, Comment } = require("../models");
 
 class CommentService {
     static async createComment(postId, authorId, content, parentId = null) {

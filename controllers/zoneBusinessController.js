@@ -1,4 +1,5 @@
 // controllers/zoneBusinessController.js
+const { ZoneBusiness } = require('./models');
 const ZoneBusiness = require('../models/ZoneBusiness');
 const XLSX = require('xlsx');
 const fs = require('fs');

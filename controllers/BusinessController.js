@@ -1,7 +1,5 @@
 require("dotenv").config();
-
-const Business = require("../models/Business");
-const { BusinessPosts } = require("../models/index");
+const { Business, BusinessPosts } = require('./models');
 const BusinessService = require("../services/BusinessService");
 const { uploadGenericFiles } = require("../utils/upload");
 
@@ -163,31 +161,6 @@ const businessController = {
     }
   },
 
-  // Get a single Business by ID
-  // getBusinessById: async (req, res) => {
-  //   try {
-  //     const { id } = req.params;
-  //     const business = await Business.findByPk(id);
-  //     if (!business) {
-  //       return res.status(404).json({
-  //         message: "Business not found",
-  //       });
-  //     }
-  //     return res.status(200).json({
-  //       message: "Business retrieved successfully",
-  //       data: business,
-  //     });
-  //   } catch (error) {
-  //     return res.status(500).json({
-  //       message: "Failed to retrieve business",
-  //       error: error.message,
-  //     });
-  //   }
-  // },
-
-  // Update a Business
-  
-  
   updateBusiness: async (req, res) => {
     try {
       console.log("➡️ updateBusiness called");
@@ -302,7 +275,6 @@ const businessController = {
       });
     }
   },
-
 
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;

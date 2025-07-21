@@ -1,6 +1,5 @@
 // controllers/ReportController.js
-const Report = require('../models/Report');
-const { sequelize } = require('../models/Report');
+const { Report } = require('./models');
 const {
   EMAIL_HOST,
   EMAIL_ADDRESS,

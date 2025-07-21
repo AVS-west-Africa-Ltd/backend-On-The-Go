@@ -1,7 +1,4 @@
-const Chat = require("../models/Chat");
-const User = require("../models/User");
-const Room = require("../models/Room");
-const RoomMember = require("../models/RoomMember");
+const { Chat, User, Room, RoomMember } = require('./models');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const { io } = require('../app');

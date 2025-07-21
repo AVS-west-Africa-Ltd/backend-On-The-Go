@@ -1,5 +1,4 @@
-const Mikrotik = require("../models/Mikrotik");
-const TicketProfile = require("../models/TicketProfile")
+const { Mikrotik, TicketProfile } = require('./models');
 const RouterConnect = require("../services/MikrotikService");
 
 

@@ -1,50 +1,26 @@
-const Business = require("./Business");
-const BusinessPosts = require("./BusinessPost");
-const BusinessFollowers = require("./BusinessFollowers");
-const User = require("./User");
-const PushNotification = require("./PushNotification");
+const fs = require("fs");
+const path = require("path");
 const sequelize = require("../config/database");
+const Sequelize = require("sequelize");
 
-// Business relationships
-Business.hasMany(BusinessPosts, {
-  foreignKey: "businessId",
-  onDelete: "CASCADE",
-});
-BusinessPosts.belongsTo(Business, { foreignKey: "businessId" });
+const db = {};
 
-Business.belongsToMany(Business, {
-  through: BusinessFollowers,
-  as: "Followers",
-  foreignKey: "followedId",
-  otherKey: "followerId",
-  onDelete: "CASCADE",
-});
+// Dynamically import each model and inject sequelize & DataTypes
+fs.readdirSync(__dirname)
+  .filter(file => file !== "index.js" && file.endsWith(".js"))
+  .forEach(file => {
+    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+    db[model.name] = model;
+  });
 
-Business.belongsToMany(Business, {
-  through: BusinessFollowers,
-  as: "Following",
-  foreignKey: "followerId",
-  otherKey: "followedId",
-  onDelete: "CASCADE",
+// Run all associations AFTER all models are loaded
+Object.keys(db).forEach(modelName => {
+  if (db[modelName].associate) {
+    db[modelName].associate(db);
+  }
 });
 
-// PushNotification relationships
-PushNotification.belongsTo(User, {
-  foreignKey: "userId",
-  as: "user"
-});
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-User.hasMany(PushNotification, {
-  foreignKey: "userId",
-  as: "notifications"
-});
-
-
-
-module.exports = { 
-  Business, 
-  BusinessPosts, 
-  BusinessFollowers,
-  User,
-  PushNotification 
-};
+module.exports = db;

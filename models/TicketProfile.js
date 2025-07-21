@@ -1,8 +1,6 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
-const Mikrotik = require("./Mikrotik");
-const User = require("./User");
 
+
+module.exports = (sequelize, DataTypes) => {
 const TicketProfile = sequelize.define('TicketProfile', {
     name: {
       type: DataTypes.STRING,
@@ -38,14 +36,18 @@ const TicketProfile = sequelize.define('TicketProfile', {
     }
 });
 
-TicketProfile.belongsTo(Mikrotik, {
-    foreignKey: "mikrotikId",
-    onDelete: "CASCADE",
-});
+TicketProfile.associate = (models) => {
+    TicketProfile.belongsTo(models.Mikrotik, {
+        foreignKey: "mikrotikId",
+        onDelete: "CASCADE",
+    });
 
-TicketProfile.belongsTo(User, {
-    foreignKey: "userId",
-    onDelete: "CASCADE",
-});
+    TicketProfile.belongsTo(models.User, {
+        foreignKey: "userId",
+        onDelete: "CASCADE",
+    });
+};
 
-module.exports = TicketProfile;
+return TicketProfile;
+    
+}

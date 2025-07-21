@@ -147,6 +147,7 @@ const businessController = {
       res.status(500).json(error.message);
     }
   },
+  
   // Get a user business
   getBusinessById: async (req, res) => {
     try {

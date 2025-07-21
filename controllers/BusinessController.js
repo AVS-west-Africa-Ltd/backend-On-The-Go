@@ -187,6 +187,7 @@ const businessController = {
 
   // Update a Business
   
+  
   updateBusiness: async (req, res) => {
     try {
       console.log("➡️ updateBusiness called");
@@ -437,6 +438,7 @@ const businessController = {
       });
     }
   },
+
 };
 
 module.exports = businessController;

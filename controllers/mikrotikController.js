@@ -19,7 +19,6 @@ const addRouter  = async(req, res)=>{
     }
 }
 
-
 const syncProfiles = async(req, res)=>{
     const userID = req.userId;
     const { routerId } = req.body
@@ -46,7 +45,6 @@ const syncProfiles = async(req, res)=>{
     }
 }
 
-
 const addTicketPrice = async(req, res)=>{
     const { profileId, amount } = req.body;
     const userID = req.userId;
@@ -55,23 +53,28 @@ const addTicketPrice = async(req, res)=>{
         await profile.update({ price: amount });
         res.status(200).json({ message: "Profile price changed"});
     } catch (error) {
+        console.log(error);
         res.status(400).json({ messsage: "Failed to change profile price." });
     }
 }
-
 
 const changeTicketStatus = async(req, res)=>{
     const { profileId, status } = req.body;
     const userID = req.userId;
     try {
-        const profile = TicketProfile.findOne({ where: { id: profileId, userId: userID }});
-        await profile.update({ isActive: status });
-        res.status(200).json({ message: "Profile price changed"});
+        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID }});
+        if (!profile) {
+            res.status(400).json({ message: "Profile not found"});
+        }
+        console.log(profile);
+        profile.isActive = status;
+        await profile.save();
+        res.status(200).json({ message: "Profile status changed"});
     } catch (error) {
-        res.status(400).json({ messsage: "Failed to change profile price." });
+        console.log(error);
+        res.status(400).json({ messsage: "Failed to change profile status." });
     }
 }
-
 
 const fetchTicketProfile = async (req, res)=>{
     const { routerId } = req.query;
@@ -86,7 +89,6 @@ const fetchTicketProfile = async (req, res)=>{
         res.status(400).json({ messsage: "Failed to fetch ticket profile." });
     }
 }
-
 
 module.exports = { addRouter, syncProfiles, addTicketPrice, changeTicketStatus, fetchTicketProfile }
 

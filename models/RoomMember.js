@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User'); // Import User model
+const User = require('./User');
+const Room = require('./Room');
 
 const RoomMember = sequelize.define('RoomMember', {
     id: {
@@ -31,6 +32,7 @@ const RoomMember = sequelize.define('RoomMember', {
 });
 
 // Associate RoomMember with User
-RoomMember.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+RoomMember.belongsTo(User, { foreignKey: 'user_id'});
+RoomMember.belongsTo(Room, { foreignKey: 'room_id'});
 
 module.exports = RoomMember;

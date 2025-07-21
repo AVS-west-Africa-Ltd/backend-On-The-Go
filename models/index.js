@@ -39,14 +39,7 @@ User.hasMany(PushNotification, {
   as: "notifications"
 });
 
-sequelize
-  .sync()
-  .then(() => {
-    // console.log("Tables created successfully!");
-  })
-  .catch((error) => {
-    console.error("Error creating tables:", error);
-  });
+
 
 module.exports = { 
   Business, 

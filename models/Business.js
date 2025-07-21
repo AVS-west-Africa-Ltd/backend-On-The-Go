@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Mikrotik = require("./Mikrotik");
 
 const Business = sequelize.define(
   "Business",
@@ -33,13 +32,6 @@ const Business = sequelize.define(
     amenities: {
       type: DataTypes.JSON,
       defaultValue: {},
-      get() {
-        const rawValue = this.getDataValue('amenities');
-        return typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
-      },
-      set(value) {
-        this.setDataValue('amenities', typeof value === 'string' ? value : JSON.stringify(value));
-      }
     },
     cacDoc: {
       type: DataTypes.STRING,
@@ -111,9 +103,6 @@ const Business = sequelize.define(
   }
 );
 
-Business.hasOne(Mikrotik, {
-    foreignKey: "businessId",
-    onDelete: "CASCADE",
-});
+
 
 module.exports = Business;

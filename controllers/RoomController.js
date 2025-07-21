@@ -195,8 +195,6 @@ exports.getAllRooms = async (req, res) => {
       include: [
         {
           model: RoomMember,
-          as: "members",
-          attributes: ["user_id"],
         },
       ],
       attributes: [

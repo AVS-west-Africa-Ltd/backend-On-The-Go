@@ -20,10 +20,6 @@ const ImageSchema = sequelize.define('Images', {
   }
 );
 
-sequelize.sync().then(() => {
-    console.log('Images table created successfully!');
-}).catch((error) => {
-    console.error('Unable to create table : ', error);
-});
+
 
 module.exports = ImageSchema;

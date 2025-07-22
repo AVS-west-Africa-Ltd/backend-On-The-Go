@@ -1,4 +1,4 @@
-const { Post, Business, User }= require("../models");
+const { Post, Business, User, Comment }= require("../models");
 const { Op, Sequelize } = require("sequelize");
 const multer = require("multer");
 const path = require("path");

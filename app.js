@@ -3,20 +3,17 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const bodyParser = require("body-parser");
-const sequelize = require("./config/database");
 const router = require("./routes/routes");
 const zoneRouter = require("./routes/zone");
 const path = require("path");
 const setupSocketIO = require("./services/socketSetup");
-const setupAssociations = require("./models/associations");
 const compression = require("compression");
 const morgan = require("morgan");
 const errorHandler = require("./handlers/errorHandler");
 const admin = require('firebase-admin'); 
 
 // Import models
-const Mikrotik = require("./models/Mikrotik");
-const TicketProfile = require("./models/TicketProfile");
+const db = require('./models');
 
 // Add Swagger imports
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -25,11 +22,11 @@ const swaggerUi = require("swagger-ui-express");
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
 
-const serviceAccount = require('./serviceAccountKey.json');
+// const serviceAccount = require('./serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
@@ -131,8 +128,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1", router);
 app.use("/zone", zoneRouter);
 
-// Setup associations **before** syncing database
-setupAssociations();
+
 
 // Initialize HTTP server
 const server = http.createServer(app);
@@ -160,10 +156,9 @@ io.on('connection', (socket) => {
 // Sync Database with Associations
 const syncDatabase = async () => {
   try {
-    await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    await Mikrotik.sync();
-    await TicketProfile.sync();
-    await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+    await db.sequelize.sync()
+    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 
     console.log("Database synced successfully!");
 

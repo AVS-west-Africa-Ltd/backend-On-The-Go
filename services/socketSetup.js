@@ -1,6 +1,5 @@
 const socketIo = require('socket.io');
-const Chat = require('../models/Chat');
-const RoomMember = require('../models/RoomMember');
+const { Chat, RoomMember } = require('../models');
 
 const setupSocketIO = (server) => {
   console.log('🚀 Initializing Socket.IO server...');

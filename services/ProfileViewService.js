@@ -1,7 +1,4 @@
-const ProfileView = require("../models/ProfileView");
-const User = require("../models/User");
-
-
+const { ProfileView, User } = require("../models");
 
 class ProfileViewService {
     // Log a profile view or update the existing one

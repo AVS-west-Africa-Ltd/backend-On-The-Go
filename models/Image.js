@@ -1,25 +1,28 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-
-const ImageSchema = sequelize.define('Images', {
-    postId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
+module.exports = (sequelize, DataTypes) => {
+    const Image = sequelize.define('Image', {
+        postId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        fileName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        filePath: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     },
-    fileName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    filePath: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-},
-{
-    tableName: 'images' // Explicitly set table name
-  }
-);
+    {
+        tableName: 'images' // Explicitly set table name
+    }
+    );
+
+    Image.associate = (models) => {
+    Image.belongsTo(models.Post, { foreignKey: "postId", as: "images" });
+    };
 
 
-
-module.exports = ImageSchema;
+    return Image;
+  
+}

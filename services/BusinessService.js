@@ -1,7 +1,4 @@
-const { Business } = require("../models");
-const RepeatedCustomer = require("../models/RepeatedCustomers");
-const User = require("../models/User");
-const WifiScan = require("../models/WifiScan");
+const { Business, RepeatedCustomer, User, WifiScan } = require("../models");
 const { Op } = require("sequelize");
 
 class BusinessService {

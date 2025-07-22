@@ -1,8 +1,5 @@
 // services/VoucherService.js
-const VoucherTemplate = require("../models/VoucherTemplate");
-const UserVoucher = require("../models/UserVoucher");
-const Business = require("../models/Business");
-const Post = require("../models/Post"); // Add this import
+const { VoucherTemplate, UserVoucher, Business, Post } = require("../models");
 const { generateUniqueCode } = require("../utils/voucherUtils");
 
 class VoucherService {

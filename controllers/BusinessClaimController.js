@@ -1,7 +1,4 @@
-// controllers/BusinessClaimController.js
-const Business = require("../models/Business");
-const BusinessClaim = require("../models/BusinessClaim");
-const User = require("../models/User");
+const { Business, BusinessClaim, User } = require('../models');
 const AWS = require("aws-sdk");
 const admin = require('firebase-admin');
 const {

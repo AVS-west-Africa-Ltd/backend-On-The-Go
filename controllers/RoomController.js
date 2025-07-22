@@ -1,12 +1,8 @@
 const fs = require("fs");
-const Room = require("../models/Room");
-const RoomMember = require("../models/RoomMember");
-const User = require('../models/User'); 
+const { Room, RoomMember, User, Chat, sequelize } = require('../models');
 const path = require("path");
 const multer = require("multer");
 const InvitationController = require("./InvitationController");
-const { sequelize } = require("../models/Room");
-const Chat = require('../models/Chat');
 const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const crypto = require('crypto');

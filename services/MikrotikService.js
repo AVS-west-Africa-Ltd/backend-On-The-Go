@@ -11,6 +11,7 @@ const connector = async ( credentials )=>{
         const router = await api.connect();
         return { router, api };
     } catch (error) {
+        console.log(error);
         api.close();
         throw new Error("Failed to connect to router.");
     }

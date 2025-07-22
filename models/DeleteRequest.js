@@ -1,4 +1,4 @@
-const User = require('./User');
+
 
 module.exports = (sequelize, DataTypes) => {
     
@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: User,
+                model: "users",
                 key: 'id'
             },
             onDelete: 'CASCADE',

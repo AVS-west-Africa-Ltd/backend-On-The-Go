@@ -1,4 +1,4 @@
-const WifiScan = require("./WifiScan");
+
 
 module.exports = (sequelize, DataTypes) => {
   const RepeatedCustomer = sequelize.define(
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: WifiScan, // Reference the WifiScan model
+          model: "wifiscan", // Reference the WifiScan model
           key: "id",
         },
         onDelete: "CASCADE",

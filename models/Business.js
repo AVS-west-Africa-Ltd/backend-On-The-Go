@@ -106,7 +106,7 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       Business.belongsToMany(models.Business, {
-        through: models.BusinessFollowers,
+        through: models.BusinessFollower,
         as: "Followers",
         foreignKey: "followedId",
         otherKey: "followerId",
@@ -114,7 +114,7 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       Business.belongsToMany(models.Business, {
-        through: models.BusinessFollowers,
+        through: models.BusinessFollower,
         as: "Following",
         foreignKey: "followerId",
         otherKey: "followedId",

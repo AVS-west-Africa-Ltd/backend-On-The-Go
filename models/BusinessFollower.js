@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const BusinessFollowers = sequelize.define("BusinessFollowers", {
+  const BusinessFollower = sequelize.define("BusinessFollower", {
     followerId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -14,5 +14,5 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  return  BusinessFollowers;  
+  return  BusinessFollower;  
 }

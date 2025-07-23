@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         metadata: {
             type: DataTypes.JSON,
-            defaultValue: {},
+            defaultValue: [],
         },
         createdAt: {
             type: DataTypes.DATE,

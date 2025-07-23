@@ -87,39 +87,7 @@ exports.createReport = async (req, res) => {
   }
 };
 
-// exports.createReport = async (req, res) => {
-//   const { title, content, reporter_id, entity_type, entity_id } = req.body;
 
-//   try {
-//     if (!title || !content || !reporter_id) {
-//       return res.status(400).json({
-//         success: false,
-//         message: 'Missing required fields: title, content, and reporter_id are required'
-//       });
-//     }
-
-//     const report = await Report.create({
-//       title,
-//       content,
-//       reporter_id,
-//       entity_type: entity_type || null,
-//       entity_id: entity_id || null
-//     });
-
-//     res.status(201).json({
-//       success: true,
-//       message: 'Report submitted successfully',
-//       data: report
-//     });
-//   } catch (error) {
-//     console.error('Error creating report:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Error submitting report',
-//       error: error.message
-//     });
-//   }
-// };
 
 
 

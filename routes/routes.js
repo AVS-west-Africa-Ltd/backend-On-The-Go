@@ -19,14 +19,14 @@ const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
-const MikrotikController = require("../controllers/MikrotikController");
+const NetworkRouterController = require("../controllers/NetworkRouterController");
 
 // Mikrotik Route
-router.post("/mikrotik/add-router",  authMiddleware, MikrotikController.addRouter);
-router.post("/mikrotik/sync-profile",  authMiddleware, MikrotikController.syncProfiles);
-router.post("/mikrotik/add-ticket-price",  authMiddleware, MikrotikController.addTicketPrice);
-router.post("/mikrotik/change-ticket-status",  authMiddleware, MikrotikController.changeTicketStatus);
-router.get("/mikrotik/fetch-profile",  authMiddleware, MikrotikController.fetchTicketProfile);
+router.post("/network-router/add-router",  authMiddleware, NetworkRouterController.addRouter);
+router.post("/network-router/sync-profile",  authMiddleware, NetworkRouterController.syncProfiles);
+router.post("/network-router/add-ticket-price",  authMiddleware, NetworkRouterController.addTicketPrice);
+router.post("/network-router/change-ticket-status",  authMiddleware, NetworkRouterController.changeTicketStatus);
+router.get("/network-router/fetch-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);

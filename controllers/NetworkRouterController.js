@@ -1,4 +1,4 @@
-const { Mikrotik, TicketProfile } = require('../models');
+const { NetworkRouter, TicketProfile } = require('../models');
 const RouterConnect = require("../services/MikrotikService");
 
 
@@ -9,9 +9,9 @@ const addRouter  = async(req, res)=>{
         const { router, api } = await RouterConnect.connector({ host, user, password });
         const systemInfo = await router.menu('/system/identity').getOnly();  
         await api.close();          
-        const mikrotik = await Mikrotik.create({ host, username: user, password, userId: userID, metadata: systemInfo });
+        const networkRouter = await NetworkRouter.create({ host, username: user, password, userId: userID, metadata: systemInfo });
         
-        res.status(200).json({mikrotik, message: "Mikrotik router added"});
+        res.status(200).json({networkRouter, message: "networkRouter router added"});
     } catch (error) {
         console.log(error);
         res.status(400).json({ messsage: "Failed to connect to router." });
@@ -20,21 +20,20 @@ const addRouter  = async(req, res)=>{
 
 const syncProfiles = async(req, res)=>{
     const userID = req.userId;
-    const { routerId } = req.body
     try {
-        const mikrotik = await Mikrotik.findOne({ 
-            where: { id: routerId }
+        const networkRouter = await NetworkRouter.findOne({ 
+            where: { userId: userID }
         });
-        if(!mikrotik){
+        if(!networkRouter){
             res.status(400).json({ messsage: "Failed to sync ticket profiles, router not found." });
         }
-        const { router, api } = await RouterConnect.connector({ host: mikrotik.host, user: mikrotik.username, password: mikrotik.password });
+        const { router, api } = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
         const profiles = await router.menu('/tool/user-manager/profile').getAll();
         await api.close();
         profiles.forEach(async( profile ) => {
-            const ticketProfile = await TicketProfile.findOne({ where: { name: profile.name, mikrotikId: routerId, userId: userID } });
+            const ticketProfile = await TicketProfile.findOne({ where: { name: profile.name, routerId: networkRouter.id, userId: userID } });
             if (!ticketProfile) {
-                await TicketProfile.create({ name: profile.name, price: 0, mikrotikId: routerId, userId: userID });
+                await TicketProfile.create({ name: profile.name, price: 0, routerId: networkRouter.id, userId: userID });
             }          
         });
         res.status(200).json({ profiles, message: "Ticket profile have been sync" });
@@ -80,7 +79,7 @@ const fetchTicketProfile = async (req, res)=>{
     const userID = req.userId;
     try {
         const profiles = await TicketProfile.findAll({
-            where: { mikrotikId: routerId, userId: userID }
+            where: { networkRouterId: routerId, userId: userID }
         });
         res.status(200).json({ profiles, message: "Profile fetched." });
     } catch (error) {

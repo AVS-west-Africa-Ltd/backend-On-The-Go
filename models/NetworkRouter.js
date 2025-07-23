@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const Mikrotik = sequelize.define('Mikrotik', {
+  const NetworkRouter = sequelize.define('NetworkRouter', {
     
       host: {
         type: DataTypes.STRING,
@@ -39,16 +39,19 @@ module.exports = (sequelize, DataTypes) => {
         },
         onDelete: 'CASCADE'
       }
+  },
+  {
+    tableName: "networkRouters",
   });
 
-  Mikrotik.associate = (models) => {
-      Mikrotik.belongsTo(models.User, {
+  NetworkRouter.associate = (models) => {
+      NetworkRouter.belongsTo(models.User, {
           foreignKey: "userId",
           onDelete: "CASCADE",
       });
   };
 
 
-  return Mikrotik;
+  return NetworkRouter;
   
 }

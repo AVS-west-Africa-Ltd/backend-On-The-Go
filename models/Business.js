@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       amenities: {
         type: DataTypes.JSON,
-        defaultValue: {},
+        defaultValue: [],
       },
       cacDoc: {
         type: DataTypes.STRING,
@@ -40,12 +40,12 @@ module.exports = (sequelize, DataTypes) => {
       hours: {
         type: DataTypes.JSON,
         allowNull: true,
-        defaultValue: {},
+        defaultValue: [],
       },
       social: {
         type: DataTypes.JSON,
         allowNull: true,
-        defaultValue: {},
+        defaultValue: [],
       },
       wifi: {
         type: DataTypes.JSON,
@@ -95,7 +95,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: "businesses", // Explicitly set table name
+      tableName: "businesses",
     }
   );
 

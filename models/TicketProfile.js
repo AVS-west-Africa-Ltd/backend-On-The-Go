@@ -25,20 +25,23 @@ const TicketProfile = sequelize.define('TicketProfile', {
       },
       onDelete: 'CASCADE'
     },
-    mikrotikId: {
+    routerId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'mikrotiks',
+        model: 'networkRouters',
         key: 'id'
       },
       onDelete: 'CASCADE'
     }
+},
+{
+  tableName: "ticketProfiles",
 });
 
 TicketProfile.associate = (models) => {
-    TicketProfile.belongsTo(models.Mikrotik, {
-        foreignKey: "mikrotikId",
+    TicketProfile.belongsTo(models.NetworkRouter, {
+        foreignKey: "routerId",
         onDelete: "CASCADE",
     });
 

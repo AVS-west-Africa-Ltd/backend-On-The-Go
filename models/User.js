@@ -157,7 +157,7 @@ module.exports = (sequelize, DataTypes) => {
         constraints: false // In case the business gets deleted
       });
 
-      User.hasOne(models.Mikrotik, {
+      User.hasOne(models.NetworkRouter, {
         foreignKey: "userId",
       });
 

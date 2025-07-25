@@ -176,6 +176,10 @@ module.exports = (sequelize, DataTypes) => {
         as: "notifications"
       });
 
+      User.hasMany(models.TicketProfile, {
+        foreignKey: "userId",
+      });
+
   };
 
   return  User;

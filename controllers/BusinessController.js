@@ -39,10 +39,10 @@ const businessController = {
       const cacDocUrl = req.files?.cacDoc?.[0]?.location || null;
 
       // Parse JSON strings if they exist
-      const socialArray = social ? JSON.parse(social) : null;
-      const wifiArray = wifi ? JSON.parse(wifi) : null;
-      const hoursArray = hours ? JSON.parse(hours) : null;
-      const amenitiesArray = amenities ? JSON.parse(amenities) : null;
+      const socialArray = social ;
+      const wifiArray = wifi;
+      const hoursArray = hours ;
+      const amenitiesArray = amenities;
 
       // Create the business
       const business = await Business.create({
@@ -253,11 +253,11 @@ const businessController = {
 
       const responseData = {
         ...business.toJSON(),
-        social: formatJsonField(business.social),
-        wifi: formatJsonField(business.wifi),
-        wifiPlans: formatJsonField(business.wifiPlans),
-        amenities: formatJsonField(business.amenities),
-        hours: formatJsonField(business.hours),
+        social: business.social,
+        wifi: business.wifi,
+        wifiPlans: business.wifiPlans,
+        amenities: business.amenities,
+        hours: business.hours,
       };
 
       console.log("📦 Final Response Data:", responseData);

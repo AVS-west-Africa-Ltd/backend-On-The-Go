@@ -1,8 +1,4 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
-const UserFollowers = require("./UserFollowers");
-const BusinessSchema = require("./Business");
-const Notification = require("./Notification");
+
 
 const User = sequelize.define(
   "User",
@@ -135,11 +131,36 @@ const User = sequelize.define(
             : 'expired';
         } else {
           user.planStatus = 'none';
+
         }
       }
     }
-  }
-);
+  );
+
+  User.associate = (models) => {
+      User.belongsToMany(models.User, {
+        as: "Followers",
+        through: models.UserFollower,
+        foreignKey: "followedId",
+        otherKey: "followerId",
+      });
+
+      User.belongsToMany(models.User, {
+        as: "Following",
+        through: models.UserFollower,
+        foreignKey: "followerId",
+        otherKey: "followedId",
+      });
+
+      User.hasMany(models.Notification, {
+        foreignKey: "recipientId",
+        as: "ReceivedNotifications",
+      });
+
+      User.hasMany(models.Notification, {
+        foreignKey: "senderId",
+        as: "SentNotifications",
+      });
 
 
 // Associations
@@ -150,43 +171,36 @@ User.belongsToMany(User, {
   otherKey: "followerId",
 });
 
-User.belongsToMany(User, {
-  as: "Following",
-  through: UserFollowers,
-  foreignKey: "followerId",
-  otherKey: "followedId",
-});
 
-User.hasMany(Notification, {
-  foreignKey: "recipientId",
-  as: "ReceivedNotifications",
-});
+      User.belongsTo(models.Business, {
+        foreignKey: "currentBusinessPlanId",
+        as: "currentBusiness",
+        constraints: false // In case the business gets deleted
+      });
 
-User.hasMany(Notification, {
-  foreignKey: "senderId",
-  as: "SentNotifications",
-});
+      User.hasOne(models.NetworkRouter, {
+        foreignKey: "userId",
+      });
 
-Notification.belongsTo(User, {
-  foreignKey: "senderId",
-  as: "Sender",
-});
+      User.hasMany(models.Comment, {
+        foreignKey: "authorId",
+        as: "comments",
+        onDelete: "CASCADE",
+      });
 
-Notification.belongsTo(User, {
-  foreignKey: "recipientId",
-  as: "Recipient",
-});
+      User.hasMany(models.ProfileView, { foreignKey: "profileOwnerId", as: "ProfileViews" });
+
+      User.hasMany(models.ProfileView, { foreignKey: "viewerId", as: "ViewedProfiles" });
+
 
 User.hasMany(BusinessSchema, {
   foreignKey: "userId",
   onDelete: "CASCADE"
 });
 
-// New association for current business
-User.belongsTo(BusinessSchema, {
-  foreignKey: "currentBusinessPlanId",
-  as: "currentBusiness",
-  constraints: false // In case the business gets deleted
-});
 
-module.exports = User;
+  };
+
+  return  User;
+    
+}

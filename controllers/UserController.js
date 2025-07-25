@@ -13,30 +13,8 @@ const {
 } = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const UserModel = require("../models/User");
-const DeleteRequestModel = require("../models/DeleteRequest");
+const { User, DeleteRequest } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
-
-// const s3 = new AWS.S3({
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   region: process.env.AWS_REGION,
-// });
-
-// const upload = multer({
-//   storage: multerS3({
-//     s3: s3,
-//     bucket: process.env.AWS_BUCKET_NAME,
-//     // acl: "public-read",
-//     contentType: multerS3.AUTO_CONTENT_TYPE,
-//     metadata: function (req, file, cb) {
-//       cb(null, { fieldName: file.fieldname });
-//     },
-//     key: function (req, file, cb) {
-//       cb(null, `profiles/${Date.now()}-${file.originalname}`);
-//     },
-//   }),
-// });
 
 class UserController {
 static async CreateUser(req, res) {
@@ -100,6 +78,7 @@ static async CreateUser(req, res) {
         }
       }
 
+
       const hashedPassword = bcrypt.hashSync(password, 10);
       const user = await userService.createUser({
         ...req.body,
@@ -143,6 +122,7 @@ static async CreateUser(req, res) {
           field: err.field.replace('users_', ''),
           message: `${err.field.replace('users_', '')} is already taken`
         }));
+
     
         return res.status(400).json({
           message: "Registration failed",
@@ -156,38 +136,7 @@ static async CreateUser(req, res) {
       });
     }
   }
-
-  // static async UpdateUserImage(req, res) {
-  //   const uploadHandler = upload.single("profileImage");
-  //   uploadHandler(req, res, async (err) => {
-  //     if (err) {
-  //       console.error("Error uploading files:", err);
-  //       return res
-  //         .status(501)
-  //         .json({ message: "Error uploading files", error: err.message });
-  //     }
-
-  //     const { userId } = req.params;
-
-  //     try {
-  //       const mediaPaths = req.file.location.toString();
-
-  //       const user = await userService.updateUser(userId, {
-  //         picture: mediaPaths,
-  //       });
-  //       if (!user) return res.status(404).json({ message: "User not found" });
-  //       return res.status(200).json({
-  //         message: "Profile picture updated successfully",
-  //         info: user,
-  //       });
-  //     } catch (error) {
-  //       res.status(500).json({
-  //         message: "Error uploading picture",
-  //         error: error.message,
-  //       });
-  //     }
-  //   });
-  // }
+  
   static async UpdateUserImage(req, res) {
     try {
       // First handle the file upload
@@ -264,6 +213,7 @@ static async CreateUser(req, res) {
       const token = jwtUtil.generateToken(user);
       return res.status(200).json({ token: token, user: user });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({ error: error.message });
     }
   }
@@ -291,6 +241,7 @@ static async CreateUser(req, res) {
       return res.status(500).json({ error: error.message });
     }
   }
+
   static async getUsers(req, res) {
     try {
       const users = await userService.getUsers();
@@ -302,58 +253,58 @@ static async CreateUser(req, res) {
     }
   }
 
-static async getUserById(req, res) {
-  try {
-    const { userId } = req.params;
+  static async getUserById(req, res) {
+    try {
+      const { userId } = req.params;
 
-    // Validate userId exists and is a positive integer
-    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-      return res.status(400).json({ 
+      // Validate userId exists and is a positive integer
+      if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid user ID format",
+          error: "User ID must be a positive integer"
+        });
+      }
+
+      const user = await userService.getUserById(Number(userId));
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found",
+          error: `No user found with ID ${userId}`
+        });
+      }
+
+      // Remove sensitive information before sending response
+      delete user.password;
+      delete user.resetPasswordOTP;
+      delete user.resetPasswordExpires;
+
+      return res.status(200).json({
+        success: true,
+        message: "User retrieved successfully",
+        data: user
+      });
+
+    } catch (error) {
+      console.error('Detailed error in getUserById:', {
+        error: error.message,
+        stack: error.stack,
+        params: req.params,
+        timestamp: new Date().toISOString()
+      });
+
+      const statusCode = error.message.includes('not found') ? 404 : 500;
+      
+      return res.status(statusCode).json({
         success: false,
-        message: "Invalid user ID format",
-        error: "User ID must be a positive integer"
+        message: "Error processing your request",
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
       });
     }
-
-    const user = await userService.getUserById(Number(userId));
-    
-    if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found",
-        error: `No user found with ID ${userId}`
-      });
-    }
-
-    // Remove sensitive information before sending response
-    delete user.password;
-    delete user.resetPasswordOTP;
-    delete user.resetPasswordExpires;
-
-    return res.status(200).json({
-      success: true,
-      message: "User retrieved successfully",
-      data: user
-    });
-
-  } catch (error) {
-    console.error('Detailed error in getUserById:', {
-      error: error.message,
-      stack: error.stack,
-      params: req.params,
-      timestamp: new Date().toISOString()
-    });
-
-    const statusCode = error.message.includes('not found') ? 404 : 500;
-    
-    return res.status(statusCode).json({
-      success: false,
-      message: "Error processing your request",
-      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
   }
-}
 
   static async deleteUser(req, res) {
     try {
@@ -367,63 +318,63 @@ static async getUserById(req, res) {
     }
   }
 
-static async updateUser(req, res) {
-  try {
-    const { userId } = req.params;
-    console.log(`[updateUser] Called with userId: ${userId}`);
-    console.log(`[updateUser] Request body:`, req.body);
+  static async updateUser(req, res) {
+    try {
+      const { userId } = req.params;
+      console.log(`[updateUser] Called with userId: ${userId}`);
+      console.log(`[updateUser] Request body:`, req.body);
 
-    // Validate userId is a positive integer
-    if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-      return res.status(400).json({ 
+      // Validate userId is a positive integer
+      if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid user ID format",
+          error: "User ID must be a positive integer"
+        });
+      }
+
+      const user = await userService.updateUser(userId, req.body);
+      
+      if (!user) {
+        console.warn(`[updateUser] No user found with ID: ${userId}`);
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found",
+          error: `No user found with ID ${userId}`
+        });
+      }
+
+      // Remove sensitive information before sending response
+      const userData = user.get ? user.get({ plain: true }) : user;
+      delete userData.password;
+      delete userData.resetPasswordOTP;
+      delete userData.resetPasswordExpires;
+
+      console.log(`[updateUser] User updated successfully:`, userData);
+      return res.status(200).json({ 
+        success: true,
+        message: "User updated successfully", 
+        data: userData 
+      });
+    } catch (error) {
+      console.error(`[updateUser] Error updating user with ID ${req.params.userId}:`, {
+        error: error.message,
+        stack: error.stack,
+        body: req.body,
+        timestamp: new Date().toISOString()
+      });
+
+      const statusCode = error.message.includes('not found') ? 404 : 
+                        error.message.includes('Invalid') ? 400 : 500;
+      
+      return res.status(statusCode).json({
         success: false,
-        message: "Invalid user ID format",
-        error: "User ID must be a positive integer"
+        message: "Error updating user",
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
       });
     }
-
-    const user = await userService.updateUser(userId, req.body);
-    
-    if (!user) {
-      console.warn(`[updateUser] No user found with ID: ${userId}`);
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found",
-        error: `No user found with ID ${userId}`
-      });
-    }
-
-    // Remove sensitive information before sending response
-    const userData = user.get ? user.get({ plain: true }) : user;
-    delete userData.password;
-    delete userData.resetPasswordOTP;
-    delete userData.resetPasswordExpires;
-
-    console.log(`[updateUser] User updated successfully:`, userData);
-    return res.status(200).json({ 
-      success: true,
-      message: "User updated successfully", 
-      data: userData 
-    });
-  } catch (error) {
-    console.error(`[updateUser] Error updating user with ID ${req.params.userId}:`, {
-      error: error.message,
-      stack: error.stack,
-      body: req.body,
-      timestamp: new Date().toISOString()
-    });
-
-    const statusCode = error.message.includes('not found') ? 404 : 
-                      error.message.includes('Invalid') ? 400 : 500;
-    
-    return res.status(statusCode).json({
-      success: false,
-      message: "Error updating user",
-      error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
   }
-}
 
 
   static async addFollower(req, res) {
@@ -519,18 +470,6 @@ static async updateUser(req, res) {
       return res.status(500).json({ error: error.message });
     }
   }
-
-  // static async getUserWithFollowers(req, res) {
-  //   try {
-  //     const { userId } = req.params;
-  //
-  //     const user = await userService.getUserWithFollowers(userId);
-  //     if (!user) return res.status(404).json({ message: "User not found" });
-  //     return res.status(200).json({ info: user });
-  //   } catch (e) {
-  //     return res.status(500).json({ error: e });
-  //   }
-  // }
 
   static async addInterests(req, res) {
     try {
@@ -730,7 +669,7 @@ static async updateUser(req, res) {
     try {
       const { userId, reason } = req.body;
 
-      const user = await UserModel.findByPk(userId);
+      const user = await User.findByPk(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
 
       // Set auto-delete time (e.g., 7 days from request)
@@ -738,7 +677,7 @@ static async updateUser(req, res) {
       expiresAt.setDate(expiresAt.getDate() + 7);
 
       // Create delete request
-      await DeleteRequestModel.create({ userId, reason, expiresAt });
+      await DeleteRequest.create({ userId, reason, expiresAt });
 
       // Send email to admin
       const deletionEmailTemplate = `
@@ -800,11 +739,11 @@ static async updateUser(req, res) {
 
   static async ApproveUserDeletionRequest(req, res) {
     try {
-      const request = await DeleteRequestModel.findByPk(req.params.requestId);
+      const request = await DeleteRequest.findByPk(req.params.requestId);
       if (!request)
         return res.status(404).json({ message: "Request not found" });
 
-      await UserModel.destroy({ where: { id: request.userId } });
+      await User.destroy({ where: { id: request.userId } });
       await request.destroy();
 
       res.status(200).json({ message: "User account deleted successfully." });
@@ -815,7 +754,7 @@ static async updateUser(req, res) {
 
   static async DenyUserDeletionRequest(req, res) {
     try {
-      const request = await DeleteRequestModel.findByPk(req.params.requestId);
+      const request = await DeleteRequest.findByPk(req.params.requestId);
       if (!request)
         return res.status(404).json({ message: "Request not found" });
 

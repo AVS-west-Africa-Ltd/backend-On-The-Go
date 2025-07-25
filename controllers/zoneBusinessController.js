@@ -1,5 +1,5 @@
 // controllers/zoneBusinessController.js
-const ZoneBusiness = require('../models/ZoneBusiness');
+const { ZoneBusiness } = require('../models');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const log = require('../utils/logger'); // Assuming you have a logger utility

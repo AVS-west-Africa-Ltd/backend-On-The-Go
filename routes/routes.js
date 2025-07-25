@@ -20,6 +20,7 @@ const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
+
 const UserLocationController = require("../controllers/UserLocationController");
 const ReferralController = require("../controllers/ReferralController");
 const LocationController = require("../controllers/LocationController");
@@ -43,6 +44,7 @@ router.get("/users/:userId/referral-info", catchErrors(ReferralController.getRef
 router.post("/track-referral/:referralCode", catchErrors(ReferralController.trackReferral));
 router.get("/users/:userId/referral-history", catchErrors(ReferralController.getReferralHistory));
 router.post("/save-user-location", UserLocationController.saveLocation);
+
 
 
 router.use("/chat", chatRoutes);

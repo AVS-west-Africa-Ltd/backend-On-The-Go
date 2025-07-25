@@ -1,4 +1,4 @@
-const Image = require('../models/Image'); // Assuming the Image model is defined in models/Image.js
+const { Image } = require('../models'); // Assuming the Image model is defined in models/Image.js
 
 class ImageService {
     /**

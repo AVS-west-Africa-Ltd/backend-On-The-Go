@@ -3,29 +3,17 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const bodyParser = require("body-parser");
-const sequelize = require("./config/database");
 const router = require("./routes/routes");
 const zoneRouter = require("./routes/zone");
 const path = require("path");
 const setupSocketIO = require("./services/socketSetup");
-const setupAssociations = require("./models/associations");
 const compression = require("compression");
 const morgan = require("morgan");
 const errorHandler = require("./handlers/errorHandler");
 const admin = require('firebase-admin'); 
 
 // Import models
-const User = require("./models/User");
-const Room = require("./models/Room");
-const RoomMember = require("./models/RoomMember");
-const Chat = require("./models/Chat");
-const Invitation = require("./models/Invitation");
-const Voucher = require("./models/Voucher");
-const UserVoucher = require("./models/UserVoucher");
-const VoucherTemplate = require("./models/VoucherTemplate");
-const VoucherExchangeRequest = require("./models/VoucherExchangeRequest");
-const RepeatedCustomer = require("./models/RepeatedCustomers");
-const WifiScan = require("./models/WifiScan");
+const db = require('./models');
 
 // Add Swagger imports
 const swaggerJSDoc = require("swagger-jsdoc");
@@ -34,13 +22,13 @@ const swaggerUi = require("swagger-ui-express");
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
 
-const serviceAccount = require('./serviceAccountKey.json');
+// const serviceAccount = require('./serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 const app = express();
 
@@ -111,7 +99,7 @@ app.use((req, res, next) => {
 });
 
 // Apply middleware
-app.use(validateApiKey);
+//app.use(validateApiKey);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
@@ -140,8 +128,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1", router);
 app.use("/zone", zoneRouter);
 
-// Setup associations **before** syncing database
-setupAssociations();
+
 
 // Initialize HTTP server
 const server = http.createServer(app);
@@ -169,22 +156,9 @@ io.on('connection', (socket) => {
 // Sync Database with Associations
 const syncDatabase = async () => {
   try {
-    await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    
-    // Sync all models in correct order to respect foreign key constraints
-    await User.sync();
-    await Room.sync();
-    await RoomMember.sync();
-    await Chat.sync();
-    await Invitation.sync();
-    await WifiScan.sync();
-    await VoucherTemplate.sync();
-    await Voucher.sync();
-    await UserVoucher.sync({ alter: true });
-    await VoucherExchangeRequest.sync();
-    await RepeatedCustomer.sync();
-    
-    await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+    await db.sequelize.sync()
+    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 
     console.log("Database synced successfully!");
 

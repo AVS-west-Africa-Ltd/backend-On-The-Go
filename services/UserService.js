@@ -1,28 +1,7 @@
-const User = require("../models/User");
-const UserFollower = require("../models/UserFollowers");
-// const { Op } = require("sequelize");
-const Notification = require("../models/Notification");
-const sequelize = require("../config/database");
-const Comment = require("../models/Comment");
-const PostSchema = require("../models/Post");
-const WifiScan = require("../models/WifiScan");
-const RepeatedCustomer = require("../models/RepeatedCustomers");
-// const NotificationService = require("./NotificationService");
-// const RepeatedCustomer = require("../models/RepeatedCustomers");
-// const WifiScan = require("../models/WifiScan");
+const { User, UserFollower, Notification, Comment, Post, WifiScan, RepeatedCustomer }= require("../models");
 
 class UserService {
-  // Create a new user
-  // static async createUser(data) {
-  //   try {
-  //     return await User.create(data);
-  //   } catch (error) {
-  //     throw new Error(error);
-  //     // throw error; 
-  //   }
-
   
-  // }
 
   // In your UserService
 static async createUser(data) {
@@ -170,7 +149,7 @@ static async updateUser(userId, data) {
         transaction,
       });
 
-      await PostSchema.destroy({ where: { userId }, transaction });
+      await Post.destroy({ where: { userId }, transaction });
       await WifiScan.destroy({ where: { userId }, transaction });
       await RepeatedCustomer.destroy({
         where: { wifiScanId: userId },
@@ -190,76 +169,7 @@ static async updateUser(userId, data) {
     }
   }
 
-  // static async followUser(followerId, followedId) {
-  //     const transaction = await sequelize.transaction();
-  //
-  //     try {
-  //         // Check if users exist and are different
-  //         if (followerId === followedId) {
-  //             throw new Error('Users cannot follow themselves');
-  //         }
-  //
-  //         const [follower, followed] = await Promise.all([
-  //             User.findByPk(followerId),
-  //             User.findByPk(followedId)
-  //         ]);
-  //
-  //         if (!follower || !followed) {
-  //             throw new Error('One or both users not found');
-  //         }
-  //
-  //         // Check if already following
-  //         const existingFollow = await UserFollower.findOne({
-  //             where: {
-  //                 followerId,
-  //                 followedId,
-  //                 status: 'active'
-  //             }
-  //         });
-  //
-  //         if (existingFollow) {
-  //             throw new Error('Already following this user');
-  //         }
-  //
-  //         // Create follow relationship
-  //         await UserFollower.create({
-  //             followerId,
-  //             followedId,
-  //             status: 'active'
-  //         }, { transaction });
-  //
-  //         // Update follower counts
-  //         await Promise.all([
-  //             User.increment('followingCount', {
-  //                 where: { id: followerId },
-  //                 transaction
-  //             }),
-  //             User.increment('followersCount', {
-  //                 where: { id: followedId },
-  //                 transaction
-  //             })
-  //         ]);
-  //
-  //         // Create notification
-  //         await Notification.create({
-  //             recipientId: followedId,
-  //             senderId: followerId,
-  //             type: 'follow',
-  //             message: `@${follower.username} started following you`,
-  //             metadata: {
-  //                 followerUsername: follower.username,
-  //                 followerPicture: follower.picture
-  //             }
-  //         }, { transaction });
-  //
-  //         await transaction.commit();
-  //         return true;
-  //
-  //     } catch (error) {
-  //         await transaction.rollback();
-  //         throw error;
-  //     }
-  // }
+  
 
   static async followUser(followerId, followedId) {
     const transaction = await sequelize.transaction();

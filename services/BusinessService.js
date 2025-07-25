@@ -1,7 +1,4 @@
-const { Business } = require("../models");
-const RepeatedCustomer = require("../models/RepeatedCustomers");
-const User = require("../models/User");
-const WifiScan = require("../models/WifiScan");
+const { Business, RepeatedCustomer, User, WifiScan } = require("../models");
 const { Op } = require("sequelize");
 
 class BusinessService {
@@ -123,7 +120,19 @@ static async getAllBusiness() {
       throw new Error("Error fetching businesses: " + error.message);
     }
   }
-
+ // idris comment out test business login
+  // static async getBusinessByUserId(userId) {
+  //   try {
+  //     // Find the user by primary key (userId) and include their associated Businesses
+  //     const user = await User.findByPk(userId, {
+  //       include: [
+  //         {
+  //           model: Business, // Include the associated Business model
+  //         },
+  //       ],
+  //     });
+  
+  
 static async getBusinessByUserId(userId) {
   try {
     const businesses = await Business.findAll({
@@ -158,6 +167,7 @@ static async getBusinessByUserId(userId) {
     throw new Error("Error manually fetching business by userId: " + error.message);
   }
 }
+
 
 
 static async getBusinessById(businessId) {

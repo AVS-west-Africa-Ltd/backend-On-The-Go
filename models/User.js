@@ -199,6 +199,10 @@ User.hasMany(BusinessSchema, {
 });
 
 
+      User.hasMany(models.TicketProfile, {
+        foreignKey: "userId",
+      });
+
   };
 
   return  User;

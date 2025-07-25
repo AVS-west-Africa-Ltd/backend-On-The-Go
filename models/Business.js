@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
       },
       logo: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
       },
       amenities: {
         type: DataTypes.JSON,
@@ -120,6 +120,8 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: "followedId",
         onDelete: "CASCADE",
       });
+
+
   };
 
   return Business;

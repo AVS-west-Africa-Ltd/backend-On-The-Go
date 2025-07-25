@@ -21,6 +21,20 @@ const BusinessClaimController = require("../controllers/BusinessClaimController"
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
 
+const NetworkRouterController = require("../controllers/NetworkRouterController");
+
+// Mikrotik Route
+router.post("/network-router/add-router",  authMiddleware, NetworkRouterController.addRouter);
+router.get("/network-router/fetch-router",  authMiddleware, NetworkRouterController.fetchRouter);
+router.post("/network-router/edit-router",  authMiddleware, NetworkRouterController.editRouter);
+router.get("/network-router/check-router-connection",  authMiddleware, NetworkRouterController.checkRouterConnection);
+router.post("/network-router/sync-profile",  authMiddleware, NetworkRouterController.syncProfiles);
+router.post("/network-router/add-ticket-price",  authMiddleware, NetworkRouterController.addTicketPrice);
+router.post("/network-router/change-ticket-status",  authMiddleware, NetworkRouterController.changeTicketStatus);
+router.get("/network-router/fetch-ticket-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
+router.post("/network-router/edit-ticket-profile",  authMiddleware, NetworkRouterController.editTicketProfile);
+
+
 const UserLocationController = require("../controllers/UserLocationController");
 const ReferralController = require("../controllers/ReferralController");
 const LocationController = require("../controllers/LocationController");

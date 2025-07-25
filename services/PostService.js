@@ -78,6 +78,7 @@ static async getPosts() {
         { model: User, as: "user" },
       ],
       order: [["createdAt", "DESC"]],
+      limit: 30
     });
 
     return posts.map((post) => {
@@ -94,16 +95,16 @@ static async getPosts() {
 
       return {
         ...raw,
-        likes: safeParse(raw.likes),
-        media: safeParse(raw.media),
-        bookmarks: safeParse(raw.bookmarks),
+        likes: raw.likes,
+        media: raw.media,
+        bookmarks: raw.bookmarks,
         business: raw.business
           ? {
               ...raw.business,
-              amenities: safeParse(raw.business.amenities),
-              social: safeParse(raw.business.social),
-              wifi: safeParse(raw.business.wifi),
-              hours: safeParse(raw.business.hours, {}), // fallback is object
+              amenities: raw.business.amenities,
+              social: raw.business.social,
+              wifi: raw.business.wifi,
+              hours: raw.business.hours, // fallback is object
             }
           : null,
       };
@@ -194,7 +195,7 @@ static async toggleBookmark(postId, userId) {
 
     let bookmarks = post.bookmarks || [];
     if (typeof bookmarks === "string") {
-      bookmarks = JSON.parse(bookmarks);
+      bookmarks = bookmarks;
     }
     if (!Array.isArray(bookmarks)) {
       bookmarks = [];
@@ -265,6 +266,7 @@ static async getPostStatistics(userId) {
     throw error;
   }
 }
+
 }
 
 module.exports = PostService;

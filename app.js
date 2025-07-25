@@ -153,27 +153,10 @@ io.on('connection', (socket) => {
   });
 });
 
-// Sync Database with Associations
-const syncDatabase = async () => {
-  try {
-    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    await db.sequelize.sync()
-    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-
-    console.log("Database synced successfully!");
-
-    // Start server after sync
-    server.listen(PORT, HOST, () => {
-      console.log(
-        `Server running on http://localhost:${PORT}, PID: ${process.pid}`
-      );
-    });
-  } catch (err) {
-    console.error("Database sync error:", err);
-    process.exit(1);
-  }
-};
-
-syncDatabase();
+server.listen(PORT, HOST, () => {
+  console.log(
+    `Server running on http://localhost:${PORT}, PID: ${process.pid}`
+  );
+});
 
 module.exports = { app, io };

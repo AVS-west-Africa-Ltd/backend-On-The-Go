@@ -10,6 +10,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
 const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
+const upload2 = require("../utils/multerSetup2");
 const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
 const processBusinessController = require("../cron/populate-business");
@@ -21,6 +22,20 @@ const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
 const UserLocationController = require("../controllers/UserLocationController");
 const ReferralController = require("../controllers/ReferralController");
+const LocationController = require("../controllers/LocationController");
+const marketerController = require("../controllers/marketerTerritoryController");
+
+
+
+router.post("/marketers", catchErrors(marketerController.createMarketer));
+router.get("/marketers", catchErrors(marketerController.getMarketers));
+router.post("/territories", catchErrors(marketerController.createTerritory));
+router.patch("/territories/:id/status", catchErrors(marketerController.updateTerritoryStatus));
+router.get("/territories", catchErrors(marketerController.getMarketerTerritories));
+// Add these with your other routes
+router.post("/upload-locations",upload2.single('csvFile'),catchErrors(LocationController.uploadLocations));
+
+router.get("/locations",catchErrors(LocationController.getAllLocations));
 
 
 // Referral routes

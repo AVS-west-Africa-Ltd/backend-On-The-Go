@@ -10,6 +10,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
 const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
+const upload2 = require("../utils/multerSetup2");
 const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
 const processBusinessController = require("../cron/populate-business");
@@ -19,14 +20,32 @@ const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
-const NetworkRouterController = require("../controllers/NetworkRouterController");
 
-// Mikrotik Route
-router.post("/network-router/add-router",  authMiddleware, NetworkRouterController.addRouter);
-router.post("/network-router/sync-profile",  authMiddleware, NetworkRouterController.syncProfiles);
-router.post("/network-router/add-ticket-price",  authMiddleware, NetworkRouterController.addTicketPrice);
-router.post("/network-router/change-ticket-status",  authMiddleware, NetworkRouterController.changeTicketStatus);
-router.get("/network-router/fetch-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
+const UserLocationController = require("../controllers/UserLocationController");
+const ReferralController = require("../controllers/ReferralController");
+const LocationController = require("../controllers/LocationController");
+const marketerController = require("../controllers/marketerTerritoryController");
+
+
+
+router.post("/marketers", catchErrors(marketerController.createMarketer));
+router.get("/marketers", catchErrors(marketerController.getMarketers));
+router.post("/territories", catchErrors(marketerController.createTerritory));
+router.patch("/territories/:id/status", catchErrors(marketerController.updateTerritoryStatus));
+router.get("/territories", catchErrors(marketerController.getMarketerTerritories));
+// Add these with your other routes
+router.post("/upload-locations",upload2.single('csvFile'),catchErrors(LocationController.uploadLocations));
+
+router.get("/locations",catchErrors(LocationController.getAllLocations));
+
+
+// Referral routes
+router.get("/users/:userId/referral-info", catchErrors(ReferralController.getReferralInfo));
+router.post("/track-referral/:referralCode", catchErrors(ReferralController.trackReferral));
+router.get("/users/:userId/referral-history", catchErrors(ReferralController.getReferralHistory));
+router.post("/save-user-location", UserLocationController.saveLocation);
+
+
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);

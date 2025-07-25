@@ -32,6 +32,8 @@ const businessController = {
         hours,
         social,
         wifi,
+        latitude,
+        longitude
       } = req.body;
 
       // Extract file URLs from S3
@@ -57,6 +59,8 @@ const businessController = {
         hours: hoursArray,
         social: socialArray,
         wifi: wifiArray,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null
       });
 
       res.status(201).json({
@@ -161,6 +165,32 @@ const businessController = {
     }
   },
 
+
+  // Get a single Business by ID
+  // getBusinessById: async (req, res) => {
+  //   try {
+  //     const { id } = req.params;
+  //     const business = await Business.findByPk(id);
+  //     if (!business) {
+  //       return res.status(404).json({
+  //         message: "Business not found",
+  //       });
+  //     }
+  //     return res.status(200).json({
+  //       message: "Business retrieved successfully",
+  //       data: business,
+  //     });
+  //   } catch (error) {
+  //     return res.status(500).json({
+  //       message: "Failed to retrieve business",
+  //       error: error.message,
+  //     });
+  //   }
+  // },
+
+  // Update a Business
+
+
   updateBusiness: async (req, res) => {
     try {
       console.log("➡️ updateBusiness called");
@@ -215,6 +245,7 @@ const businessController = {
         }
       }
 
+
       // Check if any bank detail is being uploaded or changed
       const bankDetailsChanged =
         (bankName && bankName !== business.bankName) ||
@@ -259,6 +290,24 @@ const businessController = {
         amenities: formatJsonField(business.amenities),
         hours: formatJsonField(business.hours),
       };
+
+      console.log("📦 Final Response Data:", responseData);
+
+      res.status(200).json({
+        message: "Business updated successfully",
+        data: responseData,
+      });
+    } catch (error) {
+      console.error("🔥 Error in updateBusiness:", error);
+      const statusCode = error.message.includes("upload") ? 400 : 500;
+      res.status(statusCode).json({
+        message: "Error updating business",
+        error: error.message.replace("File upload failed: ", ""),
+      });
+    }
+  }
+
+
 
       console.log("📦 Final Response Data:", responseData);
 

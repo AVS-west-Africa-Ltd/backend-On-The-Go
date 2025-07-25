@@ -17,55 +17,77 @@ const { User, DeleteRequest } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
 
 class UserController {
-  static async CreateUser(req, res) {
+static async CreateUser(req, res) {
     try {
-      const { username, email, password, pushToken, phone_number } = req.body;
+      const { 
+        username, 
+        email, 
+        password, 
+        pushToken, 
+        phone_number,
+        firstName,
+        lastName,
+        gender,
+        isStudent,
+        university
+      } = req.body;
 
-      if (!email || !password || !username) {
-        return res.status(400).json({ message: "Email, username and password are required" });
-      }
-
-
-          // Check for existing user conflicts
-    const existingUser = await userService.getUserByEmailOrUsername({
-      where: {
-        [Op.or]: [
-          { email },
-          { username },
-          { phone_number }
-        ]
-      }
-    });
-
-    if (existingUser) {
-      const conflicts = [];
-
-      if (existingUser.email === email) {
-        conflicts.push({ field: "email", message: "Email already registered" });
-      }
-      if (existingUser.phone_number === phone_number) {
-        conflicts.push({ field: "phone_number", message: "Phone number already used" });
-      }
-      if (existingUser.username === username) {
-        conflicts.push({ field: "username", message: "Username already taken" });
-      }
-
-      if (conflicts.length > 0) {
-        return res.status(400).json({
-          message: "Validation error",
-          errors: conflicts
+      if (!email || !password || !username || !firstName || !lastName || !gender) {
+        return res.status(400).json({ 
+          message: "Email, username, password, first name, last name and gender are required" 
         });
       }
-    }
 
-    
+      // Check if student but no university provided
+      if (isStudent && !university) {
+        return res.status(400).json({
+          message: "University is required for student registration",
+          errors: [{ field: "university", message: "Please select your university" }]
+        });
+      }
+
+      // Check for existing user conflicts
+      const existingUser = await userService.getUserByEmailOrUsername({
+        where: {
+          [Op.or]: [
+            { email },
+            { username },
+            { phone_number }
+          ]
+        }
+      });
+
+      if (existingUser) {
+        const conflicts = [];
+
+        if (existingUser.email === email) {
+          conflicts.push({ field: "email", message: "Email already registered" });
+        }
+        if (existingUser.phone_number === phone_number) {
+          conflicts.push({ field: "phone_number", message: "Phone number already used" });
+        }
+        if (existingUser.username === username) {
+          conflicts.push({ field: "username", message: "Username already taken" });
+        }
+
+        if (conflicts.length > 0) {
+          return res.status(400).json({
+            message: "Validation error",
+            errors: conflicts
+          });
+        }
+      }
+
+
       const hashedPassword = bcrypt.hashSync(password, 10);
       const user = await userService.createUser({
         ...req.body,
         password: hashedPassword,
         pushToken: pushToken || null,
         followersCount: 0,
-        followingCount: 0
+        followingCount: 0,
+        isStudent: isStudent || false,
+        university: isStudent ? university : null
       });
 
       return res.status(201).json({
@@ -73,48 +95,45 @@ class UserController {
         data: {
           id: user.id,
           email: user.email,
-          username: user.username
+          username: user.username,
+          isStudent: user.isStudent,
+          university: user.university
         }
       });
     } catch (error) {
       console.error('Error in CreateUser:', error);
 
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const errors = error?.errors?.map(err => ({
+          field: err?.path || "unknown",
+          message: err?.message || "Unique constraint failed"
+        })) || [];
 
+        return res.status(400).json({
+          message: "Validation error",
+          errors: errors.length > 0 ? errors : [
+            { field: "unknown", message: "Unique constraint failed" }
+          ]
+        });
+      }
+      
+      if (error.status === 400) {
+        const transformedErrors = error.errors.map(err => ({
+          field: err.field.replace('users_', ''),
+          message: `${err.field.replace('users_', '')} is already taken`
+        }));
 
-  // Check if it's a Sequelize Unique Constraint error
-  if (error.name === 'SequelizeUniqueConstraintError') {
-    const errors = error?.errors?.map(err => ({
-      field: err?.path || "unknown",
-      message: err?.message || "Unique constraint failed"
-    })) || [];
-
-    return res.status(400).json({
-      message: "Validation error",
-      errors: errors.length > 0 ? errors : [
-        { field: "unknown", message: "Unique constraint failed" }
-      ]
-    });
     
-   
-  }
-   if (error.status === 400) {
-      // Transform the existing error format
-      const transformedErrors = error.errors.map(err => ({
-        field: err.field.replace('users_', ''),
-        message: `${err.field.replace('users_', '')} is already taken`
-      }));
-  
-      return res.status(400).json({
-        message: "Registration failed",
-        errors: transformedErrors
-      });
-    }
+        return res.status(400).json({
+          message: "Registration failed",
+          errors: transformedErrors
+        });
+      }
 
-  // Fallback error
-  return res.status(500).json({
-    error: "Internal server error",
-    details: error.message || "Something went wrong"
-  });
+      return res.status(500).json({
+        error: "Internal server error",
+        details: error.message || "Something went wrong"
+      });
     }
   }
   

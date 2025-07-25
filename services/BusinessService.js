@@ -57,6 +57,8 @@ class BusinessService {
   }
 
 
+
+
   static async getAllDefibrillator() {
     try {
       const businesses = await Business.findAll({
@@ -87,6 +89,7 @@ class BusinessService {
       throw new Error("Error fetching businesses: " + error.message);
     }
   }
+
   
 
   static async getBusinessByUserId(userId) {
@@ -112,6 +115,7 @@ class BusinessService {
         social: business.social,
         wifi: business.wifi,
       }));
+
 
       return {
         ...user.toJSON(),

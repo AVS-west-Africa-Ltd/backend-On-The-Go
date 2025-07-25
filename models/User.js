@@ -1,121 +1,137 @@
 
-module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define(
-    "User",
-    {
-      firstName: {
-        type: DataTypes.STRING,
-      },
-      lastName: {
-        type: DataTypes.STRING,
-      },
-      username: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      password: {
-        type: DataTypes.STRING,
-      },
-      phone_number: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      picture: {
-        type: DataTypes.TEXT,
-      },
-      bio: {
-        type: DataTypes.TEXT,
-      },
-      pushToken: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      interests: {
-        type: DataTypes.JSON,
-      },
-      userType: {
-        type: DataTypes.STRING,
-      },
-      followersCount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-      },
-      followingCount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-      },
-      profession: {
-        type: DataTypes.STRING,
-      },
-      skills: {
-        type: DataTypes.STRING,
-      },
-      gender: {
-        type: DataTypes.STRING,
-      },
-      resetPasswordOTP: {
-        type: DataTypes.INTEGER,
-      },
-      resetPasswordExpires: {
-        type: DataTypes.TEXT,
-      },
-      location: {
-        type: DataTypes.TEXT,
-      },
-      referralCode: {
-        type: DataTypes.TEXT,
-      },
-      placesVisited: {
-        type: DataTypes.JSON,
-      },
-      // New fields for plan tracking
-      currentPlanId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: null,
-        comment: "ID of the currently active plan"
-      },
-      currentBusinessPlanId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: null,
-      },
-      planExpirationDate: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: null,
-        comment: "When the current plan expires"
-      },
-      planStatus: {
-        type: DataTypes.ENUM('active', 'expired', 'none'),
-        defaultValue: 'none',
-        comment: "Current status of the user's plan"
-      },
+
+const User = sequelize.define(
+  "User",
+  {
+    firstName: {
+      type: DataTypes.STRING,
     },
-    {
-      tableName: "users",
-      indexes: [
-        { fields: ["currentPlanId"] },
-        { fields: ["currentBusinessPlanId"] },
-        { fields: ["planStatus"] },
-      ],
-      hooks: {
-        beforeSave: async (user, options) => {
-          // Update planStatus based on expiration date
-          if (user.planExpirationDate) {
-            user.planStatus = new Date(user.planExpirationDate) > new Date() 
-              ? 'active' 
-              : 'expired';
-          } else {
-            user.planStatus = 'none';
-          }
+    lastName: {
+      type: DataTypes.STRING,
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+    },
+    phone_number: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    picture: {
+      type: DataTypes.TEXT,
+    },
+    bio: {
+      type: DataTypes.TEXT,
+    },
+    pushToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    interests: {
+      type: DataTypes.JSON,
+    },
+    userType: {
+      type: DataTypes.STRING,
+    },
+    followersCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    followingCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    profession: {
+      type: DataTypes.STRING,
+    },
+    skills: {
+      type: DataTypes.STRING,
+    },
+    gender: {
+      type: DataTypes.STRING,
+    },
+    isStudent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    university: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordOTP: {
+      type: DataTypes.INTEGER,
+    },
+    resetPasswordExpires: {
+      type: DataTypes.TEXT,
+    },
+    location: {
+      type: DataTypes.TEXT,
+    },
+    referralCode: {
+      type: DataTypes.STRING(8),
+      unique: true,
+      allowNull: true
+    },
+    successfulReferrals: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    placesVisited: {
+      type: DataTypes.JSON,
+    },
+    currentPlanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+      comment: "ID of the currently active plan"
+    },
+    currentBusinessPlanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+    },
+    planExpirationDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+      comment: "When the current plan expires"
+    },
+    planStatus: {
+      type: DataTypes.ENUM('active', 'expired', 'none'),
+      defaultValue: 'none',
+      comment: "Current status of the user's plan"
+    },
+  },
+  {
+    tableName: "users",
+    indexes: [
+      { unique: true, fields: ["email"] },
+      { unique: true, fields: ["username"] },
+      { fields: ["currentPlanId"] },
+      { fields: ["currentBusinessPlanId"] },
+      { fields: ["planStatus"] },
+      { fields: ["isStudent"] },
+      { fields: ["university"] },
+    ],
+    hooks: {
+      beforeSave: async (user, options) => {
+        if (user.planExpirationDate) {
+          user.planStatus = new Date(user.planExpirationDate) > new Date()
+            ? 'active'
+            : 'expired';
+        } else {
+          user.planStatus = 'none';
+
         }
       }
     }
@@ -146,10 +162,15 @@ module.exports = (sequelize, DataTypes) => {
         as: "SentNotifications",
       });
 
-      User.hasMany(models.Business, { 
-        foreignKey: "userId", 
-        onDelete: "CASCADE" 
-      });
+
+// Associations
+User.belongsToMany(User, {
+  as: "Followers",
+  through: UserFollowers,
+  foreignKey: "followedId",
+  otherKey: "followerId",
+});
+
 
       User.belongsTo(models.Business, {
         foreignKey: "currentBusinessPlanId",
@@ -171,10 +192,12 @@ module.exports = (sequelize, DataTypes) => {
 
       User.hasMany(models.ProfileView, { foreignKey: "viewerId", as: "ViewedProfiles" });
 
-      User.hasMany(models.PushNotification, {
-        foreignKey: "userId",
-        as: "notifications"
-      });
+
+User.hasMany(BusinessSchema, {
+  foreignKey: "userId",
+  onDelete: "CASCADE"
+});
+
 
       User.hasMany(models.TicketProfile, {
         foreignKey: "userId",

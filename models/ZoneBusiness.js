@@ -1,8 +1,3 @@
-// models/ZoneBusiness.js
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../config/database'); // Assuming you have a database config file
-
-
 
 module.exports = (sequelize, DataTypes) => {
   const ZoneBusiness = sequelize.define('ZoneBusiness', {

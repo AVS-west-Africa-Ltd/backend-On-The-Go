@@ -56,9 +56,6 @@ class BusinessService {
     }
   }
 
-
-
-
   static async getAllDefibrillator() {
     try {
       const businesses = await Business.findAll({
@@ -90,8 +87,6 @@ class BusinessService {
     }
   }
 
-  
-
   static async getBusinessByUserId(userId) {
     try {
       const user = await User.findByPk(userId, {
@@ -99,14 +94,6 @@ class BusinessService {
       });
 
       if (!user) return null;
-
-      const safeParse = (str) => {
-        try {
-          return JSON.parse(str);
-        } catch {
-          return str; // return as-is if not JSON
-        }
-      };
 
       const parsedBusinesses = user.Businesses.map((business) => ({
         ...business.toJSON(),
@@ -125,7 +112,6 @@ class BusinessService {
       throw new Error("Error fetching user: " + error.message);
     }
   }
-
 
   static async getBusinessById(businessId) {
     try {

@@ -1,5 +1,3 @@
-const { PassThrough } = require("form-data");
-
 
 module.exports = (sequelize, DataTypes) => {
 const TicketProfile = sequelize.define('TicketProfile', {

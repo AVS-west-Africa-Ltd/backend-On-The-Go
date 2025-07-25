@@ -305,26 +305,8 @@ const businessController = {
         error: error.message.replace("File upload failed: ", ""),
       });
     }
-  }
-
-
-
-      console.log("📦 Final Response Data:", responseData);
-
-      res.status(200).json({
-        message: "Business updated successfully",
-        data: responseData,
-      });
-    } catch (error) {
-      console.error("🔥 Error in updateBusiness:", error);
-      const statusCode = error.message.includes("upload") ? 400 : 500;
-      res.status(statusCode).json({
-        message: "Error updating business",
-        error: error.message.replace("File upload failed: ", ""),
-      });
-    }
   },
-
+  
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;
 

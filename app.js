@@ -22,11 +22,11 @@ const swaggerUi = require("swagger-ui-express");
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
 
-// const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = require('./serviceAccountKey.json');
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount)
-// });
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
@@ -86,6 +86,8 @@ const swaggerSpec = swaggerJSDoc(options);
 
 app.use(cors());
 
+
+
 // CORS Headers
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -99,6 +101,7 @@ app.use((req, res, next) => {
 });
 
 // Apply middleware
+
 //app.use(validateApiKey);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -153,27 +156,10 @@ io.on('connection', (socket) => {
   });
 });
 
-// Sync Database with Associations
-const syncDatabase = async () => {
-  try {
-    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    await db.sequelize.sync()
-    await db.sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-
-    console.log("Database synced successfully!");
-
-    // Start server after sync
-    server.listen(PORT, HOST, () => {
-      console.log(
-        `Server running on http://localhost:${PORT}, PID: ${process.pid}`
-      );
-    });
-  } catch (err) {
-    console.error("Database sync error:", err);
-    process.exit(1);
-  }
-};
-
-syncDatabase();
+server.listen(PORT, HOST, () => {
+  console.log(
+    `Server running on http://localhost:${PORT}, PID: ${process.pid}`
+  );
+});
 
 module.exports = { app, io };

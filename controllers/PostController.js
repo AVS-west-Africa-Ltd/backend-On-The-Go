@@ -339,11 +339,9 @@ class PostController {
 
   static async getPosts(req, res) {
     try {
-      console.log("getPosts called"); // Debug: method entry
       const posts = await PostService.getPosts();
-      console.log("Posts fetched:", posts); // Debug: log fetched posts
-      if (!posts || posts.length === 0)
-        return res.status(404).json({ message: "Posts not found", info: [] });
+      // Debug: log fetched posts
+      if (!posts || posts.length === 0) return res.status(404).json({ message: "Posts not found", info: [] });
       return res.status(200).json({ info: posts });
     } catch (error) {
       console.error("Error in getPosts:", error); // Debug: log error

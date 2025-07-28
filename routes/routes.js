@@ -10,6 +10,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const businessPostsController = require("../controllers/BusinessPostsController");
 const getImage = require("../controllers/getImage");
 const upload = require("../utils/multerSetup");
+const upload2 = require("../utils/multerSetup2");
 const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
 const processBusinessController = require("../cron/populate-business");
@@ -19,14 +20,52 @@ const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
+const UserLocationController = require("../controllers/UserLocationController");
+const ReferralController = require("../controllers/ReferralController");
+const LocationController = require("../controllers/LocationController");
+const marketerController = require("../controllers/marketerTerritoryController");
 const NetworkRouterController = require("../controllers/NetworkRouterController");
+const PaymentController = require("../controllers/PaymentController");
 
 // Mikrotik Route
 router.post("/network-router/add-router",  authMiddleware, NetworkRouterController.addRouter);
+router.get("/network-router/fetch-router",  authMiddleware, NetworkRouterController.fetchRouter);
+router.post("/network-router/edit-router",  authMiddleware, NetworkRouterController.editRouter);
+router.get("/network-router/check-router-connection",  authMiddleware, NetworkRouterController.checkRouterConnection);
 router.post("/network-router/sync-profile",  authMiddleware, NetworkRouterController.syncProfiles);
 router.post("/network-router/add-ticket-price",  authMiddleware, NetworkRouterController.addTicketPrice);
 router.post("/network-router/change-ticket-status",  authMiddleware, NetworkRouterController.changeTicketStatus);
-router.get("/network-router/fetch-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
+router.get("/network-router/fetch-ticket-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
+router.post("/network-router/edit-ticket-profile",  authMiddleware, NetworkRouterController.editTicketProfile);
+
+// Payment Route
+router.post("/payment/initialize",  authMiddleware, PaymentController.createTransaction);
+router.post("/payment/verify",  PaymentController.verifyPayment);
+
+
+
+
+
+
+router.post("/marketers", catchErrors(marketerController.createMarketer));
+router.get("/marketers", catchErrors(marketerController.getMarketers));
+router.post("/territories", catchErrors(marketerController.createTerritory));
+router.patch("/territories/:id/status", catchErrors(marketerController.updateTerritoryStatus));
+router.get("/territories", catchErrors(marketerController.getMarketerTerritories));
+
+
+router.post("/upload-locations",upload2.single('csvFile'),catchErrors(LocationController.uploadLocations));
+router.get("/locations",catchErrors(LocationController.getAllLocations));
+router.get("/locations-businesses", catchErrors(LocationController.getAllLocationBusiness));
+
+
+// Referral routes
+router.get("/users/:userId/referral-info", catchErrors(ReferralController.getReferralInfo));
+router.post("/track-referral/:referralCode", catchErrors(ReferralController.trackReferral));
+router.get("/users/:userId/referral-history", catchErrors(ReferralController.getReferralHistory));
+router.post("/save-user-location", UserLocationController.saveLocation);
+
+
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
@@ -86,10 +125,12 @@ router.delete(
   catchErrors(UserController.removeFollower)
 );
 router.get("/my-followers/:userId", catchErrors(UserController.getFollowers));
+
 router.get(
   "/users-following-me/:userId",
   catchErrors(UserController.getFollowing)
 );
+
 router.get(
   "/notifications/:userId",
   catchErrors(UserController.getNotifications)
@@ -211,24 +252,16 @@ router.get(
 // Business Profile
 
 router.post("/register-business", businessController.createBusiness);
-// router.post("/business/toggle-follow", businessController.toggleFollow);
+
 router.get("/businesses/:userId", businessController.getBusinessByUserId);
 router.get("/business/:businessId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business", businessController.getAllBusiness);
 router.get("/all-defibrillator", businessController.getAllDefibrillator);
 
-// router.get("/business/:userId/user", businessController.getUserBusinesses);
-// router.get("/business/:businessId/following", businessController.getFollowing);
-router.put("/businesses/:id", businessController.updateBusiness);
-// router.delete("/businesses/:id", businessController.deleteBusiness);
 
-// router.post("/register-business", catchErrors(businessController.createBusiness));
-// router.get("/businesses/:id", catchErrors(businessController.getBusinessById));
-// router.get("/businesses", catchErrors(businessController.getAllBusinesses));
-// router.get("/business/:userId/user", catchErrors(businessController.getUserBusinesses));
-// router.put("/businesses/:id", catchErrors(businessController.updateBusiness));
-// router.delete("/businesses/:id", catchErrors(businessController.deleteBusiness));
+router.put("/businesses/:id", businessController.updateBusiness);
+
 
 router.get(
   "/businesses/:businessId/posts",

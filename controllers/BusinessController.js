@@ -32,6 +32,8 @@ const businessController = {
         hours,
         social,
         wifi,
+        latitude,
+        longitude
       } = req.body;
 
       // Extract file URLs from S3
@@ -39,10 +41,10 @@ const businessController = {
       const cacDocUrl = req.files?.cacDoc?.[0]?.location || null;
 
       // Parse JSON strings if they exist
-      const socialArray = social ? JSON.parse(social) : null;
-      const wifiArray = wifi ? JSON.parse(wifi) : null;
-      const hoursArray = hours ? JSON.parse(hours) : null;
-      const amenitiesArray = amenities ? JSON.parse(amenities) : null;
+      const socialArray = social ;
+      const wifiArray = wifi;
+      const hoursArray = hours ;
+      const amenitiesArray = amenities;
 
       // Create the business
       const business = await Business.create({
@@ -57,6 +59,8 @@ const businessController = {
         hours: hoursArray,
         social: socialArray,
         wifi: wifiArray,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null
       });
 
       res.status(201).json({
@@ -75,8 +79,9 @@ const businessController = {
 
   // Get all Businesses
   getAllBusinesses: async (req, res) => {
+    const { offset } = req.query;
     try {
-      const businesses = await BusinessService.getAllBusinesses();
+      const businesses = await BusinessService.getAllBusinesses(offset);
 
       return res.status(200).json({
         businesses,
@@ -91,12 +96,10 @@ const businessController = {
 
   // Get all Businesses
   getAllBusiness: async (req, res) => {
+    const { offset } = req.query;
     try {
-      console.log("➡️ getAllBusiness called");
-
-      const businesses = await BusinessService.getAllBusiness();
-
-      console.log("✅ Businesses retrieved:", businesses);
+    
+      const businesses = await BusinessService.getAllBusiness(offset);
 
       return res.status(200).json(businesses);
     } catch (error) {
@@ -116,6 +119,7 @@ const businessController = {
 
       return res.status(200).json(defibrillators);
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         message: "Failed to retrieve defibrillators",
         error: error.message,
@@ -215,6 +219,7 @@ const businessController = {
         }
       }
 
+
       // Check if any bank detail is being uploaded or changed
       const bankDetailsChanged =
         (bankName && bankName !== business.bankName) ||
@@ -253,11 +258,11 @@ const businessController = {
 
       const responseData = {
         ...business.toJSON(),
-        social: formatJsonField(business.social),
-        wifi: formatJsonField(business.wifi),
-        wifiPlans: formatJsonField(business.wifiPlans),
-        amenities: formatJsonField(business.amenities),
-        hours: formatJsonField(business.hours),
+        social: business.social,
+        wifi: business.wifi,
+        wifiPlans: business.wifiPlans,
+        amenities: business.amenities,
+        hours: business.hours,
       };
 
       console.log("📦 Final Response Data:", responseData);
@@ -275,7 +280,7 @@ const businessController = {
       });
     }
   },
-
+  
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;
 

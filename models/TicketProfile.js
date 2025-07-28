@@ -1,5 +1,4 @@
 
-
 module.exports = (sequelize, DataTypes) => {
 const TicketProfile = sequelize.define('TicketProfile', {
     name: {
@@ -7,7 +6,7 @@ const TicketProfile = sequelize.define('TicketProfile', {
       allowNull: false
     },
     price: {
-      type: DataTypes.STRING,
+      type: DataTypes.DOUBLE,
       allowNull: false,
       defaultValue: 0
     },
@@ -33,7 +32,27 @@ const TicketProfile = sequelize.define('TicketProfile', {
         key: 'id'
       },
       onDelete: 'CASCADE'
-    }
+    },
+    owner: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ""
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ""
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ""
+    },
+    bandwidth: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ""
+    },
 },
 {
   tableName: "ticketProfiles",
@@ -49,6 +68,8 @@ TicketProfile.associate = (models) => {
         foreignKey: "userId",
         onDelete: "CASCADE",
     });
+
+    
 };
 
 return TicketProfile;

@@ -1,4 +1,3 @@
-
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     "User",
@@ -60,6 +59,14 @@ module.exports = (sequelize, DataTypes) => {
       gender: {
         type: DataTypes.STRING,
       },
+      isStudent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      university: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       resetPasswordOTP: {
         type: DataTypes.INTEGER,
       },
@@ -70,17 +77,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
       },
       referralCode: {
-        type: DataTypes.TEXT,
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true,
+      },
+      successfulReferrals: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
       placesVisited: {
         type: DataTypes.JSON,
       },
-      // New fields for plan tracking
       currentPlanId: {
         type: DataTypes.INTEGER,
         allowNull: true,
         defaultValue: null,
-        comment: "ID of the currently active plan"
+        comment: "ID of the currently active plan",
       },
       currentBusinessPlanId: {
         type: DataTypes.INTEGER,
@@ -91,93 +103,100 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
         defaultValue: null,
-        comment: "When the current plan expires"
+        comment: "When the current plan expires",
       },
       planStatus: {
-        type: DataTypes.ENUM('active', 'expired', 'none'),
-        defaultValue: 'none',
-        comment: "Current status of the user's plan"
+        type: DataTypes.ENUM("active", "expired", "none"),
+        defaultValue: "none",
+        comment: "Current status of the user's plan",
       },
     },
     {
       tableName: "users",
       indexes: [
+        { unique: true, fields: ["email"] },
+        { unique: true, fields: ["username"] },
         { fields: ["currentPlanId"] },
         { fields: ["currentBusinessPlanId"] },
         { fields: ["planStatus"] },
+        { fields: ["isStudent"] },
+        { fields: ["university"] },
       ],
       hooks: {
         beforeSave: async (user, options) => {
-          // Update planStatus based on expiration date
           if (user.planExpirationDate) {
-            user.planStatus = new Date(user.planExpirationDate) > new Date() 
-              ? 'active' 
-              : 'expired';
+            user.planStatus =
+              new Date(user.planExpirationDate) > new Date()
+                ? "active"
+                : "expired";
           } else {
-            user.planStatus = 'none';
+            user.planStatus = "none";
           }
-        }
-      }
+        },
+      },
     }
   );
 
   User.associate = (models) => {
-      User.belongsToMany(models.User, {
-        as: "Followers",
-        through: models.UserFollower,
-        foreignKey: "followedId",
-        otherKey: "followerId",
-      });
+    User.belongsToMany(models.User, {
+      as: "Followers",
+      through: models.UserFollower,
+      foreignKey: "followedId",
+      otherKey: "followerId",
+    });
 
-      User.belongsToMany(models.User, {
-        as: "Following",
-        through: models.UserFollower,
-        foreignKey: "followerId",
-        otherKey: "followedId",
-      });
+    User.belongsToMany(models.User, {
+      as: "Following",
+      through: models.UserFollower,
+      foreignKey: "followerId",
+      otherKey: "followedId",
+    });
 
-      User.hasMany(models.Notification, {
-        foreignKey: "recipientId",
-        as: "ReceivedNotifications",
-      });
+    User.hasMany(models.Notification, {
+      foreignKey: "recipientId",
+      as: "ReceivedNotifications",
+    });
 
-      User.hasMany(models.Notification, {
-        foreignKey: "senderId",
-        as: "SentNotifications",
-      });
+    User.hasMany(models.Notification, {
+      foreignKey: "senderId",
+      as: "SentNotifications",
+    });
 
-      User.hasMany(models.Business, { 
-        foreignKey: "userId", 
-        onDelete: "CASCADE" 
-      });
+    User.belongsTo(models.Business, {
+      foreignKey: "currentBusinessPlanId",
+      as: "currentBusiness",
+      constraints: false, // In case the business gets deleted
+    });
 
-      User.belongsTo(models.Business, {
-        foreignKey: "currentBusinessPlanId",
-        as: "currentBusiness",
-        constraints: false // In case the business gets deleted
-      });
+    User.hasOne(models.NetworkRouter, {
+      foreignKey: "userId",
+    });
 
-      User.hasOne(models.NetworkRouter, {
-        foreignKey: "userId",
-      });
+    User.hasMany(models.Comment, {
+      foreignKey: "authorId",
+      as: "comments",
+      onDelete: "CASCADE",
+    });
 
-      User.hasMany(models.Comment, {
-        foreignKey: "authorId",
-        as: "comments",
-        onDelete: "CASCADE",
-      });
+    User.hasMany(models.ProfileView, {
+      foreignKey: "profileOwnerId",
+      as: "ProfileViews",
+    });
 
-      User.hasMany(models.ProfileView, { foreignKey: "profileOwnerId", as: "ProfileViews" });
+    User.hasMany(models.ProfileView, {
+      foreignKey: "viewerId",
+      as: "ViewedProfiles",
+    });
 
-      User.hasMany(models.ProfileView, { foreignKey: "viewerId", as: "ViewedProfiles" });
+    User.hasMany(models.Business, {
+      foreignKey: "userId",
+      onDelete: "CASCADE",
+    });
 
-      User.hasMany(models.PushNotification, {
-        foreignKey: "userId",
-        as: "notifications"
-      });
-
+    User.hasMany(models.TicketProfile, {
+      foreignKey: "userId",
+    });
   };
 
-  return  User;
-    
-}
+  return User;
+};

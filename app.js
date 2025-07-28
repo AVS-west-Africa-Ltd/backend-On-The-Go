@@ -22,11 +22,11 @@ const swaggerUi = require("swagger-ui-express");
 const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
 
-// const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = require('./serviceAccountKey.json');
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount)
-// });
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
@@ -86,6 +86,8 @@ const swaggerSpec = swaggerJSDoc(options);
 
 app.use(cors());
 
+
+
 // CORS Headers
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -99,6 +101,7 @@ app.use((req, res, next) => {
 });
 
 // Apply middleware
+
 //app.use(validateApiKey);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

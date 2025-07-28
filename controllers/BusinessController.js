@@ -79,8 +79,9 @@ const businessController = {
 
   // Get all Businesses
   getAllBusinesses: async (req, res) => {
+    const { offset } = req.query;
     try {
-      const businesses = await BusinessService.getAllBusinesses();
+      const businesses = await BusinessService.getAllBusinesses(offset);
 
       return res.status(200).json({
         businesses,
@@ -95,12 +96,10 @@ const businessController = {
 
   // Get all Businesses
   getAllBusiness: async (req, res) => {
+    const { offset } = req.query;
     try {
-      console.log("➡️ getAllBusiness called");
-
-      const businesses = await BusinessService.getAllBusiness();
-
-      console.log("✅ Businesses retrieved:", businesses);
+    
+      const businesses = await BusinessService.getAllBusiness(offset);
 
       return res.status(200).json(businesses);
     } catch (error) {
@@ -120,6 +119,7 @@ const businessController = {
 
       return res.status(200).json(defibrillators);
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         message: "Failed to retrieve defibrillators",
         error: error.message,
@@ -164,32 +164,6 @@ const businessController = {
       res.status(500).json(error.message);
     }
   },
-
-
-  // Get a single Business by ID
-  // getBusinessById: async (req, res) => {
-  //   try {
-  //     const { id } = req.params;
-  //     const business = await Business.findByPk(id);
-  //     if (!business) {
-  //       return res.status(404).json({
-  //         message: "Business not found",
-  //       });
-  //     }
-  //     return res.status(200).json({
-  //       message: "Business retrieved successfully",
-  //       data: business,
-  //     });
-  //   } catch (error) {
-  //     return res.status(500).json({
-  //       message: "Failed to retrieve business",
-  //       error: error.message,
-  //     });
-  //   }
-  // },
-
-  // Update a Business
-
 
   updateBusiness: async (req, res) => {
     try {

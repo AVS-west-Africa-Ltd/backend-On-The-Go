@@ -33,6 +33,11 @@ const TicketProfile = sequelize.define('TicketProfile', {
       },
       onDelete: 'CASCADE'
     },
+    owner: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: ""
+    },
     title: {
       type: DataTypes.STRING,
       allowNull: false,

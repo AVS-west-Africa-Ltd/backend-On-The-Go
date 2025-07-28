@@ -1,51 +1,62 @@
-const { User, UserFollower, Notification, Comment, Post, WifiScan, RepeatedCustomer }= require("../models");
+const {
+  User,
+  UserFollower,
+  Notification,
+  Comment,
+  Post,
+  WifiScan,
+  RepeatedCustomer,
+  sequelize
+} = require("../models");
 
 class UserService {
-  
-
   // In your UserService
-static async createUser(data) {
-  try {
-    return await User.create(data);
-  } catch (error) {
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      const errors = error.errors.map(err => ({
-        field: err.path,
-        message: err.message
-      }));
-      throw { status: 400, errors };
-    }
-    throw error;
-  }
-}
-
-static async getUserById(userId) {
-  try {
-    const user = await User.findByPk(userId);
-    if (!user) return false;
-
-    // Convert Sequelize instance to plain object
-    const userData = user.get({ plain: true });
-    
-    // Safely parse JSON fields with proper error handling
-    const parseJsonField = (field) => {
-      try {
-        return field ? (typeof field === 'string' ? JSON.parse(field) : field) : [];
-      } catch (e) {
-        return [];
+  static async createUser(data) {
+    try {
+      return await User.create(data);
+    } catch (error) {
+      if (error.name === "SequelizeUniqueConstraintError") {
+        const errors = error.errors.map((err) => ({
+          field: err.path,
+          message: err.message,
+        }));
+        throw { status: 400, errors };
       }
-    };
-
-    return {
-      ...userData,
-      interests: parseJsonField(userData.interests),
-      placesVisited: parseJsonField(userData.placesVisited)
-    };
-  } catch (error) {
-    console.error('Error in getUserById:', error);
-    throw new Error("Error fetching user details");
+      throw error;
+    }
   }
-}
+
+  static async getUserById(userId) {
+    try {
+      const user = await User.findByPk(userId);
+      if (!user) return false;
+
+      // Convert Sequelize instance to plain object
+      const userData = user.get({ plain: true });
+
+      // Safely parse JSON fields with proper error handling
+      const parseJsonField = (field) => {
+        try {
+          return field
+            ? typeof field === "string"
+              ? JSON.parse(field)
+              : field
+            : [];
+        } catch (e) {
+          return [];
+        }
+      };
+
+      return {
+        ...userData,
+        interests: parseJsonField(userData.interests),
+        placesVisited: parseJsonField(userData.placesVisited),
+      };
+    } catch (error) {
+      console.error("Error in getUserById:", error);
+      throw new Error("Error fetching user details");
+    }
+  }
 
   // Get user by email/username
   static async getUserByEmailOrUsername(props) {
@@ -56,16 +67,6 @@ static async getUserById(userId) {
     }
   }
 
-  // Get all users
-  // static async getUsers(props) {
-  //   try {
-  //     if (props) return await User.findAll(props);
-  //     return await User.findAll({});
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // }
-
   static async getUsers(props) {
     try {
       const users = await User.findAll(props || {});
@@ -75,8 +76,8 @@ static async getUserById(userId) {
         const userData = user.toJSON();
         return {
           ...userData,
-          interests: JSON.parse(userData.interests || "[]"),
-          placesVisited: JSON.parse(userData.placesVisited || "[]"),
+          interests: userData.interests,
+          placesVisited: userData.placesVisited,
         };
       });
     } catch (error) {
@@ -85,47 +86,47 @@ static async getUserById(userId) {
   }
 
   // Update user information
-static async updateUser(userId, data) {
-  const transaction = await sequelize.transaction();
-  try {
-    console.log(`[UserService] Updating user ${userId} with data:`, data);
-    
-    const user = await User.findByPk(userId, { transaction });
-    if (!user) {
+  static async updateUser(userId, data) {
+    const transaction = await sequelize.transaction();
+    try {
+      console.log(`[UserService] Updating user ${userId} with data:`, data);
+
+      const user = await User.findByPk(userId, { transaction });
+      if (!user) {
+        await transaction.rollback();
+        throw new Error(`User with ID ${userId} not found`);
+      }
+
+      // Handle JSON fields if they exist in the data
+      if (data.interests && typeof data.interests === "string") {
+        try {
+          data.interests = JSON.parse(data.interests);
+        } catch (e) {
+          await transaction.rollback();
+          throw new Error("Invalid interests format. Must be valid JSON");
+        }
+      }
+
+      if (data.placesVisited && typeof data.placesVisited === "string") {
+        try {
+          data.placesVisited = JSON.parse(data.placesVisited);
+        } catch (e) {
+          await transaction.rollback();
+          throw new Error("Invalid placesVisited format. Must be valid JSON");
+        }
+      }
+
+      const updatedUser = await user.update(data, { transaction });
+      await transaction.commit();
+
+      console.log(`[UserService] Successfully updated user ${userId}`);
+      return updatedUser;
+    } catch (error) {
       await transaction.rollback();
-      throw new Error(`User with ID ${userId} not found`);
+      console.error(`[UserService] Error updating user ${userId}:`, error);
+      throw new Error(`Failed to update user: ${error.message}`);
     }
-
-    // Handle JSON fields if they exist in the data
-    if (data.interests && typeof data.interests === 'string') {
-      try {
-        data.interests = JSON.parse(data.interests);
-      } catch (e) {
-        await transaction.rollback();
-        throw new Error('Invalid interests format. Must be valid JSON');
-      }
-    }
-
-    if (data.placesVisited && typeof data.placesVisited === 'string') {
-      try {
-        data.placesVisited = JSON.parse(data.placesVisited);
-      } catch (e) {
-        await transaction.rollback();
-        throw new Error('Invalid placesVisited format. Must be valid JSON');
-      }
-    }
-
-    const updatedUser = await user.update(data, { transaction });
-    await transaction.commit();
-    
-    console.log(`[UserService] Successfully updated user ${userId}`);
-    return updatedUser;
-  } catch (error) {
-    await transaction.rollback();
-    console.error(`[UserService] Error updating user ${userId}:`, error);
-    throw new Error(`Failed to update user: ${error.message}`);
   }
-}
   // Delete a user
   static async deleteUser(userId) {
     // Get the sequelize instance from your User model
@@ -169,8 +170,6 @@ static async updateUser(userId, data) {
     }
   }
 
-  
-
   static async followUser(followerId, followedId) {
     const transaction = await sequelize.transaction();
 
@@ -199,7 +198,7 @@ static async updateUser(userId, data) {
 
       if (existingFollow) {
         if (existingFollow.status === "active") {
-          throw new Error("Already following this user");
+          return { success: true };
         }
         // Update existing record instead of creating new one
         await existingFollow.update(
@@ -433,120 +432,6 @@ static async updateUser(userId, data) {
       }
     );
   }
-  // Add follower to user
-  // static async addFollower(userId, followerId) {
-  //     try {
-  //         const user = await User.findByPk(userId);
-  //         const follower = await User.findByPk(followerId);
-
-  //         if (!user || !follower) return false;
-
-  //         // Add follower to the user's followers
-  //         await user.addFollower(follower);
-
-  //         // Notification for the user being followed
-  //         await Notification.create({
-  //             userId: userId, // The user being followed
-  //             followerId: follower.id, // The follower
-  //             notificationType: 'followed', // Indicates the type of notification
-  //             message: `${user.username} started following you.`,
-  //         });
-
-  //         // Notification for the follower who started following someone
-  //         await Notification.create({
-  //             userId: follower.id, // The follower
-  //             followerId: user.id, // The user being followed
-  //             notificationType: 'following', // Indicates the type of notification
-  //             message: `You started following ${follower.username}.`,
-  //         });
-
-  //         return user;
-  //     } catch (error) {
-  //         throw new Error(`Error adding follower: ${error.message}`);
-  //     }
-  // }
-
-  // // Remove follower from user
-  // static async removeFollower(userId, followerId) {
-  //     try {
-  //         // Find both users
-  //         const user = await User.findByPk(userId);
-  //         const follower = await User.findByPk(followerId);
-
-  //         if (!user || !follower) return false;
-
-  //         // Remove the follower relationship
-  //         await user.removeFollower(follower);
-
-  //         // Remove the initial "followed" notification, if it exists
-  //         const followNotification = await Notification.findOne({
-  //             where: {
-  //                 userId: userId,
-  //                 followerId: follower.id,
-  //                 notificationType: 'followed',
-  //             },
-  //         });
-  //         if (followNotification) {
-  //             await followNotification.destroy(); // Delete the "followed" notification
-  //         }
-
-  //         // Create a new "unfollow" notification
-  //         await Notification.create({
-  //             userId: userId, // The user being unfollowed
-  //             followerId: follower.id, // The user who unfollowed
-  //             notificationType: 'unfollowed', // A new type for "unfollowed"
-  //             message: `${user.username} unfollowed you.`,
-  //         });
-
-  //         // Return the user who was unfollowed
-  //         return user;
-  //     } catch (error) {
-  //         throw new Error(`Error removing follower: ${error.message}`);
-  //     }
-  // }
-
-  // // Get notifications for user
-  // static async getNotifications(userId) {
-  //     try {
-  //         const notification = await Notification.findAll({ where: { followerId: userId } });
-  //         if (!notification) return false;
-  //         return notification;
-  //     } catch (error) {
-  //         throw new Error(`Error retrieving notifications: ${error.message}`);
-  //     }
-  // }
-
-  // // Mark notification as read
-  // static async markNotificationAsRead(notificationId) {
-  //     try {
-  //         const notification = await Notification.findByPk(notificationId);
-  //         if (!notification) return false;
-  //         notification.read = true;
-  //         await notification.save();
-  //         return notification;
-  //     } catch (error) {
-  //         throw new Error(`Error marking notification as read: ${error.message}`);
-  //     }
-  // }
-
-  // // Get user and their followers
-  // static async getUserWithFollowers(userId) {
-  //     try {
-  //         const user = await User.findByPk(userId, {
-  //             include: {
-  //                 model: User,
-  //                 as: 'Followers',
-  //                 attributes: ['id', 'username', 'email'],
-  //                 through: { attributes: [] },
-  //             },
-  //         });
-
-  //         if (!user) return false;
-  //         return user;
-  //     } catch (error) {
-  //         throw new Error(`Error fetching user with followers: ${error.message}`);
-  //     }
-  // };
 
   // Add an interest to the user's interests array
   static async addInterest(userId, newInterest) {

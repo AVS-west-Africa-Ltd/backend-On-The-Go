@@ -13,28 +13,38 @@ const {
 } = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const { User, DeleteRequest } = require("../models");
+const { User, DeleteRequest, Referral, sequelize } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
+const { RandomCharacters } = require("../helpers");
 
 class UserController {
-static async CreateUser(req, res) {
+  static async CreateUser(req, res) {
     try {
-      const { 
-        username, 
-        email, 
-        password, 
-        pushToken, 
+      const {
+        username,
+        email,
+        password,
+        pushToken,
         phone_number,
         firstName,
         lastName,
         gender,
         isStudent,
-        university
+        university,
+        referralCode
       } = req.body;
 
-      if (!email || !password || !username || !firstName || !lastName || !gender) {
-        return res.status(400).json({ 
-          message: "Email, username, password, first name, last name and gender are required" 
+      if (
+        !email ||
+        !password ||
+        !username ||
+        !firstName ||
+        !lastName ||
+        !gender
+      ) {
+        return res.status(400).json({
+          message:
+            "Email, username, password, first name, last name and gender are required",
         });
       }
 
@@ -42,44 +52,51 @@ static async CreateUser(req, res) {
       if (isStudent && !university) {
         return res.status(400).json({
           message: "University is required for student registration",
-          errors: [{ field: "university", message: "Please select your university" }]
+          errors: [
+            { field: "university", message: "Please select your university" },
+          ],
         });
       }
 
       // Check for existing user conflicts
       const existingUser = await userService.getUserByEmailOrUsername({
         where: {
-          [Op.or]: [
-            { email },
-            { username },
-            { phone_number }
-          ]
-        }
+          [Op.or]: [{ email }, { username }, { phone_number }],
+        },
       });
 
       if (existingUser) {
         const conflicts = [];
 
         if (existingUser.email === email) {
-          conflicts.push({ field: "email", message: "Email already registered" });
+            conflicts.push({
+              field: "email",
+              message: "Email already registered",
+            });
         }
         if (existingUser.phone_number === phone_number) {
-          conflicts.push({ field: "phone_number", message: "Phone number already used" });
+            conflicts.push({
+              field: "phone_number",
+              message: "Phone number already used",
+            });
         }
         if (existingUser.username === username) {
-          conflicts.push({ field: "username", message: "Username already taken" });
+          conflicts.push({
+            field: "username",
+            message: "Username already taken",
+          });
         }
 
         if (conflicts.length > 0) {
           return res.status(400).json({
             message: "Validation error",
-            errors: conflicts
+            errors: conflicts,
           });
         }
       }
 
-
       const hashedPassword = bcrypt.hashSync(password, 10);
+
       const user = await userService.createUser({
         ...req.body,
         password: hashedPassword,
@@ -87,8 +104,27 @@ static async CreateUser(req, res) {
         followersCount: 0,
         followingCount: 0,
         isStudent: isStudent || false,
-        university: isStudent ? university : null
+        university: isStudent ? university : null,
+        referralCode: `OTG-${RandomCharacters(6)}`
       });
+
+      if( referralCode ){
+        const referrerUser = await User.findOne({ where: { referralCode: referralCode }})
+
+        if( referrerUser ){
+          
+          await sequelize.transaction(async (t) => {
+
+            await referrerUser.update({ successfulReferrals: ( referrerUser.successfulReferrals + 1 ) }, { transaction: t});
+            await Referral.create({ referrerId: referrerUser.id, refereeId: user.id }, { transaction: t});
+
+          });
+        }
+        
+      }
+
+      
+
 
       return res.status(201).json({
         message: "User registered successfully",
@@ -97,46 +133,49 @@ static async CreateUser(req, res) {
           email: user.email,
           username: user.username,
           isStudent: user.isStudent,
-          university: user.university
-        }
+          university: user.university,
+          referralCode: user.referralCode
+        },
       });
-    } catch (error) {
-      console.error('Error in CreateUser:', error);
 
-      if (error.name === 'SequelizeUniqueConstraintError') {
-        const errors = error?.errors?.map(err => ({
-          field: err?.path || "unknown",
-          message: err?.message || "Unique constraint failed"
-        })) || [];
+    } catch (error) {
+      console.error("Error in CreateUser:", error);
+
+      if (error.name === "SequelizeUniqueConstraintError") {
+        const errors =
+          error?.errors?.map((err) => ({
+            field: err?.path || "unknown",
+            message: err?.message || "Unique constraint failed",
+          })) || [];
 
         return res.status(400).json({
           message: "Validation error",
-          errors: errors.length > 0 ? errors : [
-            { field: "unknown", message: "Unique constraint failed" }
-          ]
+          errors:
+            errors.length > 0
+              ? errors
+              : [{ field: "unknown", message: "Unique constraint failed" }],
         });
       }
-      
+
       if (error.status === 400) {
-        const transformedErrors = error.errors.map(err => ({
-          field: err.field.replace('users_', ''),
-          message: `${err.field.replace('users_', '')} is already taken`
+        const transformedErrors = error.errors.map((err) => ({
+          field: err.field.replace("users_", ""),
+          message: `${err.field.replace("users_", "")} is already taken`,
         }));
 
-    
         return res.status(400).json({
           message: "Registration failed",
-          errors: transformedErrors
+          errors: transformedErrors,
         });
       }
 
       return res.status(500).json({
         error: "Internal server error",
-        details: error.message || "Something went wrong"
+        details: error.message || "Something went wrong",
       });
     }
   }
-  
+
   static async UpdateUserImage(req, res) {
     try {
       // First handle the file upload
@@ -235,7 +274,7 @@ static async CreateUser(req, res) {
 
       return res.status(200).json({
         message: "Push token updated successfully",
-        info: { userId: user.id, pushToken: user.pushToken }
+        info: { userId: user.id, pushToken: user.pushToken },
       });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -259,20 +298,20 @@ static async CreateUser(req, res) {
 
       // Validate userId exists and is a positive integer
       if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
           message: "Invalid user ID format",
-          error: "User ID must be a positive integer"
+          error: "User ID must be a positive integer",
         });
       }
 
       const user = await userService.getUserById(Number(userId));
-      
+
       if (!user) {
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
           message: "User not found",
-          error: `No user found with ID ${userId}`
+          error: `No user found with ID ${userId}`,
         });
       }
 
@@ -284,24 +323,26 @@ static async CreateUser(req, res) {
       return res.status(200).json({
         success: true,
         message: "User retrieved successfully",
-        data: user
+        data: user,
       });
-
     } catch (error) {
-      console.error('Detailed error in getUserById:', {
+      console.error("Detailed error in getUserById:", {
         error: error.message,
         stack: error.stack,
         params: req.params,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
-      const statusCode = error.message.includes('not found') ? 404 : 500;
-      
+      const statusCode = error.message.includes("not found") ? 404 : 500;
+
       return res.status(statusCode).json({
         success: false,
         message: "Error processing your request",
-        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
-        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : "An error occurred",
+        ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
       });
     }
   }
@@ -326,21 +367,21 @@ static async CreateUser(req, res) {
 
       // Validate userId is a positive integer
       if (!userId || !Number.isInteger(Number(userId)) || Number(userId) <= 0) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
           message: "Invalid user ID format",
-          error: "User ID must be a positive integer"
+          error: "User ID must be a positive integer",
         });
       }
 
       const user = await userService.updateUser(userId, req.body);
-      
+
       if (!user) {
         console.warn(`[updateUser] No user found with ID: ${userId}`);
-        return res.status(404).json({ 
+        return res.status(404).json({
           success: false,
           message: "User not found",
-          error: `No user found with ID ${userId}`
+          error: `No user found with ID ${userId}`,
         });
       }
 
@@ -351,38 +392,46 @@ static async CreateUser(req, res) {
       delete userData.resetPasswordExpires;
 
       console.log(`[updateUser] User updated successfully:`, userData);
-      return res.status(200).json({ 
+      return res.status(200).json({
         success: true,
-        message: "User updated successfully", 
-        data: userData 
+        message: "User updated successfully",
+        data: userData,
       });
     } catch (error) {
-      console.error(`[updateUser] Error updating user with ID ${req.params.userId}:`, {
-        error: error.message,
-        stack: error.stack,
-        body: req.body,
-        timestamp: new Date().toISOString()
-      });
+      console.error(
+        `[updateUser] Error updating user with ID ${req.params.userId}:`,
+        {
+          error: error.message,
+          stack: error.stack,
+          body: req.body,
+          timestamp: new Date().toISOString(),
+        }
+      );
 
-      const statusCode = error.message.includes('not found') ? 404 : 
-                        error.message.includes('Invalid') ? 400 : 500;
-      
+      const statusCode = error.message.includes("not found")
+        ? 404
+        : error.message.includes("Invalid")
+        ? 400
+        : 500;
+
       return res.status(statusCode).json({
         success: false,
         message: "Error updating user",
-        error: process.env.NODE_ENV === 'development' ? error.message : 'An error occurred',
-        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : "An error occurred",
+        ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
       });
     }
   }
 
-
   static async addFollower(req, res) {
     try {
       const { userId, followedId } = req.params;
-      const user = await userService.followUser(userId, followedId);
+      const followUser = await userService.followUser(userId, followedId);
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (followUser.success !== true) return res.status(400).json({ message: "Following this user failed" });
       return res.status(200).json({ message: "Follower added successfully" });
     } catch (error) {
       return res.status(500).json({ error: error.message });

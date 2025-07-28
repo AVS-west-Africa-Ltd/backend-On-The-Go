@@ -3,7 +3,7 @@ const { Op } = require("sequelize");
 
 class BusinessService {
   // Get user by ID
-  static async getAllBusinesses() {
+  static async getAllBusinesses(offset) {
     try {
       const users = await User.findAll({
         where: { userType: "business" },
@@ -12,7 +12,8 @@ class BusinessService {
             model: Business,
           },
         ],
-        limit: 30
+        limit: 30,
+        offset: Number(offset) || 0
       });
 
       if (!users) return false;
@@ -43,9 +44,9 @@ class BusinessService {
     }
   }
 
-  static async getAllBusiness() {
+  static async getAllBusiness(offset) {
     try {
-      const businesses = await Business.findAll({limit: 30});
+      const businesses = await Business.findAll({limit: 30, offset: Number(offset) || 0});
 
       if (!businesses || businesses.length === 0) return false;
 
@@ -61,27 +62,8 @@ class BusinessService {
       const businesses = await Business.findAll({
         where: { type: "defibrillator" },
       });
-
       if (!businesses || businesses.length === 0) return false;
-
-      const parsedBusinesses = businesses.map((business) => {
-        const amenities = business.amenities
-          ? JSON.parse(business.amenities)
-          : null;
-        const hours = business.hours ? JSON.parse(business.hours) : null;
-        const social = business.social ? JSON.parse(business.social) : null;
-        const wifi = business.wifi ? JSON.parse(business.wifi) : null;
-
-        return {
-          ...business.toJSON(),
-          amenities,
-          hours,
-          social,
-          wifi,
-        };
-      });
-
-      return parsedBusinesses;
+      return businesses;
     } catch (error) {
       throw new Error("Error fetching businesses: " + error.message);
     }
@@ -126,7 +108,6 @@ class BusinessService {
       throw new Error("Error fetching user: " + error.message);
     }
   }
-
 
   static async addWifiScanner(userId, businessId, location, wifiName) {
     try {
@@ -174,7 +155,6 @@ class BusinessService {
     }
   }
 
-
   static async getAllWifiScan(businessId) {
     try {
       // Retrieve all Wi-Fi scans for the specific business
@@ -212,7 +192,6 @@ class BusinessService {
       );
     }
   }
-
 
   static async getAllRepeatedCustomers(businessId) {
     try {
@@ -299,7 +278,6 @@ class BusinessService {
     };
   }
 
-
   static async searchBusinessesByName(searchTerm, limit = 10) {
     try {
       const businesses = await Business.findAll({
@@ -336,7 +314,6 @@ class BusinessService {
       throw new Error("Business search failed");
     }
   }
-
 
   static async searchBusinessesByName(searchTerm, page = 1, limit = 10) {
     try {

@@ -77,7 +77,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
       },
       referralCode: {
-        type: DataTypes.STRING(8),
+        type: DataTypes.STRING,
         unique: true,
         allowNull: true,
       },

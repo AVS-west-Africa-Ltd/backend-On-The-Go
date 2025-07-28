@@ -1,5 +1,4 @@
-const ReferralModel = require("../models/Referral");
-const UserModel = require("../models/User");
+const { Referral, User } = require("../models");
 const { Op } = require("sequelize");
 
 // Moved generateReferralCode outside the class as a standalone function
@@ -18,7 +17,7 @@ const generateReferralCode = async (userId) => {
         if (!exists) break;
     } while (true);
 
-    await UserModel.update({ referralCode: code }, { where: { id: userId } });
+    await User.update({ referralCode: code }, { where: { id: userId } });
     return code;
 };
 
@@ -28,7 +27,7 @@ class ReferralController {
         try {
             const { userId } = req.params;
 
-            const user = await UserModel.findByPk(userId, {
+            const user = await User.findByPk(userId, {
                 attributes: ['id', 'referralCode', 'username', 'successfulReferrals']
             });
 
@@ -77,7 +76,7 @@ class ReferralController {
                 });
             }
 
-            const referrer = await UserModel.findOne({
+            const referrer = await User.findOne({
                 where: { referralCode },
                 attributes: ['id']
             });
@@ -89,7 +88,7 @@ class ReferralController {
                 });
             }
 
-            const referee = await UserModel.findByPk(refereeId);
+            const referee = await User.findByPk(refereeId);
             if (!referee) {
                 return res.status(404).json({
                     success: false,
@@ -104,7 +103,7 @@ class ReferralController {
                 });
             }
 
-            const existingReferral = await ReferralModel.findOne({
+            const existingReferral = await Referral.findOne({
                 where: { refereeId }
             });
 
@@ -115,7 +114,7 @@ class ReferralController {
                 });
             }
 
-            const newReferral = await ReferralModel.create({
+            const newReferral = await Referral.create({
                 referrerId: referrer.id,
                 refereeId,
                 status: 'completed'
@@ -148,7 +147,7 @@ class ReferralController {
             const { userId } = req.params;
 
             // 1. Get all referrals for this user
-            const referrals = await ReferralModel.findAll({
+            const referrals = await Referral.findAll({
                 where: { referrerId: userId },
                 raw: true
             });

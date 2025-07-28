@@ -20,8 +20,12 @@ const reportRoutes = require("./reportRoutes");
 const BusinessClaimController = require("../controllers/BusinessClaimController");
 const businessClaimUpload = require("../utils/businessClaimUpload");
 const WaitlistController = require("../controllers/WaitlistController");
-
+const UserLocationController = require("../controllers/UserLocationController");
+const ReferralController = require("../controllers/ReferralController");
+const LocationController = require("../controllers/LocationController");
+const marketerController = require("../controllers/marketerTerritoryController");
 const NetworkRouterController = require("../controllers/NetworkRouterController");
+const PaymentController = require("../controllers/PaymentController");
 
 // Mikrotik Route
 router.post("/network-router/add-router",  authMiddleware, NetworkRouterController.addRouter);
@@ -34,11 +38,12 @@ router.post("/network-router/change-ticket-status",  authMiddleware, NetworkRout
 router.get("/network-router/fetch-ticket-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
 router.post("/network-router/edit-ticket-profile",  authMiddleware, NetworkRouterController.editTicketProfile);
 
+// Payment Route
+router.post("/payment/initialize",  authMiddleware, PaymentController.createTransaction);
+router.post("/payment/verify",  PaymentController.verifyPayment);
 
-const UserLocationController = require("../controllers/UserLocationController");
-const ReferralController = require("../controllers/ReferralController");
-const LocationController = require("../controllers/LocationController");
-const marketerController = require("../controllers/marketerTerritoryController");
+
+
 
 
 
@@ -47,10 +52,11 @@ router.get("/marketers", catchErrors(marketerController.getMarketers));
 router.post("/territories", catchErrors(marketerController.createTerritory));
 router.patch("/territories/:id/status", catchErrors(marketerController.updateTerritoryStatus));
 router.get("/territories", catchErrors(marketerController.getMarketerTerritories));
-// Add these with your other routes
-router.post("/upload-locations",upload2.single('csvFile'),catchErrors(LocationController.uploadLocations));
 
+
+router.post("/upload-locations",upload2.single('csvFile'),catchErrors(LocationController.uploadLocations));
 router.get("/locations",catchErrors(LocationController.getAllLocations));
+router.get("/locations-businesses", catchErrors(LocationController.getAllLocationBusiness));
 
 
 // Referral routes
@@ -119,10 +125,12 @@ router.delete(
   catchErrors(UserController.removeFollower)
 );
 router.get("/my-followers/:userId", catchErrors(UserController.getFollowers));
+
 router.get(
   "/users-following-me/:userId",
   catchErrors(UserController.getFollowing)
 );
+
 router.get(
   "/notifications/:userId",
   catchErrors(UserController.getNotifications)
@@ -244,24 +252,16 @@ router.get(
 // Business Profile
 
 router.post("/register-business", businessController.createBusiness);
-// router.post("/business/toggle-follow", businessController.toggleFollow);
+
 router.get("/businesses/:userId", businessController.getBusinessByUserId);
 router.get("/business/:businessId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business", businessController.getAllBusiness);
 router.get("/all-defibrillator", businessController.getAllDefibrillator);
 
-// router.get("/business/:userId/user", businessController.getUserBusinesses);
-// router.get("/business/:businessId/following", businessController.getFollowing);
-router.put("/businesses/:id", businessController.updateBusiness);
-// router.delete("/businesses/:id", businessController.deleteBusiness);
 
-// router.post("/register-business", catchErrors(businessController.createBusiness));
-// router.get("/businesses/:id", catchErrors(businessController.getBusinessById));
-// router.get("/businesses", catchErrors(businessController.getAllBusinesses));
-// router.get("/business/:userId/user", catchErrors(businessController.getUserBusinesses));
-// router.put("/businesses/:id", catchErrors(businessController.updateBusiness));
-// router.delete("/businesses/:id", catchErrors(businessController.deleteBusiness));
+router.put("/businesses/:id", businessController.updateBusiness);
+
 
 router.get(
   "/businesses/:businessId/posts",

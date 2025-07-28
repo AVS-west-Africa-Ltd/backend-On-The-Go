@@ -1,5 +1,5 @@
 // services/LocationService.js
-const Location = require("../models/Location");
+const { Location } = require("../models");
 const csv = require('csv-parser');
 const fs = require('fs');
 
@@ -35,6 +35,6 @@ module.exports = {
   },
 
   getAllLocations: async () => {
-    return await Location.findAll();
+    return await Location.findAll({ limit: 100 });
   }
 };

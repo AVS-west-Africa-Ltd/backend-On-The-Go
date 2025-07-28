@@ -16,11 +16,11 @@ const addRouter  = async(req, res)=>{
         }
         
         const { router, api } = await RouterConnect.connector({ host, user, password });
-        const systemInfo = await router.menu('/system/resource').getOnly();  
-        await api.close();         
+        const systemInfo = await router.menu('/system/resource').getOnly();
+        await api.close();   
         networkRouter = await NetworkRouter.create({ host, username: user, password, userId: userID, metadata: systemInfo });
         
-        res.status(200).json({networkRouter, message: "networkRouter router added"});
+        res.status(200).json({networkRouter, message: "Network router added"});
     } catch (error) {
         console.log(error);
         res.status(400).json({ messsage: "Failed to connect to router." });
@@ -92,9 +92,9 @@ const syncProfiles = async(req, res)=>{
         const profiles = await router.menu('/tool/user-manager/profile').getAll();
         await api.close();
         profiles.forEach(async( profile ) => {
-            const ticketProfile = await TicketProfile.findOne({ where: { name: profile.name, routerId: networkRouter.id, userId: userID } });
+            const ticketProfile = await TicketProfile.findOne({ where: { name: profile.name, routerId: networkRouter.id, userId: userID} });
             if (!ticketProfile) {
-                await TicketProfile.create({ name: profile.name, price: 0, routerId: networkRouter.id, userId: userID });
+                await TicketProfile.create({ name: profile.name, price: 0, routerId: networkRouter.id, userId: userID,  owner: profile.owner });
             }          
         });
         res.status(200).json({ profiles, message: "Ticket profile have been sync" });
@@ -111,7 +111,7 @@ const editTicketProfile = async(req, res)=>{
         const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID }});
         await profile.update({ 
             title: title,
-            decription: description,
+            description: description,
             bandwidth: bandwidth,
             price: amount,
             isActive: status

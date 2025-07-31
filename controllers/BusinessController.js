@@ -2,6 +2,7 @@ require("dotenv").config();
 const { Business, BusinessPosts } = require('../models');
 const BusinessService = require("../services/BusinessService");
 const { uploadGenericFiles } = require("../utils/upload");
+const { Op } = require('sequelize');
 
 const businessController = {
   // Create a new Business
@@ -408,6 +409,23 @@ const businessController = {
         totalPages: Math.ceil(total / limit),
         businesses,
       });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to search businesses",
+        error: error.message,
+      });
+    }
+  },
+
+  searchBusinessesName: async (req, res) => {
+    try {
+      const { searchTerm } = req.query;
+      const businesses = await Business.findAll({ where:{ 
+          name: { [Op.like]: `%${searchTerm}%` }
+        },
+      });
+      return res.status(200).json({ businesses, message: "Businesses fetched "});
+
     } catch (error) {
       return res.status(500).json({
         message: "Failed to search businesses",

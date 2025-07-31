@@ -177,17 +177,17 @@ exports.fetchTicketProfile = async (req, res)=>{
 }
 
 exports.routerCommand = async(req, res)=>{
-   const userID = req.userId;
+   const { routerId } = req.query;
    let client;
     try {
         const networkRouter = await NetworkRouter.findOne({ 
-            where: { userId: userID }
+            where: { id: routerId }
         });
         if(!networkRouter){
             res.status(400).json({ messsage: "Failed to check connection, router not found." });
         }
         client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
-        const systemInfo = await client.router.menu('/system/resource').getOnly();  
+        const systemInfo = await client.router.menu('/system/resource').write();
         await client.api.close();   
         res.status(200).json({ systemInfo, message: "Connection was established to router."});
     } catch (error) {

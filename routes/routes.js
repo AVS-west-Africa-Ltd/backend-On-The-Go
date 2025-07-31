@@ -258,6 +258,7 @@ router.get("/business/:businessId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business", businessController.getAllBusiness);
 router.get("/business-by-location", businessController.searchBusinessesByLocation);
+router.get("/business/name/search", businessController.searchBusinessesName);
 router.get("/all-defibrillator", businessController.getAllDefibrillator);
 
 

@@ -13,7 +13,6 @@ const upload = require("../utils/multerSetup");
 const upload2 = require("../utils/multerSetup2");
 const { catchErrors } = require("../handlers/errorHandler");
 const ProfileViewController = require("../controllers/ProfleViewController");
-const processBusinessController = require("../cron/populate-business");
 const PushNotificationController = require("../controllers/PushNotificationController");
 const VoucherController = require("../controllers/VoucherController");
 const reportRoutes = require("./reportRoutes");
@@ -37,6 +36,7 @@ router.post("/network-router/add-ticket-price",  authMiddleware, NetworkRouterCo
 router.post("/network-router/change-ticket-status",  authMiddleware, NetworkRouterController.changeTicketStatus);
 router.get("/network-router/fetch-ticket-profile",  authMiddleware, NetworkRouterController.fetchTicketProfile);
 router.post("/network-router/edit-ticket-profile",  authMiddleware, NetworkRouterController.editTicketProfile);
+router.get("/network-router/router-command",  authMiddleware, NetworkRouterController.routerCommand);
 
 // Payment Route
 router.post("/payment/initialize",  authMiddleware, PaymentController.createTransaction);
@@ -227,7 +227,7 @@ router.get(
   catchErrors(CommentController.getComments)
 );
 router.delete(
-  "/posts/:postId/comments/:commentId/:userId",
+  "/posts/comments/:commentId/:userId",
   catchErrors(CommentController.deleteComment)
 );
 
@@ -257,32 +257,23 @@ router.get("/businesses/:userId", businessController.getBusinessByUserId);
 router.get("/business/:businessId", businessController.getBusinessById);
 router.get("/businesses", businessController.getAllBusinesses);
 router.get("/business", businessController.getAllBusiness);
+router.get("/business-by-location", businessController.searchBusinessesByLocation);
 router.get("/all-defibrillator", businessController.getAllDefibrillator);
 
 
 router.put("/businesses/:id", businessController.updateBusiness);
 
-
-router.get(
-  "/businesses/:businessId/posts",
-  catchErrors(businessController.getBusinessPosts)
-);
+router.get( "/businesses/:businessId/posts", catchErrors(businessController.getBusinessPosts) );
 
 // Business Posts
 router.post("/bussiness/post", catchErrors(businessPostsController.createPost));
-router.get(
-  "/bussiness/posts",
-  catchErrors(businessPostsController.getAllPosts)
-);
+router.get( "/bussiness/posts", catchErrors(businessPostsController.getAllPosts));
 router.get("/posts/:id", catchErrors(businessPostsController.getPostById));
 router.put("/posts/:id", catchErrors(businessPostsController.updatePost));
 router.put("/like/:id", catchErrors(businessPostsController.toggleLike));
 router.delete("/posts/:id", catchErrors(businessPostsController.deletePost));
 
-router.get(
-  "/posts/:businessId/posts",
-  catchErrors(businessPostsController.getBusinessPosts)
-);
+router.get( "/posts/:businessId/posts", catchErrors(businessPostsController.getBusinessPosts) );
 
 // Get Images
 router.get("/uploads/:id", getImage);
@@ -290,7 +281,7 @@ router.get("/uploads/:id", getImage);
 router.get("/business/filters", businessController.filterBusinesses);
 router.get("/search/business", businessController.searchBusinessesByName);
 
-router.get("/process-businesses", processBusinessController.processBusinesses);
+
 
 // Push Notification routes
 router.post(

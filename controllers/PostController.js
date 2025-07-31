@@ -255,7 +255,7 @@ class PostController {
         let payload = {
           userId,
           description,
-          rating,
+          rating: rating || 0,
           businessId,
           media,
           postType,
@@ -266,7 +266,7 @@ class PostController {
         // Send notifications to followers
         // const notificationResult = await sendNotificationsToFollowers(userId, description);
         //send push to all users
-        const notificationResult = await sendNotificationsToAllUsers(userId, description);
+        //const notificationResult = await sendNotificationsToAllUsers(userId, description);
 
         // If this post is about a business, automatically create a voucher for the user
         let voucherResult = null;
@@ -380,7 +380,7 @@ class PostController {
 
       const post = await PostService.toggleLike(postId, userId);
       if (!post) return res.status(404).json({ message: "Post not found" });
-      return res.status(200).json({ message: "Post toggled successfully" });
+      return res.status(200).json({ post, message: "Post toggled successfully" });
     } catch (error) {
       return res.status(500).json({ error: error.message, message: error });
     }
@@ -443,6 +443,7 @@ class PostController {
       });
     }
   }
+  
 }
 
 module.exports = PostController;

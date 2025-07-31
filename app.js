@@ -11,6 +11,7 @@ const compression = require("compression");
 const morgan = require("morgan");
 const errorHandler = require("./handlers/errorHandler");
 const admin = require('firebase-admin'); 
+const demoBusiness = require('./cron/populate-business'); 
 
 // Import models
 const db = require('./models');
@@ -130,7 +131,7 @@ app.get("/", (req, res) => {
 // Route setup
 app.use("/api/v1", router);
 app.use("/zone", zoneRouter);
-
+app.get("/demo-business", demoBusiness);
 
 
 // Initialize HTTP server

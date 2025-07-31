@@ -1,6 +1,5 @@
-// controllers/UserLocationController.js
-const UserLocation = require("../models/UserLocation");
-const User = require("../models/User");
+
+const { User, UserLocation } = require("../models");
 
 const UserLocationController = {
   saveLocation: async (req, res) => {
@@ -20,6 +19,7 @@ const UserLocationController = {
 
       res.status(201).json({ message: "Location saved", data: saved });
     } catch (error) {
+      console.log(error);
       res.status(500).json({ message: "Error saving location", error: error.message });
     }
   }

@@ -1579,7 +1579,7 @@ router.get(
  *         description: Server error
  */
 router.delete(
-  "/posts/:postId/comments/:commentId/:userId",
+  "/posts/comments/:commentId/:userId",
   catchErrors(CommentController.deleteComment)
 );
 

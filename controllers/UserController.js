@@ -19,6 +19,7 @@ const { RandomCharacters } = require("../helpers");
 
 class UserController {
   static async CreateUser(req, res) {
+    
     try {
       const {
         username,
@@ -115,8 +116,8 @@ class UserController {
           
           await sequelize.transaction(async (t) => {
 
-            await referrerUser.update({ successfulReferrals: ( referrerUser.successfulReferrals + 1 ) }, { transaction: t});
-            await Referral.create({ referrerId: referrerUser.id, refereeId: user.id }, { transaction: t});
+            await referrerUser.update( { successfulReferrals: ( referrerUser.successfulReferrals + 1 ) }, { transaction: t} );
+            await Referral.create( { referrerId: referrerUser.id, refereeId: user.id }, { transaction: t} );
 
           });
         }

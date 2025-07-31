@@ -1,18 +1,17 @@
 const fs = require("fs");
 const csv = require("csv-parser");
 const bcrypt = require("bcryptjs");
-const UserService = require("../services/UserService");
-const { Business } = require("../models");
+const db = require("../models");
+const { RandomNumber } = require("../helpers");
 
 // Track processed businesses to avoid duplicates
 const processedBusinesses = new Map();
 
 // Process CSV file
-const processBusinessController = {
-  processBusinesses: async (req, res) => {
+const processBusinesses = async (req, res) => {
     const results = [];
 
-    fs.createReadStream("cron/defillibrators.csv")
+    fs.createReadStream("./cron/businessGotoMarket.csv")
       .pipe(csv())
       .on("data", (data) => results.push(data))
       .on("end", async () => {
@@ -38,7 +37,7 @@ const processBusinessController = {
               firstName: business.name,
               username: business.username || generateUsername(business.name),
               email: business.email || generateEmail(business.name, results),
-              phone_number: business.phone || "",
+              phone_number: business.phone || RandomNumber(11),
               password: "otgafrica",
             });
 
@@ -60,13 +59,10 @@ const processBusinessController = {
         } catch (error) {
           console.error("Error processing businesses:", error);
         } finally {
-          return res.json({ message: "Businesses processed successfully" });
+          res.status(200).json({ message: "Businesses processed successfully" });
         }
       });
-  },
 };
-
-module.exports = processBusinessController;
 
 // Helper functions
 async function createUser(userData) {
@@ -79,7 +75,7 @@ async function createUser(userData) {
     }
 
     let payload = { where: { email: email } };
-    const isUserRegistered = await UserService.getUserByEmailOrUsername(
+    const isUserRegistered = await db.User.findOne(
       payload
     );
     if (isUserRegistered) {
@@ -106,12 +102,10 @@ async function createUser(userData) {
       profession: "",
       skills: "",
       gender: "",
-      resetPasswordOTP: "",
-      resetPasswordExpires: "",
     };
 
     // Create user with all required fields
-    const user = await UserService.createUser(userPayload);
+    const user = await db.User.create(userPayload);
     return user.id;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -123,7 +117,7 @@ async function createBusiness(businessData) {
     businessData;
 
   try {
-    const business = await Business.create({
+    const business = await db.Business.create({
       userId,
       name,
       type,
@@ -233,3 +227,5 @@ function generateFallbackEmail(existingEmails) {
 
   return email;
 }
+
+module.exports = processBusinesses;

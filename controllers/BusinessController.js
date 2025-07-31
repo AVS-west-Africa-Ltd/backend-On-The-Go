@@ -416,6 +416,22 @@ const businessController = {
     }
   },
 
+  searchBusinessesByLocation: async (req, res) => {
+    
+    const { latitude, longitude } = req.query;
+      try {
+
+        const businesses = await BusinessService.searchBusinessbyLocation(latitude, longitude);
+
+        if (!businesses) return res.status(404).json({ message: "No record found" });
+
+        return res.status(200).json({ businesses });
+
+      } catch (error) {
+        return res.status(500).json({ error: error.message });
+      }
+  }
+
 };
 
 module.exports = businessController;

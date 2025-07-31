@@ -3,6 +3,7 @@ const chatController = require("../controllers/ChatController");
 const roomController = require("../controllers/RoomController");
 const invitationController = require('../controllers/InvitationController');
 const botController = require("../controllers/BotController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
@@ -32,12 +33,13 @@ router.get("/room/:roomId/members", chatController.getRoomMembers);
 router.delete("/rooms/type/:type", roomController.deleteRoomsByType);
 
 // Invitation operations
-router.post("/invitation/create", invitationController.createInvitation);       // Create an invitation
-router.get("/invitations", invitationController.getAllInvitations);            // Get all invitations
-router.get("/invitation/:id", invitationController.getInvitationById);         // Get a single invitation
-router.put("/invitation/:id", invitationController.updateInvitation);          // Update an invitation
-router.delete("/invitation/:id", invitationController.deleteInvitation);       // Delete an invitation
-router.get("/user/:userId/invitations", invitationController.getUserInvitations);  // New route to get all invitations for a user
+router.post("/invitation/create", invitationController.createInvitation); 
+router.get("/invitations", invitationController.getAllInvitations); 
+router.get("/invitation/:id", invitationController.getInvitationById);  
+router.put("/invitation/:id", invitationController.updateInvitation);
+router.put("/invitation/:id/reject", authMiddleware, invitationController.rejectInvitation);  
+router.delete("/invitation/:id", invitationController.deleteInvitation);   
+router.get("/user/:userId/invitations", invitationController.getUserInvitations);  
 router.get("/room/:roomId/invites", invitationController.getRoomInvites);
 router.post("/generate-comment/:postId", botController.generateCommentForPost);
 module.exports = router;

@@ -136,16 +136,17 @@ exports.sendMessage = async (req, res) => {
           },
           include: [{
             model: User,
-            as: 'user',
             attributes: ['id', 'pushToken']
           }]
         });
 
+        console.log(roomMembers);
+
         // Filter members who have push tokens
         const recipients = roomMembers
-          .filter(member => member.user.pushToken)
-          .map(member => member.user.id);
-
+          .filter(member => member.User.pushToken)
+          .map(member => member.User.id);
+        console.log("this is recipients:",recipients);
         if (recipients.length > 0) {
           const mediaType = req.file ?
             req.file.mimetype.split('/')[0] === 'image' ? 'image' :
@@ -464,15 +465,14 @@ exports.toggleBroadcast = async (req, res) => {
       },
       include: [{
         model: User,
-        as: 'user',
         attributes: ['id', 'pushToken']
       }]
     });
 
     // Filter members who have push tokens
     const recipients = roomMembers
-      .filter(member => member.user.pushToken)
-      .map(member => member.user.id);
+      .filter(member => member.User.pushToken)
+      .map(member => member.User.id);
 
     // Send push notification if there are recipients
     if (recipients.length > 0) {

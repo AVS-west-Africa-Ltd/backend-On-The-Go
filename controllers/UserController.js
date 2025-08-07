@@ -18,6 +18,7 @@ const { uploadProfileImage } = require("../utils/upload");
 const { RandomCharacters } = require("../helpers");
 
 class UserController {
+
   static async CreateUser(req, res) {
     
     try {
@@ -88,7 +89,7 @@ class UserController {
           });
         }
 
-        if (conflicts.length > 0) {
+        if (conflicts.length > 0) { 
           return res.status(400).json({
             message: "Validation error",
             errors: conflicts,
@@ -831,6 +832,7 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
+  
 }
 
 module.exports = UserController;

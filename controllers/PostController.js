@@ -18,6 +18,8 @@ const ALLOWED_FILE_TYPES = {
   "image/png": "png",
   "image/gif": "gif",
   "video/mp4": "mp4",
+  "video/quicktime": "mov",
+  "video/quicktime": "qt",
   // 'application/pdf': 'pdf'
 };
 
@@ -291,9 +293,9 @@ class PostController {
         return res.status(201).json({
           message: "Post successfully created",
           post,
-          notifications: notificationResult 
-            ? `Notifications sent to ${notificationResult.successCount} followers` 
-            : "No notifications sent",
+          // notifications: notificationResult 
+          //   ? `Notifications sent to ${notificationResult.successCount} followers` 
+          //   : "No notifications sent",
           voucher: voucherResult
         });
       } catch (error) {

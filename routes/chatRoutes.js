@@ -42,4 +42,8 @@ router.delete("/invitation/:id", invitationController.deleteInvitation);
 router.get("/user/:userId/invitations", invitationController.getUserInvitations);  
 router.get("/room/:roomId/invites", invitationController.getRoomInvites);
 router.post("/generate-comment/:postId", botController.generateCommentForPost);
+
+router.post('/room/:roomId/mark-read', chatController.markRoomRead);
+router.get('/user/:userId/unread-counts', chatController.getUnreadCounts);
+
 module.exports = router;

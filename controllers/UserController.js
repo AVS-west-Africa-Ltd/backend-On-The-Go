@@ -110,22 +110,16 @@ class UserController {
       });
 
       if( referralCode ){
-        const referrerUser = await User.findOne({ where: { referralCode: referralCode }})
-
+        const referrerUser = await User.findOne({ where: { referralCode: referralCode }});
         if( referrerUser ){
           
           await sequelize.transaction(async (t) => {
-
             await referrerUser.update( { successfulReferrals: ( referrerUser.successfulReferrals + 1 ) }, { transaction: t} );
             await Referral.create( { referrerId: referrerUser.id, refereeId: user.id }, { transaction: t} );
-
           });
         }
         
       }
-
-      
-
 
       return res.status(201).json({
         message: "User registered successfully",

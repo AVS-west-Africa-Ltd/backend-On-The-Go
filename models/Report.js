@@ -1,18 +1,13 @@
 
 module.exports = (sequelize, DataTypes) => {
   const Report = sequelize.define('Report', {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
     title: {
       type: DataTypes.STRING,
       allowNull: false
     },
     content: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     reporter_id: {
       type: DataTypes.INTEGER,

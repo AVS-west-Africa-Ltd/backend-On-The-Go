@@ -10,13 +10,12 @@ const {
 const nodemailer = require('nodemailer');
 
 exports.createReport = async (req, res) => {
-  const { title, content, entity_type, entity_id } = req.body;
+  const { title, entity_type, entity_id } = req.body;
   const user_ID = req.userId;
   try {
 
     const report = await Report.create({
       title,
-      content,
       reporter_id: user_ID,
       entity_type: entity_type,
       entity_id: entity_id

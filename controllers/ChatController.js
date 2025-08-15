@@ -85,6 +85,7 @@ exports.sendMessage = async (req, res) => {
     try {
       // Verify room membership
       const memberInfo = await RoomMember.findOne({ where: { room_id, user_id: sender_id } });
+
       if (!memberInfo) {
         return res.status(403).json({ success: false, message: "You are not a member of this room" });
       }

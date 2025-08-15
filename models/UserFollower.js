@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: DataTypes.NOW,
         },
     },{
-    tableName: 'userfollowers' // Explicitly set table name
+        tableName: 'userfollowers' // Explicitly set table name
     }
     );
 

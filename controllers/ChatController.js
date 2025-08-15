@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { Chat, User, Room, RoomMember } = require('../models');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
@@ -8,15 +10,68 @@ const AWS = require("aws-sdk");
 const multerS3 = require("multer-s3");
 const crypto = require('crypto');
 const { sendChatNotification } = require('./PushNotificationController');
+const nodemailer = require('nodemailer');
 
-// Encryption configuration
+// ========================= Email (Gmail) =========================
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASSWORD = process.env.EMAIL_PASS;
+
+let mailTransporter = null;
+if (!EMAIL_USER || !EMAIL_PASSWORD) {
+  console.error("Missing EMAIL_USER or EMAIL_PASS in environment variables. Pending-message emails will be skipped.");
+} else {
+  mailTransporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASSWORD,
+    },
+  });
+}
+
+/**
+ * Send an email via Gmail
+ * @param {{to:string, subject:string, text?:string, html?:string, attachments?:Array}} emailData
+ */
+async function sendEmail(emailData) {
+  if (!mailTransporter) return { success: false, response: 'email transporter not configured' };
+
+  const { to, subject, text, html, attachments } = emailData;
+  if (!to || !subject || (!text && !html)) {
+    throw new Error("Missing required fields: to, subject, text or html");
+  }
+  const mailOptions = {
+    from: `"OTG Reminder" <${EMAIL_USER}>`,
+    to,
+    subject,
+    text,
+    html,
+    attachments,
+  };
+  const info = await mailTransporter.sendMail(mailOptions);
+  return { success: true, response: info.response };
+}
+
+async function getUnreadCountForRoom(userId, roomId) {
+  // get member row to read last_read_at
+  const member = await RoomMember.findOne({ where: { user_id: userId, room_id: roomId } });
+  const where = {
+    room_id: roomId,
+    sender_id: { [Op.ne]: userId }, // only messages from the other person
+  };
+  if (member?.last_read_at) {
+    where.createdAt = { [Op.gt]: member.last_read_at };
+  }
+  const count = await Chat.count({ where });
+  return count;
+}
+// ========================= Encryption =========================
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY
   ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex').slice(0, 32) // Convert hex to buffer and ensure 32 bytes
   : crypto.randomBytes(32); // Generate random 32 bytes if no key provided
 const IV_LENGTH = 16;
 const ALGORITHM = 'aes-256-cbc';
 
-// Encryption utility functions
 const encrypt = (text) => {
   if (!text) return text;
   const iv = crypto.randomBytes(IV_LENGTH);
@@ -37,14 +92,28 @@ const decrypt = (text) => {
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return decrypted.toString();
 };
-// AWS S3 Configuration
+
+// Plain preview helper (decrypts if needed)
+function getPreviewFromMessage(msg) {
+  try {
+    if (!msg) return '';
+    const raw = msg.content || '';
+    let plain = raw;
+    // If your content is always encrypted, decrypt it:
+    try { plain = decrypt(raw); } catch { }
+    return String(plain).replace(/\s+/g, ' ').trim().slice(0, 140);
+  } catch {
+    return '';
+  }
+}
+
+// ========================= AWS S3 Upload =========================
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
 
-// Multer configuration for file uploads
 const upload = multer({
   storage: multerS3({
     s3: s3,
@@ -69,6 +138,79 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
+
+// ========================= 5-min No-Reply Email (1:1 rooms only) =========================
+/**
+ * Schedules an email to the other user if no reply after 5 minutes.
+ */
+function schedulePendingReplyEmail({
+  messageId,
+  roomId,
+  senderId,
+  createdAt,
+  recipientEmail,
+  roomName,
+  delayMs = 5 * 60 * 1000
+}) {
+  if (!mailTransporter || !recipientEmail) return;
+
+  setTimeout(async () => {
+    try {
+      const replied = await Chat.findOne({
+        where: {
+          room_id: roomId,
+          createdAt: { [Op.gt]: createdAt },
+          sender_id: { [Op.ne]: senderId },
+        },
+      });
+      if (replied) return;
+
+      // Get sender info
+      const sender = await User.findByPk(senderId, {
+        attributes: ['firstName', 'lastName', 'username']
+      });
+
+      // Get the original message
+      const message = await Chat.findByPk(messageId, { attributes: ['id', 'content'] });
+      const preview = getPreviewFromMessage(message);
+
+      const senderName =
+        (sender.firstName || sender.lastName)
+          ? `${sender.firstName || ''} ${sender.lastName || ''}`.trim()
+          : sender.username || 'Someone';
+
+      const subject = `You have a pending message from ${senderName}`;
+      const html = `
+        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;">
+          <h2 style="margin:0 0 8px;">You have a pending message from ${senderName}</h2>
+          ${preview ? `<p style="color:#555;margin:0 0 12px;">${preview}</p>` : ''}
+          <p style="margin:0;">Open the conversation in your app to reply.</p>
+          <p style="margin-top:16px;font-size:12px;color:#888;">
+            This reminder was sent after ${delayMs / 60000} minute(s) of inactivity.
+          </p>
+        </div>
+      `;
+      const text = `You have a pending message from ${senderName}:\n${preview || ''}\n\nOpen the conversation in your app to reply.`;
+
+      console.log(`Sending email now to ${recipientEmail} due to no reply.`);
+
+      await sendEmail({
+        to: recipientEmail,
+        subject,
+        html,
+        text,
+        from: `"OTG" <${EMAIL_USER}>`
+      });
+    } catch (err) {
+      console.error('Pending 1:1 email check failed:', err);
+    }
+  }, delayMs);
+}
+
+
+
+
+// ========================= Controllers =========================
 
 // Send a message
 exports.sendMessage = async (req, res) => {
@@ -95,11 +237,10 @@ exports.sendMessage = async (req, res) => {
         return res.status(404).json({ success: false, message: "Room not found" });
       }
 
-      // Check if broadcast is enabled and if sender is not the room creator
       if (room.broadcast_enabled && String(room.created_by) !== String(sender_id)) {
-        return res.status(403).json({ 
-          success: false, 
-          message: "Only room creator can send messages when broadcast mode is enabled" 
+        return res.status(403).json({
+          success: false,
+          message: "Only room creator can send messages when broadcast mode is enabled"
         });
       }
 
@@ -121,36 +262,25 @@ exports.sendMessage = async (req, res) => {
         content: decrypt(message.content)
       };
 
-      // Emit to socket if available
       if (io) {
         io.emit(`room_${room_id}`, messageForSocket);
       }
 
-      // Send push notifications to other room members (excluding sender)
+      // Send push notifications to other members
       try {
-        // Get all room members except sender
         const roomMembers = await RoomMember.findAll({
-          where: {
-            room_id,
-            user_id: { [Op.ne]: sender_id } // Exclude sender
-          },
-          include: [{
-            model: User,
-            attributes: ['id', 'pushToken']
-          }]
+          where: { room_id, user_id: { [Op.ne]: sender_id } },
+          include: [{ model: User, attributes: ['id', 'pushToken'] }]
         });
 
-        console.log(roomMembers);
-
-        // Filter members who have push tokens
         const recipients = roomMembers
           .filter(member => member.User.pushToken)
           .map(member => member.User.id);
-        console.log("this is recipients:",recipients);
+
         if (recipients.length > 0) {
-          const mediaType = req.file ?
-            req.file.mimetype.split('/')[0] === 'image' ? 'image' :
-              req.file.mimetype.split('/')[1] : null;
+          const mediaType = req.file
+            ? (req.file.mimetype.split('/')[0] === 'image' ? 'image' : req.file.mimetype.split('/')[1])
+            : null;
 
           await sendChatNotification({
             senderId: sender_id,
@@ -158,15 +288,38 @@ exports.sendMessage = async (req, res) => {
             roomId: room_id,
             message: content,
             mediaType,
-            customData: {
-              messageId: message.id,
-              isRequest: request
-            }
+            customData: { messageId: message.id, isRequest: request }
           });
         }
       } catch (notificationError) {
         console.error('Error sending push notifications:', notificationError);
-        // Don't fail the message send operation if notifications fail
+      }
+
+      // ===== Schedule 30-sec no-reply email (ONLY if exactly 2 members) =====
+      try {
+        const members = await RoomMember.findAll({ where: { room_id } });
+        if (members.length === 2) {
+          const other = members.find(m => String(m.user_id) !== String(sender_id));
+          if (other) {
+            const otherUser = await User.findByPk(other.user_id, { attributes: ['email', 'firstName', 'lastName', 'username'] });
+            if (otherUser?.email) {
+              console.log(
+                `User with email ${otherUser.email} will get an email after 30 seconds of no reply.`
+              );
+              schedulePendingReplyEmail({
+                messageId: message.id,
+                roomId: room_id,
+                senderId: sender_id,
+                createdAt: message.createdAt || new Date(),
+                recipientEmail: otherUser.email,
+                roomName: room?.name || '',
+                delayMs: 5 * 60 * 1000
+              });
+            }
+          }
+        }
+      } catch (scheduleErr) {
+        console.error('Error scheduling pending-reply email:', scheduleErr);
       }
 
       res.status(201).json({
@@ -174,13 +327,16 @@ exports.sendMessage = async (req, res) => {
         message: "Message sent successfully",
         data: messageForSocket
       });
+
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ success: false, error: error.message });
     }
   });
-  
 };
+
+
+
 
 // Get messages for a specific room
 exports.getRoomMessages = async (req, res) => {
@@ -596,6 +752,62 @@ exports.getMessages = async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+};
+
+// POST /chat/room/:roomId/mark-read
+exports.markRoomRead = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const { user_id } = req.body;
+    if (!roomId || !user_id) {
+      return res.status(400).json({ success: false, message: 'roomId and user_id are required' });
+    }
+
+    // ensure it’s a 1:1 room (exactly two members)
+    const members = await RoomMember.count({ where: { room_id: roomId } });
+    if (members !== 2) {
+      return res.status(400).json({ success: false, message: 'Unread counts are supported only for direct 1:1 rooms' });
+    }
+
+    await RoomMember.update(
+      { last_read_at: new Date() },
+      { where: { room_id: roomId, user_id } }
+    );
+
+    // (optional) also set status=read for all messages from other user up to now
+    return res.json({ success: true, message: 'Room marked as read' });
+  } catch (e) {
+    console.error('markRoomRead error:', e);
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+// GET /chat/user/:userId/unread-counts
+exports.getUnreadCounts = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // get all direct rooms the user is in (2 members)
+    const myMemberships = await RoomMember.findAll({ where: { user_id: userId } });
+    const roomIds = myMemberships.map(m => m.room_id);
+
+    // sanity filter: only rooms that actually have 2 members
+    const directRoomIds = [];
+    for (const id of roomIds) {
+      const c = await RoomMember.count({ where: { room_id: id } });
+      if (c === 2) directRoomIds.push(id);
+    }
+
+    const data = {};
+    for (const rid of directRoomIds) {
+      data[rid] = await getUnreadCountForRoom(userId, rid);
+    }
+
+    res.json({ success: true, data });
+  } catch (e) {
+    console.error('getUnreadCounts error:', e);
+    res.status(500).json({ success: false, message: e.message });
   }
 };
 

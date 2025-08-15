@@ -1,17 +1,41 @@
 // controllers/InvitationController.js
-const { Invitation, Room, RoomMember, sequelize } = require('../models');
+const { Invitation, Room, RoomMember, User, sequelize } = require('../models');
+const { simplePushNotification } = require("./PushNotificationController");
+const { Op } = require('sequelize');
 // Create an invitation
 exports.createInvitation = async (req, res) => {
   const { inviter_id, room_id, invitees } = req.body;
 
   try {
     const invitation = await Invitation.create({ inviter_id, room_id, invitees });
+    const users = await User.findAll({
+      where: {
+        id: {
+          [Op.in]: invitees,
+        },
+        pushToken: {
+          [Op.ne]: "", 
+          [Op.not]: null
+        }
+      },
+    });
+    const room = await Room.findOne({where:{id: room_id}});
+    if(users && room){
+      const title = "Community Invitation";
+      const content = `Hey you have been invited to join ${room.name}`;
+      users.forEach(async (user)=> {
+        await simplePushNotification(user.pushToken, title, content, {} );
+      });
+      
+    }
     res.status(201).json({
       success: true,
       message: 'Invitation created successfully',
       data: invitation
     });
+    
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       success: false,
       message: 'Error creating invitation',
@@ -260,6 +284,57 @@ exports.deleteInvitation = async (req, res) => {
     });
   }
 };
+
+exports.rejectInvitation = async(req, res) => {
+  const { id } = req.params;
+  const userID = req.userId;
+  try {
+    const invitation = await Invitation.findByPk(id);
+
+    if (!invitation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Invitation not found'
+      });
+    }
+    if(Array.isArray(invitation.invitees)){
+      const invitees = invitation.invitees.filter(invitee => invitee !== userID);
+      await invitation.update({ invitees: invitees });
+    }
+
+    
+    const users = await User.findAll({
+      where: {
+        id: invitation.inviter_id,
+        pushToken: {
+          [Op.ne]: "", 
+          [Op.not]: null
+        }
+      },
+    });
+
+    if(users){
+      users.forEach(async (user)=> {
+        const title = "Community Invitation";
+        const content = `Hey sorry ${user.username} rejected your invite `;
+        await simplePushNotification(user.pushToken, title, content, {} );
+      });
+    }
+
+    
+
+    res.status(200).json({
+      success: true,
+      message: 'Invitation rejected successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting invitation',
+      error: error.message
+    });
+  }
+}
 
 // Get invitations for a specific user
 exports.getUserInvitations = async (req, res) => {

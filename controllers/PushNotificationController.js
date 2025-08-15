@@ -143,6 +143,8 @@ async function sendPushNotification({ title, body, data = {}, userIds = null }) 
   }
 }
 
+
+
 // Original controller (now uses the reusable function)
 exports.sendNotificationToAllUsers = catchErrors(async (req, res) => {
   const { title, body, data } = req.body;
@@ -465,6 +467,25 @@ exports.sendPostNotification = async function({
       success: false,
       error: error.message
     };
+  }
+};
+
+exports.simplePushNotification = async (fcmToken, title, body, data = {}) => {
+  const message = {
+    notification: {
+      title,
+      body,
+    },
+    data: data,
+    token: fcmToken,
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log('Successfully sent message:', response);
+    return response;
+  } catch (error) {
+    console.error('Error sending message:', error);
   }
 };
 

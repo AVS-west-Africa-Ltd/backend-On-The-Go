@@ -14,7 +14,6 @@ const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME,
-    // acl: "public-read",
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: function (req, file, cb) {
       cb(null, { fieldName: file.fieldname });
@@ -25,29 +24,8 @@ const upload = multer({
   }),
 });
 
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "uploads/");
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueName = Date.now() + "-" + file.originalname;
-//     cb(null, uniqueName);
-//   },
-// });
-
-// const storage = new CloudinaryStorage({
-//   cloudinary: cloudinary,
-//   params: {
-//     folder: "business_posts", // Cloudinary folder where files will be stored
-//     allowed_formats: ["jpg", "jpeg", "png", "gif"], // Allowed file types
-//     public_id: (req, file) => `${Date.now()}-${file.originalname}`, // Generate unique file names
-//   },
-// });
-//
-
-// const upload = multer({ storage: storage });
-
 const businessPostsController = {
+
   // Create a new BusinessPost
   createPost: async (req, res) => {
     const uploadHandler = upload.array("media", 10);
@@ -69,10 +47,7 @@ const businessPostsController = {
           return res.status(404).json({ message: "Business not found" });
         }
 
-        // const mediaPaths = req.files.map(
-        //   (file) =>
-        //     `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
-        // );
+       
         const mediaPaths = req.files.map((file) => file.location);
 
         // Create a new post associated with the business
@@ -238,6 +213,7 @@ const businessPostsController = {
       });
     }
   },
+
   toggleLike: async (req, res) => {
     const { id: postId } = req.params;
     const { userId } = req.body;
@@ -270,6 +246,8 @@ const businessPostsController = {
       throw new Error("Error updating likes");
     }
   },
+
+  
 };
 
 module.exports = businessPostsController;

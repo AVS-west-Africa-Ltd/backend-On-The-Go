@@ -1,5 +1,6 @@
 const { Business, RepeatedCustomer, User, WifiScan, TicketProfile } = require("../models");
 const { Op } = require("sequelize");
+const { getBoundingBox } = require("../helpers");
 
 class BusinessService {
   // Get user by ID
@@ -278,12 +279,12 @@ class BusinessService {
     };
   }
 
-  static async searchBusinessesByName(searchTerm, limit = 10) {
+  static async searchBusinessesByName(searchTerm, limit = 100) {
     try {
       const businesses = await Business.findAll({
         where: {
           name: {
-            [Op.like]: `%${searchTerm}%`, // Using LIKE with case-sensitive collation
+            [Op.like]: `%${searchTerm}%`, 
           },
         },
         limit: parseInt(limit),
@@ -330,26 +331,6 @@ class BusinessService {
         order: [["name", "ASC"]],
       });
 
-      // return businesses.map((business) => {
-      //   const parsedBusiness = business.get({ plain: true });
-
-      //   // Parse all stringified JSON fields
-      //   const jsonFields = ["amenities", "hours", "social", "wifi"];
-      //   jsonFields.forEach((field) => {
-      //     try {
-      //       parsedBusiness[field] = parsedBusiness[field]
-      //         ? JSON.parse(parsedBusiness[field])
-      //         : null;
-      //     } catch (e) {
-      //       console.error(`Error parsing ${field}:`, e);
-      //       parsedBusiness[field] = null;
-      //     }
-      //   });
-
-      //   return parsedBusiness;
-      // });
-
-      // Parse all JSON string fields
       const businesses = rows.map((business) => {
         const parsedBusiness = business.get({ plain: true });
         const jsonFields = ["amenities", "hours", "social", "wifi"];
@@ -375,6 +356,21 @@ class BusinessService {
       console.error("Search error:", error);
       throw new Error("Business search failed");
     }
+  }  
+
+  static async searchBusinessbyLocation( latitude, longitude ) {
+
+    const box = getBoundingBox(Number(latitude), Number(longitude), 10);
+
+    const businesses = await Business.findAll({
+      where: {
+        latitude: { [Op.between]: [box.minLat, box.maxLat] },
+        longitude: { [Op.between]: [box.minLng, box.maxLng] }
+      },
+      limit: 40
+    });
+
+    return businesses;
   }
 
 }

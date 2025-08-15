@@ -2,6 +2,7 @@
 const { User, Post, Comment } = require("../models");
 
 class CommentService {
+    
     static async createComment(postId, authorId, content, parentId = null) {
         try {
             return await Comment.create({
@@ -44,17 +45,11 @@ class CommentService {
         }
     }
 
-    static async deleteComment(postId, commentId, userId) {
+    static async deleteComment(commentId, userId) {
         try {
-            const post = await Post.findByPk(postId);
 
-            if (!post) return false;
-
-            if (post.userId !== userId) return false;
-
-            const comment = await Comment.findByPk(commentId);
-            if (!comment || comment.postId !== postId) return false;
-
+            const comment = await Comment.findOne({ where:{ id:commentId,  authorId: userId }});
+            if (!comment) return false;
             return await comment.destroy();
         } catch (err) {
             throw new Error(err.message || 'Error deleting comment');

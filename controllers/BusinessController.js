@@ -1,7 +1,9 @@
 require("dotenv").config();
-const { Business, BusinessPosts } = require('../models');
+const { Business, BusinessPosts, User } = require('../models'); // ⬅️ include User
 const BusinessService = require("../services/BusinessService");
 const { uploadGenericFiles } = require("../utils/upload");
+const { Op } = require('sequelize');
+const sendEmail = require("../services/sendEmail"); // ⬅️ mailer
 
 const businessController = {
   // Create a new Business
@@ -40,10 +42,10 @@ const businessController = {
       const logoUrl = req.files?.logo?.[0]?.location || null;
       const cacDocUrl = req.files?.cacDoc?.[0]?.location || null;
 
-      // Parse JSON strings if they exist
-      const socialArray = social ;
+      // Keep as provided (your service expects arrays/objects already)
+      const socialArray = social;
       const wifiArray = wifi;
-      const hoursArray = hours ;
+      const hoursArray = hours;
       const amenitiesArray = amenities;
 
       // Create the business
@@ -62,6 +64,123 @@ const businessController = {
         latitude: latitude ? parseFloat(latitude) : null,
         longitude: longitude ? parseFloat(longitude) : null
       });
+
+      // ---------- BUSINESS WELCOME EMAIL (non-blocking) ----------
+      (async () => {
+        try {
+          // Get owner email
+          const owner = userId ? await User.findByPk(userId) : null;
+          const to = owner?.email;
+          if (!to) {
+            console.warn("[createBusiness] No owner email found — skipping business welcome email");
+            return;
+          }
+
+          const subject = "Welcome to the OTG Business Network 🎉";
+          // Reuse same Cloudinary base + assets used in UserController
+          const BASE = "https://res.cloudinary.com/doefjylyu/image/upload";
+          const IMG = {
+            hero: `${BASE}/f_auto,q_auto/hero_hpg6la.png`,
+            business: `${BASE}/f_auto,q_auto/business_n2pxwd.png`,
+          };
+
+          // Google Form link (as requested)
+          const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc_XyST_KIraWXj5J8uTZWhemiAHUg4fCu9Uw06GpIsEPVvLA/viewform";
+
+          const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Welcome to OTG Business</title>
+<style>
+  @media only screen and (max-width:680px){
+    .container{width:100% !important}
+    .p16{padding:16px !important}
+    .center{text-align:center !important}
+  }
+  a { color:#1C46FF; }
+</style>
+</head>
+<body style="margin:0;background:#F5F6F8">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F5F6F8">
+    <tr>
+      <td align="center" style="padding:24px">
+        <table role="presentation" width="640" class="container" cellspacing="0" cellpadding="0" border="0" style="width:640px;max-width:640px;background:#ffffff;border-radius:16px;overflow:hidden">
+          <!-- Hero -->
+          <tr>
+            <td>
+              <img src="${IMG.hero}" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
+            </td>
+          </tr>
+
+          <!-- Greeting -->
+          <tr>
+            <td class="p16" style="padding:24px 28px 8px 28px;font-family:Arial,Helvetica,sans-serif;color:#0F172A">
+              <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;">Hey ${name || "there"},</p>
+              <p style="margin:0;font-size:16px;line-height:24px;color:#334155">
+                You're officially part of the <strong>OTG Business Network</strong>—where good vibes, fast Wi-Fi, and smart visibility come together.
+                Every day, thousands of users on OTG search for great spots to work, chill, and connect. And now, your business is on the map!
+              </p>
+            </td>
+          </tr>
+
+          <!-- Business banner -->
+          <tr>
+            <td>
+              <img src="${IMG.business}" width="640" alt="Your Business, Seen by Thousands." style="display:block;width:100%;height:auto" />
+            </td>
+          </tr>
+
+          <!-- Benefits -->
+          <tr>
+            <td class="p16" style="padding:16px 28px 8px 28px">
+              <ul style="margin:0;padding:0 0 0 18px;color:#334155;font-size:15px;line-height:24px;font-family:Arial,Helvetica,sans-serif">
+                <li style="margin-bottom:8px"><strong>Show off your space</strong></li>
+                <li style="margin-bottom:8px"><strong>Get real-time reviews and feedback</strong></li>
+                <li style="margin-bottom:8px"><strong>Offer perks and drive loyalty</strong></li>
+                <li style="margin-bottom:8px"><strong>Access smart insights to grow your business</strong></li>
+              </ul>
+            </td>
+          </tr>
+
+          <!-- Next steps + CTA -->
+          <tr>
+            <td class="p16" style="padding:8px 28px 4px 28px;font-family:Arial,Helvetica,sans-serif;color:#334155;font-size:15px;line-height:24px">
+              <p style="margin:0 0 12px 0">
+                <strong>Next steps:</strong> Complete this quick form so we can verify and enrich your listing.
+              </p>
+              <a href="${FORM_URL}" style="display:inline-block;background:#1C46FF;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 18px;border-radius:10px;font-size:14px">
+                Complete Business Form
+              </a>
+            </td>
+          </tr>
+
+          <!-- Closing -->
+          <tr>
+            <td class="p16" style="padding:20px 28px 24px 28px;font-family:Arial,Helvetica,sans-serif;color:#334155;font-size:14px;line-height:22px">
+              <p style="margin:0 0 12px 0">We're excited to have you on board. Let's help people find you faster.</p>
+              <p style="margin:0 0 12px 0">Welcome to the future of smart discovery.</p>
+              <p style="margin:0 0 4px 0">Stay connected. Stay rewarded. Stay OTG.</p>
+              <p style="margin:0">With 💛,<br/>The OTG Team</p>
+              <p style="margin:16px 0 0 0;color:#94A3B8;font-size:12px;text-align:center">&copy; ${new Date().getFullYear()} OnTheGo Africa. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+          await sendEmail({ to, subject, html });
+          console.log("[createBusiness] Business welcome email sent to:", to);
+        } catch (err) {
+          console.error("[createBusiness] Failed to send business welcome email:", err.message);
+        }
+      })();
+      // ---------- END BUSINESS WELCOME EMAIL ----------
 
       res.status(201).json({
         message: "Business created successfully",
@@ -98,13 +217,10 @@ const businessController = {
   getAllBusiness: async (req, res) => {
     const { offset } = req.query;
     try {
-    
       const businesses = await BusinessService.getAllBusiness(offset);
-
       return res.status(200).json(businesses);
     } catch (error) {
       console.error("❌ Error retrieving businesses:", error);
-
       return res.status(500).json({
         message: "Failed to retrieve businesses",
         error: error.message,
@@ -141,12 +257,11 @@ const businessController = {
 
       return res.status(200).json(business);
     } catch (error) {
-      // console.error("Error fetching user's businesses:", error);
       res.status(500).json(error.message);
     }
   },
 
-  // Get a user business
+  // Get business by id
   getBusinessById: async (req, res) => {
     try {
       const { businessId } = req.params;
@@ -160,7 +275,6 @@ const businessController = {
 
       return res.status(200).json(business);
     } catch (error) {
-      // console.error("Error fetching user's businesses:", error);
       res.status(500).json(error.message);
     }
   },
@@ -200,9 +314,7 @@ const businessController = {
         accountNumber
       } = req.body;
 
-      console.log("🔍 Fetching business by ID:", id);
       const business = await Business.findByPk(id);
-
       if (!business) {
         console.warn("⚠️ Business not found with ID:", id);
         return res.status(404).json({ message: "Business not found" });
@@ -215,10 +327,9 @@ const businessController = {
           parsedAmenities = typeof amenities === 'string' ? JSON.parse(amenities) : amenities;
         } catch (e) {
           console.error("❌ Error parsing amenities:", e);
-          parsedAmenities = business.amenities; // fallback to existing
+          parsedAmenities = business.amenities; // fallback
         }
       }
-
 
       // Check if any bank detail is being uploaded or changed
       const bankDetailsChanged =
@@ -248,13 +359,7 @@ const businessController = {
         console.log("🔄 Bank details changed — splitCode cleared.");
       }
 
-      console.log("🛠️ Update Data Prepared:", updateData);
-
       await business.update(updateData);
-      console.log("✅ Business updated successfully.");
-
-      const formatJsonField = (field) =>
-        typeof field === "string" ? JSON.parse(field) : field;
 
       const responseData = {
         ...business.toJSON(),
@@ -264,8 +369,6 @@ const businessController = {
         amenities: business.amenities,
         hours: business.hours,
       };
-
-      console.log("📦 Final Response Data:", responseData);
 
       res.status(200).json({
         message: "Business updated successfully",
@@ -280,12 +383,11 @@ const businessController = {
       });
     }
   },
-  
+
   getBusinessPosts: async (req, res) => {
     const { businessId } = req.params;
 
     try {
-      // Query the Business table with its related posts
       const business = await Business.findByPk(businessId, {
         attributes: ["id", "name", "type", "logo"],
         include: {
@@ -317,7 +419,6 @@ const businessController = {
       const { businessId } = req.params;
       const { userId, location, wifiName } = req.body;
 
-      // Validate inputs
       if (!userId) {
         return res.status(400).json({ error: "userId is required" });
       }
@@ -363,21 +464,16 @@ const businessController = {
   // business.controller.js
   filterBusinesses: async (req, res) => {
     try {
-      // Extract all possible filter parameters
       const filters = {
         wifi: req.query.wifi === "true",
         parkingSpace: req.query.parkingSpace === "true",
         airConditioning: req.query.airConditioning === "true",
         petFriendly: req.query.petFriendly === "true",
-        // Add more as needed
       };
 
-      // Use the appropriate service method based on your database
       const businesses = await BusinessService.filterBusinessesAlt(filters);
 
-      return res.status(200).json({
-        businesses,
-      });
+      return res.status(200).json({ businesses });
     } catch (error) {
       return res.status(500).json({
         message: "Failed to filter businesses",
@@ -416,6 +512,33 @@ const businessController = {
     }
   },
 
+  searchBusinessesName: async (req, res) => {
+    try {
+      const { searchTerm } = req.query;
+      const businesses = await Business.findAll({ where:{ 
+          name: { [Op.like]: `%${searchTerm}%` }
+        },
+      });
+      return res.status(200).json({ businesses, message: "Businesses fetched "});
+
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to search businesses",
+        error: error.message,
+      });
+    }
+  },
+
+  searchBusinessesByLocation: async (req, res) => {
+    const { latitude, longitude } = req.query;
+    try {
+      const businesses = await BusinessService.searchBusinessbyLocation(latitude, longitude);
+      if (!businesses) return res.status(404).json({ message: "No record found" });
+      return res.status(200).json({ businesses });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
 };
 
 module.exports = businessController;

@@ -2,9 +2,10 @@ const { NetworkRouter, TicketProfile } = require('../models');
 const RouterConnect = require("../services/MikrotikService");
 
 
-const addRouter  = async(req, res)=>{
+exports.addRouter  = async(req, res)=>{
     const { host, user, password } = req.body; 
-    const userID = req.userId;    
+    const userID = req.userId;
+    let client;    
     try { 
 
         let networkRouter = await NetworkRouter.findOne({ 
@@ -15,19 +16,20 @@ const addRouter  = async(req, res)=>{
             res.status(200).json({ messsage: "You have added router already" });
         }
         
-        const { router, api } = await RouterConnect.connector({ host, user, password });
-        const systemInfo = await router.menu('/system/resource').getOnly();
-        await api.close();   
+        client = await RouterConnect.connector({ host, user, password });
+        const systemInfo = await client.router.menu('/system/resource').getOnly();
+        await client.api.close(); 
         networkRouter = await NetworkRouter.create({ host, username: user, password, userId: userID, metadata: systemInfo });
         
         res.status(200).json({networkRouter, message: "Network router added"});
     } catch (error) {
+        if(client && client.api) await client.api.close(); 
         console.log(error);
         res.status(400).json({ messsage: "Failed to connect to router." });
     }
 }
 
-const fetchRouter = async (req, res)=>{
+exports.fetchRouter = async (req, res)=>{
     const userID = req.userId;
     try {
         const router = await NetworkRouter.findAll({
@@ -40,7 +42,7 @@ const fetchRouter = async (req, res)=>{
     }
 }
 
-const editRouter = async(req, res)=>{
+exports.editRouter = async(req, res)=>{
     const userID = req.userId;
     try {
         const { routerId, host, user, password } = req.body;
@@ -60,8 +62,9 @@ const editRouter = async(req, res)=>{
     }
 }
 
-const checkRouterConnection = async(req, res)=>{
+exports.checkRouterConnection = async(req, res)=>{
    const userID = req.userId;
+   let client;
     try {
         const networkRouter = await NetworkRouter.findOne({ 
             where: { userId: userID }
@@ -69,18 +72,20 @@ const checkRouterConnection = async(req, res)=>{
         if(!networkRouter){
             res.status(400).json({ messsage: "Failed to check connection, router not found." });
         }
-        const { router, api } = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
-        const systemInfo = await router.menu('/system/resource').getOnly();  
-        await api.close();   
+        client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
+        const systemInfo = await client.router.menu('/system/resource').getOnly();  
+        await client.api.close();   
         res.status(200).json({ systemInfo, message: "Connection was established to router."});
     } catch (error) {
+        if(client && client.api) await client.api.close();
         console.log(error);
         res.status(400).json({ messsage: "Failed to update network router info." });
     } 
 }
 
-const syncProfiles = async(req, res)=>{
+exports.syncProfiles = async(req, res)=>{
     const userID = req.userId;
+    let client;
     try {
         const networkRouter = await NetworkRouter.findOne({ 
             where: { userId: userID }
@@ -88,9 +93,9 @@ const syncProfiles = async(req, res)=>{
         if(!networkRouter){
             res.status(400).json({ messsage: "Failed to sync ticket profiles, router not found." });
         }
-        const { router, api } = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
-        const profiles = await router.menu('/tool/user-manager/profile').getAll();
-        await api.close();
+        client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
+        const profiles = await client.router.menu('/tool/user-manager/profile').getAll();
+        await client.api.close();
         profiles.forEach(async( profile ) => {
             const ticketProfile = await TicketProfile.findOne({ where: { name: profile.name, routerId: networkRouter.id, userId: userID} });
             if (!ticketProfile) {
@@ -99,12 +104,13 @@ const syncProfiles = async(req, res)=>{
         });
         res.status(200).json({ profiles, message: "Ticket profile have been sync" });
     } catch (error) {
+        if(client && client.api) await client.api.close();
         console.log(error);
         res.status(400).json({ messsage: "Failed to sync ticket profiles." });
     }
 }
 
-const editTicketProfile = async(req, res)=>{
+exports.editTicketProfile = async(req, res)=>{
     const userID = req.userId;
     try {
         const { profileId, title, description, bandwidth, status, amount } = req.body;
@@ -123,7 +129,7 @@ const editTicketProfile = async(req, res)=>{
     }
 }
 
-const addTicketPrice = async(req, res)=>{
+exports.addTicketPrice = async(req, res)=>{
     const userID = req.userId;
     try {
         const { profileId, amount } = req.body;
@@ -139,7 +145,7 @@ const addTicketPrice = async(req, res)=>{
     }
 }
 
-const changeTicketStatus = async(req, res)=>{
+exports.changeTicketStatus = async(req, res)=>{
     const { profileId, status } = req.body;
     const userID = req.userId;
     try {
@@ -157,7 +163,7 @@ const changeTicketStatus = async(req, res)=>{
     }
 }
 
-const fetchTicketProfile = async (req, res)=>{
+exports.fetchTicketProfile = async (req, res)=>{
     const userID = req.userId;
     try {
         const profiles = await TicketProfile.findAll({
@@ -170,5 +176,25 @@ const fetchTicketProfile = async (req, res)=>{
     }
 }
 
-module.exports = { addRouter, syncProfiles, addTicketPrice, changeTicketStatus, fetchTicketProfile, fetchRouter, editTicketProfile, editRouter, checkRouterConnection }
+exports.routerCommand = async(req, res)=>{
+   const { routerId } = req.query;
+   let client;
+    try {
+        const networkRouter = await NetworkRouter.findOne({ 
+            where: { id: routerId }
+        });
+        if(!networkRouter){
+            res.status(400).json({ messsage: "Failed to check connection, router not found." });
+        }
+        client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
+        const systemInfo = await client.router.menu('/system/resource').write();
+        await client.api.close();   
+        res.status(200).json({ systemInfo, message: "Connection was established to router."});
+    } catch (error) {
+        if(client && client.api) await client.api.close();
+        console.log(error);
+        res.status(400).json({ messsage: "Failed to update network router info." });
+    } 
+}
+
 

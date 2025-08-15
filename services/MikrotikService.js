@@ -47,7 +47,7 @@ exports.generateTicket = async ( ticketProfile )=>{
 
     } catch (error) {
         console.log(error);
-        client.close();
+        if(client) await client.close();
         throw new Error("Failed to generate ticket.");
     }
 

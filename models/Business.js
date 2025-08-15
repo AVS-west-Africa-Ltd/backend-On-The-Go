@@ -93,6 +93,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         field: 'account_number'
       },
+      ratingsCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+
+      },
+      postsCount:{
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      }
     },
     {
       tableName: "businesses",

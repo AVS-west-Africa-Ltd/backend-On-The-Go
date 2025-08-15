@@ -405,6 +405,7 @@ exports.acceptJoinRequest = async (req, res) => {
 
   try {
     const room = await Room.findByPk(room_id);
+    console.log(Array.isArray(room.join_requests));
     if (!room) {
       return res.status(404).json({ success: false, message: "Room not found" });
     }

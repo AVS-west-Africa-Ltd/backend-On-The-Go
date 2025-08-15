@@ -1,6 +1,6 @@
 
 module.exports = (sequelize, DataTypes) => {
- 
+
     const RoomMember = sequelize.define('RoomMember', {
         id: {
             type: DataTypes.INTEGER,
@@ -19,6 +19,11 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
         },
+        last_read_at: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            defaultValue: null
+        },
         is_admin: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
@@ -31,8 +36,8 @@ module.exports = (sequelize, DataTypes) => {
 
     // Associate RoomMember with User
     RoomMember.associate = (models) => {
-        RoomMember.belongsTo(models.User, { foreignKey: 'user_id'});
-        RoomMember.belongsTo(models.Room, { foreignKey: 'room_id'});
+        RoomMember.belongsTo(models.User, { foreignKey: 'user_id' });
+        RoomMember.belongsTo(models.Room, { foreignKey: 'room_id' });
         RoomMember.belongsTo(models.Room, {
             foreignKey: "room_id",
             onDelete: "CASCADE",

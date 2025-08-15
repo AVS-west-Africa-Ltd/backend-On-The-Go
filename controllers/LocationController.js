@@ -7,6 +7,7 @@ const fs = require('fs');
 const { Op } = require('sequelize');
 
 module.exports = {
+  
   uploadLocations: async (req, res) => {
     try {
       if (!req.file) {
@@ -74,7 +75,7 @@ module.exports = {
         offset: offsetParsed,
       });
 
-      res.status(200).json({ locations, businesses, message: " Location & Business info fetch " });
+      res.status(200).json({ businesses, message: " Location & Business info fetch " });
 
     } catch (error) {
       console.error( "Error fetching locations & businesses:", error );
@@ -84,6 +85,5 @@ module.exports = {
     
 
   }
-
   
 };

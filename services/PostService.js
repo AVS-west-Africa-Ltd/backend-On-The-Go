@@ -18,7 +18,12 @@ const upload = multer({ storage: storage });
 class PostService {
   static async createPost(data) {
     try {
-      return await Post.create(data);
+      const post = await Post.create(data);
+      await Business.increment(
+        { ratingsCount: data.rating, postsCount: 1 },
+        { where: { id: data.businessId } }
+      );
+      return post;
     } catch (err) {
       throw err;
     }
@@ -136,32 +141,36 @@ static async deletePost(postId) {
 
 static async toggleLike(postId, userId) {
   try {
-    const post = await Post.findByPk(postId, {
-      attributes: ["id", "likes"],
-    });
+      let post = await Post.findByPk(postId, {
+        attributes: ["id", "likes"],
+      });
 
-    if (!post) return false;
+      if (!post) return false;
 
-    let likes = post.likes || [];
-    if (typeof likes === "string") {
-      likes = JSON.parse(likes);
+      let likes = post.likes || [];
+      if (typeof likes === "string") {
+        likes = JSON.parse(likes);
+      }
+      if (!Array.isArray(likes)) {
+        likes = [];
+      }
+
+      if (likes.includes(userId)) {
+        likes = likes.filter((id) => id !== userId);
+      } else {
+        likes.push(userId);
+      }
+
+      post = await Post.update(
+        { likes: likes }, 
+        { where: { id: postId } }
+      );
+
+      return post;
+    } catch (err) {
+      console.error("Error updating post:", err);
+      throw new Error("Error updating likes");
     }
-    if (!Array.isArray(likes)) {
-      likes = [];
-    }
-
-    if (likes.includes(userId)) {
-      likes = likes.filter((id) => id !== userId);
-    } else {
-      likes.push(userId);
-    }
-
-    await post.update({ likes });
-    return post;
-  } catch (err) {
-    console.error("Error updating post:", err);
-    throw new Error("Error updating likes");
-  }
 }
 
 static async ratePost(postId, newRating) {

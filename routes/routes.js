@@ -1,5 +1,6 @@
 const express = require("express");
 const chatRoutes = require("./chatRoutes");
+const otgRouter = require("./otg");
 const authRoutes = require("./Initials/authRoutes");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
@@ -69,6 +70,7 @@ router.post("/save-user-location", UserLocationController.saveLocation);
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
+router.use("/otg", otgRouter);
 
 router.post("/join-waitlist", WaitlistController.joinWaitlist);
 router.get("/waitlist", WaitlistController.getWaitlist);

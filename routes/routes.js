@@ -120,6 +120,14 @@ router.post(
   "/:userId/follow/:followedId",
   catchErrors(UserController.addFollower)
 );
+router.post(
+  "/follower/block",
+  catchErrors(UserController.blockFollower)
+);
+router.post(
+  "/user/block",
+  catchErrors(UserController.blockUser)
+);
 router.delete(
   "/:userId/unfollow/:followedId",
   catchErrors(UserController.removeFollower)

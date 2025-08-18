@@ -13,7 +13,7 @@ const {
 } = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const { User, DeleteRequest, Referral, sequelize } = require("../models");
+const { User, DeleteRequest, Referral, sequelize, UserFollower } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
 const { RandomCharacters } = require("../helpers");
 const sendEmail = require("../services/sendEmail");
@@ -21,7 +21,7 @@ const sendEmail = require("../services/sendEmail");
 
 class UserController {
 
-  // INSIDE class UserController
+  
   static async CreateUser(req, res) {
     try {
       const {
@@ -576,6 +576,45 @@ class UserController {
       return res.status(200).json({ message: "Follower removed successfully" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async blockFollower(req, res) {
+    try {
+      const { followedId } = req.body;
+      const follower = await UserFollower.findOne({
+        where: {
+          followerId: req.userId,
+          followedId,
+          status: "active",
+        },
+      });
+
+      if(!follower){
+        return res.status(400).json({ message: "Error blocking follower" });
+      }
+
+      follower.status = "blocked";
+      await follower.save();
+
+      return res.status(200).json({ message: "Follower blocked successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "Error blocking user" });
+    }
+  }
+
+  static async blockUser(req, res) {
+    try {
+      const { followedId } = req.body;
+      const follower = await UserFollower.create({
+        followerId: req.userId,
+        followedId,
+        status: "blocked",
+      });
+
+      return res.status(200).json({ message: "User blocked successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "Error blocking user" });
     }
   }
 

@@ -2,54 +2,78 @@ const RouterOSClient = require('sy5-routeros-client').RouterOSClient;
 const { NetworkRouter } = require('../models');
 const {  RandomCharacters } = require('../helpers');
 
-exports.connector = async ( credentials )=>{
+exports.getSystemResource = async (credentials) => {
+  let client;
+  try {
+    client = new RouterOSClient(credentials);
+    const router = await client.connect();
+    const systemInfo = await router.menu("/system/resource").getOnly();
 
-    const api = new RouterOSClient({
-        host: credentials.host,
-        user: credentials.user,
-        password: credentials.password
+    if (!systemInfo) throw new Error("Failed to fetch system resource.");
+    return systemInfo;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch system resource.");
+  } finally {
+    if (client) await client.close();
+  }
+};
+
+exports.fetchProfile = async (credentials) => {
+  let client;
+  try {
+    client = new RouterOSClient(credentials);
+    const router = await client.connect();
+    const profiles = await router.menu("/tool/user-manager/profile").getAll();
+
+    if (!profiles) throw new Error("Failed to fetch profiles.");
+    return profiles;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to fetch profiles.");
+  } finally {
+    if (client) await client.close();
+  }
+};
+
+exports.generateTicket = async (ticketProfile) => {
+  let client;
+  try {
+    // Fetch router from DB
+    const networkRouter = await NetworkRouter.findOne({
+      where: { id: ticketProfile.routerId },
     });
-    try {
-        const router = await api.connect();
-        return { router, api };
-    } catch (error) {
-        console.log(error);
-        api.close();
-        throw new Error("Failed to connect to router.");
-    }
-    
-}
+    if (!networkRouter) throw new Error("Failed to fetch network router.");
 
-exports.generateTicket = async ( ticketProfile )=>{
-    let client;
-    try {
-        
-        const networkRouter = await NetworkRouter.findOne({ where: { id: ticketProfile.routerId } });
+    const credentials = {
+      host: networkRouter.host,
+      user: networkRouter.username,
+      password: networkRouter.password,
+    };
 
-        if(!networkRouter) throw new Error("Failed to fetch network router.");
+    client = new RouterOSClient(credentials);
+    const router = await client.connect();
 
-        const credentials = { host:networkRouter.host, user: networkRouter.username, password: networkRouter.password };
+    // Add new user in User Manager
+    const userManagerMenu = router.menu("/tool/user-manager/user");
+    const ticketInfo = { username: RandomCharacters(6), password: RandomCharacters(6) }
+    const ticket = await userManagerMenu.add({
+      ...ticketInfo,
+      customer: ticketProfile.owner,
+    });
 
-        client =  new RouterOSClient( credentials );
+    // Activate profile
+    await userManagerMenu.exec("create-and-activate-profile", {
+      customer: ticketProfile.owner,
+      profile: ticketProfile.name,
+      numbers: ticket.id,
+    });
 
-        const router = await client.connect();
-
-        const ticket = await router.menu('/tool/user-manager/user').add({
-            username: RandomCharacters(6),
-            password:  RandomCharacters(6),
-            customer: ticketProfile.owner,
-        });
-
-        //const profile = await router.menu().write(`/tool user-manager user create-and-activate-profile ${ticket.username} customer=operator  profile=5DAYS`);
-
-        client.close();
-        return { ticket };
-
-    } catch (error) {
-        console.log(error);
-        if(client) await client.close();
-        throw new Error("Failed to generate ticket.");
-    }
-
-    
-}
+    return ticketInfo;
+  } catch (error) {
+    console.error("Ticket generation failed:", error);
+    throw new Error("Failed to generate ticket.");
+  } finally {
+    if (client) await client.close();
+  }
+};

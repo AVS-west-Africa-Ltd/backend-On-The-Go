@@ -1,4 +1,4 @@
-// models/WifiSpot.js
+
 module.exports = (sequelize, DataTypes) => {
   const WifiSpot = sequelize.define(
     'WifiSpot',

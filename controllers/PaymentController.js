@@ -35,25 +35,39 @@ const createTransaction = async(req, res)=>{
 }
 
 const verifyPayment = async(req, res)=>{
-    const { reference } = req.body;
+    
     try {
-        const transaction = await Transaction.findOne({ where: { reference: reference}});
+      const { reference } = req.body;
 
-        if(!transaction) res.status(400).json({message: "Failed to fetch payment transaction"});
+      const transaction = await Transaction.findOne({
+        where: { reference: reference },
+      });
 
-        const ticketProfile = await TicketProfile.findOne({ where: { id: transaction.ticketId}});
+      if (!transaction){
+        res
+          .status(400)
+          .json({ message: "Failed to fetch payment transaction" });
+      }
 
-        if(!ticketProfile) res.status(400).json({message: "Failed to fetch ticket profile"});
+      const ticketProfile = await TicketProfile.findOne({
+        where: { id: transaction.ticketId },
+      });
 
-        const hotspotTicket = await generateTicket(ticketProfile.toJSON());
+      if (!ticketProfile){
+        res.status(400).json({ message: "Failed to fetch ticket profile" });
+      }
 
-        await transaction.update({ status: "completed", hotspotTicket: hotspotTicket.ticket });
+      const hotspotTicket = await generateTicket(ticketProfile.toJSON());
 
-        res.status(200).json({ transaction });
+      await transaction.update({
+        status: "completed",
+        hotspotTicket: hotspotTicket,
+      });
 
+      res.status(200).json({ transaction });
     } catch (error) {
-        console.log(error);
-        return res.status(400).json({ message:"Failed to verify payment" });
+      console.log(error);
+      return res.status(400).json({ message: "Failed to verify payment" });
     }
     
 }

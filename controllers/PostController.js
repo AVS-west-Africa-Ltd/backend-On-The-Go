@@ -341,7 +341,7 @@ class PostController {
 
   static async getPosts(req, res) {
     try {
-      const posts = await PostService.getPosts();
+      const posts = await PostService.getPosts(req.userId);
       // Debug: log fetched posts
       if (!posts || posts.length === 0) return res.status(404).json({ message: "Posts not found", info: [] });
       return res.status(200).json({ info: posts });

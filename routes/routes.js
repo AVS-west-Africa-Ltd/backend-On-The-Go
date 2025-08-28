@@ -1,5 +1,6 @@
 const express = require("express");
 const chatRoutes = require("./chatRoutes");
+const otgRouter = require("./otg");
 const authRoutes = require("./Initials/authRoutes");
 const router = express.Router();
 const UserController = require("../controllers/UserController");
@@ -69,6 +70,7 @@ router.post("/save-user-location", UserLocationController.saveLocation);
 
 router.use("/chat", chatRoutes);
 router.use("/auth", authRoutes);
+router.use("/otg", otgRouter);
 
 router.post("/join-waitlist", WaitlistController.joinWaitlist);
 router.get("/waitlist", WaitlistController.getWaitlist);
@@ -119,6 +121,14 @@ router.put(
 router.post(
   "/:userId/follow/:followedId",
   catchErrors(UserController.addFollower)
+);
+router.post(
+  "/follower/block", authMiddleware,
+  catchErrors(UserController.blockFollower)
+);
+router.post(
+  "/user/block", authMiddleware,
+  catchErrors(UserController.blockUser)
 );
 router.delete(
   "/:userId/unfollow/:followedId",
@@ -188,7 +198,7 @@ router.get(
 );
 
 // Post routes
-router.post("/user/post", catchErrors(PostController.createPost));
+router.post("/user/post", authMiddleware, catchErrors(PostController.createPost));
 router.get("/user/post/:postId", catchErrors(PostController.getPostById));
 router.get(
   "/posts/user/:userId/:postType",
@@ -198,7 +208,7 @@ router.put(
   "/user/:userId/push-token",
   catchErrors(UserController.updatePushToken)
 );
-router.get("/posts/user", catchErrors(PostController.getPosts));
+router.get("/posts/user", authMiddleware, catchErrors(PostController.getPosts));
 router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
 router.post("/:userId/likes/:postId", catchErrors(PostController.toggleLike));

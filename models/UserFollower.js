@@ -2,12 +2,10 @@
 module.exports = (sequelize, DataTypes) => {
     const UserFollower = sequelize.define('UserFollower', {
         followerId: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
+            type: DataTypes.INTEGER,  
         },
         followedId: {
             type: DataTypes.INTEGER,
-            primaryKey: true,
         },
         status: {
             type: DataTypes.ENUM('active', 'blocked'),
@@ -18,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: DataTypes.NOW,
         },
     },{
-        tableName: 'userfollowers' // Explicitly set table name
+        tableName: 'userfollowers'
     }
     );
 

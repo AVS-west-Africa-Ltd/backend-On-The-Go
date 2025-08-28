@@ -1,33 +1,40 @@
 const { NetworkRouter, TicketProfile } = require('../models');
-const RouterConnect = require("../services/MikrotikService");
+const Mikrotik = require("../services/MikrotikService");
 
 
-exports.addRouter  = async(req, res)=>{
-    const { host, user, password } = req.body; 
+exports.addRouter = async (req, res) => {
+  
+  try {
+    const { host, user, password } = req.body;
     const userID = req.userId;
-    let client;    
-    try { 
+    let router = await NetworkRouter.findOne({
+      where: { userId: userID },
+    });
 
-        let networkRouter = await NetworkRouter.findOne({ 
-            where: { userId: userID }
-        });
-
-        if(networkRouter){
-            res.status(200).json({ messsage: "You have added router already" });
-        }
-        
-        client = await RouterConnect.connector({ host, user, password });
-        const systemInfo = await client.router.menu('/system/resource').getOnly();
-        await client.api.close(); 
-        networkRouter = await NetworkRouter.create({ host, username: user, password, userId: userID, metadata: systemInfo });
-        
-        res.status(200).json({networkRouter, message: "Network router added"});
-    } catch (error) {
-        if(client && client.api) await client.api.close(); 
-        console.log(error);
-        res.status(400).json({ messsage: "Failed to connect to router." });
+    if (router) {
+      res.status(200).json({ messsage: "You have added router already" });
     }
-}
+
+    const systemInfo = await Mikrotik.getSystemResource({
+      host,
+      user,
+      password,
+    });
+
+    router = await NetworkRouter.create({
+      host,
+      username: user,
+      password,
+      userId: userID,
+      metadata: systemInfo,
+    });
+
+    res.status(200).json({ router, message: "Network router added" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ messsage: "Failed to add router." });
+  }
+};
 
 exports.fetchRouter = async (req, res)=>{
     const userID = req.userId;
@@ -63,56 +70,69 @@ exports.editRouter = async(req, res)=>{
 }
 
 exports.checkRouterConnection = async(req, res)=>{
-   const userID = req.userId;
-   let client;
+   
     try {
-        const networkRouter = await NetworkRouter.findOne({ 
+        const userID = req.userId;
+        const router = await NetworkRouter.findOne({ 
             where: { userId: userID }
         });
-        if(!networkRouter){
+        if(!router){
             res.status(400).json({ messsage: "Failed to check connection, router not found." });
         }
-        client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
-        const systemInfo = await client.router.menu('/system/resource').getOnly();  
-        await client.api.close();   
+        
+        const systemInfo = await Mikrotik.getSystemResource({ host: router.host, user: router.username, password: router.password });
+         
         res.status(200).json({ systemInfo, message: "Connection was established to router."});
     } catch (error) {
-        if(client && client.api) await client.api.close();
         console.log(error);
         res.status(400).json({ messsage: "Failed to update network router info." });
     } 
 }
 
-exports.syncProfiles = async(req, res)=>{
-    const userID = req.userId;
-    let client;
+exports.syncProfiles = async (req, res) => {
+    
     try {
-        const networkRouter = await NetworkRouter.findOne({ 
-            where: { userId: userID }
+        const userID = req.userId;
+        const router = await NetworkRouter.findOne({
+            where: { userId: userID },
         });
-        if(!networkRouter){
-            res.status(400).json({ messsage: "Failed to sync ticket profiles, router not found." });
+        if (!router) {
+            res.status(400).json({ messsage: "Failed to sync ticket profiles, router not found."});
         }
-        client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
-        const profiles = await client.router.menu('/tool/user-manager/profile').getAll();
-        await client.api.close();
-        profiles.forEach(async( profile ) => {
-            const ticketProfile = await TicketProfile.findOne({ where: { name: profile.name, routerId: networkRouter.id, userId: userID} });
-            if (!ticketProfile) {
-                await TicketProfile.create({ name: profile.name, price: 0, routerId: networkRouter.id, userId: userID,  owner: profile.owner });
-            }          
+
+        const profiles = await Mikrotik.fetchProfile({
+            host: router.host,
+            user: router.username,
+            password: router.password,
+        });
+        if (!profiles) {
+            res.status(400).json({ messsage: "Failed to sync ticket profiles." });
+        }
+        profiles.forEach(async (profile) => {
+            const ticketProfile = await TicketProfile.findOne({
+            where: { name: profile.name, routerId: router.id, userId: userID },
+        });
+        if (!ticketProfile) {
+            await TicketProfile.create({
+            name: profile.name,
+            price: 0,
+            routerId: router.id,
+            userId: userID,
+            owner: profile.owner,
+            });
+        }
         });
         res.status(200).json({ profiles, message: "Ticket profile have been sync" });
     } catch (error) {
-        if(client && client.api) await client.api.close();
         console.log(error);
         res.status(400).json({ messsage: "Failed to sync ticket profiles." });
     }
-}
+};
 
 exports.editTicketProfile = async(req, res)=>{
-    const userID = req.userId;
+    
     try {
+        const userID = req.userId;
         const { profileId, title, description, bandwidth, status, amount } = req.body;
         const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID }});
         await profile.update({ 
@@ -153,7 +173,6 @@ exports.changeTicketStatus = async(req, res)=>{
         if (!profile) {
             res.status(400).json({ message: "Failed profile not found"});
         }
-        console.log(profile);
         profile.isActive = status;
         await profile.save();
         res.status(200).json({ message: "Profile status changed"});
@@ -177,23 +196,30 @@ exports.fetchTicketProfile = async (req, res)=>{
 }
 
 exports.routerCommand = async(req, res)=>{
-   const { routerId } = req.query;
+   const { username } = req.query;
    let client;
     try {
-        const networkRouter = await NetworkRouter.findOne({ 
-            where: { id: routerId }
+
+        client = await RouterConnect.connector({ host: "192.168.88.1", user: "remote", password: "12345678" });
+        const userManagerMenu = await client.router.menu('/tool user-manager user');
+        const user = await userManagerMenu.exec(`add`, {
+            username,
+            password: "12345678",
+            customer: "operator"
         });
-        if(!networkRouter){
-            res.status(400).json({ messsage: "Failed to check connection, router not found." });
-        }
-        client = await RouterConnect.connector({ host: networkRouter.host, user: networkRouter.username, password: networkRouter.password });
-        const systemInfo = await client.router.menu('/system/resource').write();
-        await client.api.close();   
-        res.status(200).json({ systemInfo, message: "Connection was established to router."});
+        const num = parseInt(user[0].ret.replace(/\D/g, ''), 10); // extract number only
+        const result = num - 1;
+        const profile = await userManagerMenu.exec("create-and-activate-profile", {
+            customer:"operator",
+            profile:"1HR",
+            numbers: result
+        })
+        await client.api.close();
+        res.status(200).json({ user, message: "Connection was establisshed to router."});
     } catch (error) {
         if(client && client.api) await client.api.close();
         console.log(error);
-        res.status(400).json({ messsage: "Failed to update network router info." });
+        res.status(400).json({ messsage: error.message });
     } 
 }
 

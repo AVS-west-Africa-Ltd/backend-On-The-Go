@@ -1,4 +1,6 @@
+
 const { developmentErrors } = require('../handlers/errorHandler');
+
 const { Activity } = require('../models');
 
 const activityLogger = (req, res, next) => {

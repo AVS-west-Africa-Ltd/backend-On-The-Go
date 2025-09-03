@@ -8,7 +8,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Message operations
-router.post("/message/send", chatController.sendMessage);
+router.post("/message/send", authMiddleware, chatController.sendMessage);
 router.get("/message/history", chatController.getMessages);
 router.delete("/message/delete", chatController.deleteMessage);
 router.get("/room/:roomId/messages", chatController.getRoomMessages);

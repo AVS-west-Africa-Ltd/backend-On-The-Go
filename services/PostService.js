@@ -1,4 +1,4 @@
-const { Post, Business, User, Comment, UserFollower }= require("../models");
+const { Post, Business, User, Comment, UserFollower, BlockedUser }= require("../models");
 const { Op, Sequelize } = require("sequelize");
 const multer = require("multer");
 const path = require("path");
@@ -72,15 +72,13 @@ class PostService {
 
 static async getPosts(currentUserId) {
   try {
-    const blockedUsers = await UserFollower.findAll({
+    const blockedUsers = await BlockedUser.findAll({
       where: {
-        followerId: currentUserId,
-        status: 'blocked'
-      },
-      attributes: ['followedId']
+        user: currentUserId,
+      }
     });
 
-    const blockedIds = blockedUsers.map(b => b.followedId);
+    const blockedIds = blockedUsers.map(b => b.blocked);
 
     const posts = await Post.findAll({
       where: {
@@ -128,6 +126,7 @@ static async getPosts(currentUserId) {
       };
     });
   } catch (error) {
+    console.log(error);
     throw error;
   }
 }

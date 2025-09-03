@@ -3,16 +3,19 @@ module.exports = (sequelize, DataTypes) => {
   const WifiSpot = sequelize.define(
     'WifiSpot',
     {
-      id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
       ssid: { type: DataTypes.STRING(128), allowNull: false },
-      password_enc: { type: DataTypes.TEXT, allowNull: true }, // AES-256 encrypted
+      username: { type: DataTypes.TEXT, allowNull: true },
+      password: { type: DataTypes.TEXT, allowNull: true },
+
       latitude: { type: DataTypes.DECIMAL(10, 7), allowNull: false },
       longitude: { type: DataTypes.DECIMAL(10, 7), allowNull: false },
-      platform: { type: DataTypes.STRING(16), allowNull: true },
-      capturedAt: { type: DataTypes.DATE, allowNull: true },
-      source_ip: { type: DataTypes.STRING(45), allowNull: true },
-      submitted_by: { type: DataTypes.INTEGER, allowNull: true }, // optional FK to User
-      approved: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+
+      security: { type: DataTypes.STRING(64), allowNull: true },
+      provider: { type: DataTypes.STRING(128), allowNull: true },
+      download_speed_mbps: { type: DataTypes.FLOAT, allowNull: true },
+      upload_speed_mbps: { type: DataTypes.FLOAT, allowNull: true },
+      address: { type: DataTypes.TEXT, allowNull: true },
+      notes: { type: DataTypes.TEXT, allowNull: true },
     },
     {
       tableName: 'wifi_spots',
@@ -25,8 +28,21 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  WifiSpot.associate = (models) => {
-    // Optional: WifiSpot.belongsTo(models.User, { foreignKey: 'submitted_by' });
+  WifiSpot.addHook('beforeValidate', (record) => {
+    const bssid = (record.bssid || '').trim().toLowerCase();
+    if (bssid) {
+      record.uniqueKey = `bssid:${bssid}`;
+    } else {
+      const ssid = (record.ssid || '').trim().toLowerCase();
+      const lat = record.latitude ?? 'null';
+      const lng = record.longitude ?? 'null';
+      record.uniqueKey = `ssid:${ssid}|lat:${lat}|lng:${lng}`;
+    }
+  });
+
+  WifiSpot.associate = (_models) => {
+    // Optionally relate to User:
+    // WifiSpot.belongsTo(models.User, { foreignKey: 'submitted_by' });
   };
 
   return WifiSpot;

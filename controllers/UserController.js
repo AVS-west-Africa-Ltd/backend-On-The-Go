@@ -13,15 +13,13 @@ const {
 } = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const { User, DeleteRequest, Referral, sequelize, UserFollower } = require("../models");
+const { User, DeleteRequest, Referral, sequelize, UserFollower, BlockedUser } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
 const { RandomCharacters } = require("../helpers");
 const sendEmail = require("../services/sendEmail");
 
 
 class UserController {
-
-  
   static async CreateUser(req, res) {
     try {
       const {
@@ -32,13 +30,18 @@ class UserController {
         phone_number,
         firstName,
         lastName,
-        gender,
         isStudent,
         university,
         referralCode,
       } = req.body;
 
-      if (!email || !password || !username || !firstName || !lastName || !gender) {
+      if (
+        !email ||
+        !password ||
+        !username ||
+        !firstName ||
+        !lastName
+      ) {
         return res.status(400).json({
           message:
             "Email, username, password, first name, last name and gender are required",
@@ -49,7 +52,9 @@ class UserController {
       if (isStudent && !university) {
         return res.status(400).json({
           message: "University is required for student registration",
-          errors: [{ field: "university", message: "Please select your university" }],
+          errors: [
+            { field: "university", message: "Please select your university" },
+          ],
         });
       }
 
@@ -64,17 +69,28 @@ class UserController {
       if (existingUser) {
         const conflicts = [];
         if (existingUser.email === email) {
-          conflicts.push({ field: "email", message: "Email already registered" });
+          conflicts.push({
+            field: "email",
+            message: "Email already registered",
+          });
         }
         if (phone_number && existingUser.phone_number === phone_number) {
-          conflicts.push({ field: "phone_number", message: "Phone number already used" });
+          conflicts.push({
+            field: "phone_number",
+            message: "Phone number already used",
+          });
         }
         if (existingUser.username === username) {
-          conflicts.push({ field: "username", message: "Username already taken" });
+          conflicts.push({
+            field: "username",
+            message: "Username already taken",
+          });
         }
 
         if (conflicts.length > 0) {
-          return res.status(400).json({ message: "Validation error", errors: conflicts });
+          return res
+            .status(400)
+            .json({ message: "Validation error", errors: conflicts });
         }
       }
 
@@ -97,7 +113,10 @@ class UserController {
         if (referrerUser) {
           await sequelize.transaction(async (t) => {
             await referrerUser.update(
-              { successfulReferrals: (referrerUser.successfulReferrals || 0) + 1 },
+              {
+                successfulReferrals:
+                  (referrerUser.successfulReferrals || 0) + 1,
+              },
               { transaction: t }
             );
             await Referral.create(
@@ -129,7 +148,7 @@ class UserController {
           };
 
           // Links (replace with your real ones)
-           const businessLink = "https://onthego.africa/business";
+          const businessLink = "https://onthego.africa/business";
           const instagram = "https://instagram.com/onthegoafrica";
           const tiktok = "https://www.tiktok.com/@onthegoafrica";
           const linkedin = "https://www.linkedin.com/company/onthegoafrica";
@@ -160,14 +179,18 @@ class UserController {
           <!-- Hero -->
           <tr>
             <td>
-              <img src="${IMG.hero}" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
+              <img src="${
+                IMG.hero
+              }" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
             </td>
           </tr>
 
           <!-- Greeting -->
           <tr>
             <td class="p16" style="padding:24px 28px 8px 28px;font-family:Arial,Helvetica,sans-serif;color:#0F172A">
-              <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;">Hey ${firstName || "there"},</p>
+              <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;">Hey ${
+                firstName || "there"
+              },</p>
               <p style="margin:0;font-size:16px;line-height:24px;color:#334155">
                 Welcome to the OTG community—where staying connected is no longer a hustle!
                 Whether you're catching up on schoolwork, working on the go, or just exploring,
@@ -176,7 +199,9 @@ class UserController {
             </td>
           </tr>
             <td>
-              <img src="${IMG.reviewBanner}" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
+              <img src="${
+                IMG.reviewBanner
+              }" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
             </td>
 
 
@@ -201,7 +226,9 @@ class UserController {
           </tr>
 
             <td>
-              <img src="${IMG.business}" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
+              <img src="${
+                IMG.business
+              }" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
             </td>
 
           <!-- Business CTA -->
@@ -224,7 +251,9 @@ class UserController {
           <!-- Community banner -->
           <tr>
             <td style="padding:8px 28px 8px 28px">
-              <img src="${IMG.community}" width="100%" alt="Built by the Community, for the Community." style="display:block;border-radius:12px" />
+              <img src="${
+                IMG.community
+              }" width="100%" alt="Built by the Community, for the Community." style="display:block;border-radius:12px" />
             </td>
           </tr>
 
@@ -254,7 +283,10 @@ class UserController {
           await sendEmail({ to: email, subject, html });
           console.log("[CreateUser] Welcome email sent to:", email);
         } catch (err) {
-          console.error("[CreateUser] Failed to send welcome email:", err.message);
+          console.error(
+            "[CreateUser] Failed to send welcome email:",
+            err.message
+          );
         }
       })();
       // ---------- END WELCOME EMAIL ----------
@@ -281,14 +313,20 @@ class UserController {
           })) || [];
         return res.status(400).json({
           message: "Validation error",
-          errors: errors.length > 0 ? errors : [{ field: "unknown", message: "Unique constraint failed" }],
+          errors:
+            errors.length > 0
+              ? errors
+              : [{ field: "unknown", message: "Unique constraint failed" }],
         });
       }
 
       if (error.status === 400 && Array.isArray(error.errors)) {
         const transformedErrors = error.errors.map((err) => ({
           field: (err.field || "").replace("users_", ""),
-          message: `${(err.field || "").replace("users_", "")} is already taken`,
+          message: `${(err.field || "").replace(
+            "users_",
+            ""
+          )} is already taken`,
         }));
 
         return res.status(400).json({
@@ -539,8 +577,8 @@ class UserController {
       const statusCode = error.message.includes("not found")
         ? 404
         : error.message.includes("Invalid")
-          ? 400
-          : 500;
+        ? 400
+        : 500;
 
       return res.status(statusCode).json({
         success: false,
@@ -559,7 +597,8 @@ class UserController {
       const { userId, followedId } = req.params;
       const followUser = await userService.followUser(userId, followedId);
 
-      if (followUser.success !== true) return res.status(400).json({ message: "Following this user failed" });
+      if (followUser.success !== true)
+        return res.status(400).json({ message: "Following this user failed" });
       return res.status(200).json({ message: "Follower added successfully" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -575,46 +614,24 @@ class UserController {
 
       return res.status(200).json({ message: "Follower removed successfully" });
     } catch (error) {
-      
       return res.status(500).json({ error: error.message });
     }
   }
-
 
   static async blockUser(req, res) {
     try {
       const { followedId } = req.body;
 
-      if (!followedId) {
-        return res.status(400).json({ message: "followedId is required" });
-      }
-
-      
-      let follower = await UserFollower.findOne({
-        where: {
-          followerId: req.userId,
-          followedId
-        }
+      const blockedUser = await BlockedUser.create({
+        user: req.userId,
+        blocked: followedId,
       });
 
-      if (follower) {
-        
-        await follower.update({ status: "blocked" });
-      } else {
-        
-        follower = await UserFollower.create({
-          followerId: req.userId,
-          followedId,
-          status: "blocked",
-        });
-      }
-
-      return res.status(200).json({ 
-        success:true,
+      return res.status(200).json({
+        success: true,
         message: "User blocked successfully",
-        data: follower 
+        data: blockedUser,
       });
-
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Error blocking user" });
@@ -1000,7 +1017,6 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
-
 }
 
 module.exports = UserController;

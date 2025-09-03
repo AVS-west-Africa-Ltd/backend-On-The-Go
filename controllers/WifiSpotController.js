@@ -1,4 +1,4 @@
-// controllers/WifiSpotController.js
+1// controllers/WifiSpotController.js
 const { Op, Sequelize } = require('sequelize');
 const { WifiSpot } = require('../models');
 const { encrypt, decrypt } = require('../services/crypto');

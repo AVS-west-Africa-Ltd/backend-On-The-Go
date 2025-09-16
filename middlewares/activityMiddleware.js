@@ -1,15 +1,26 @@
-const Activity = require('../models/Activity');
+// middlewares/activityMiddleware.js
+const { Activity } = require('../models'); // use the models index, not ../models/Activity
 
-const activityLogger = (req, res, next) => {
+function clamp(s, n) {
+  if (s == null) return null;
+  return String(s).slice(0, n);
+}
+
+module.exports = (req, res, next) => {
   res.on('finish', async () => {
     try {
+      if (!Activity || typeof Activity.create !== 'function') return;
+
+      // current DB sizes: url/userAgent 255, method 8, ip 45
       await Activity.create({
-        userId: req.user ? req.user._id : null,
-        url: req.originalUrl,
-        method: req.method,
-        ip: req.ip,
-        userAgent: req.headers['user-agent'],
-        statusCode: res.statusCode
+        userId: Number.isFinite(Number(req.user?.id ?? req.user?._id))
+          ? Number(req.user?.id ?? req.user?._id)
+          : null,
+        url: clamp(req.originalUrl, 255),
+        method: clamp(req.method, 8),
+        ip: clamp(req.ip, 45),
+        userAgent: clamp(req.headers['user-agent'], 255),
+        statusCode: res.statusCode,
       });
     } catch (err) {
       console.error('Error logging activity:', err);
@@ -18,5 +29,3 @@ const activityLogger = (req, res, next) => {
 
   next();
 };
-
-module.exports = activityLogger;

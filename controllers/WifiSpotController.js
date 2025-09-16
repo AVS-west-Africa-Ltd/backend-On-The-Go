@@ -164,7 +164,7 @@ exports.list = async (req, res) => {
     const q = (req.query.q || '').trim();
     const platform = req.query.platform || null;
     const approved = req.query.approved == null ? null : req.query.approved === 'true';
-    const order = req.query.order || 'createdAt:DESC'; // or last_signal, etc.
+    const order = req.query.order || 'createdAt:DESC';
 
     const where = {};
     if (q) where.ssid = { [Op.iLike]: `%${q}%` };
@@ -294,62 +294,28 @@ exports.near = async (req, res) => {
 // -------- Bulk upload: JSON body ----------
 exports.bulkUpload = async (req, res) => {
   try {
-    const payload = Array.isArray(req.body?.networks) ? req.body.networks
-                  : Array.isArray(req.body) ? req.body
-                  : null;
-    if (!payload || payload.length === 0) {
-      return res.status(400).json({ success:false, message: 'Send { "networks": [...] } or a raw array' });
+    const { networks } = req.body;
+    if(!Array.isArray(networks)){
+        return res.status(400).json({message: "Sorry data must be an array"});
     }
-
-    // Normalize and validate
-    const rows = payload.map(normalizeRow).filter(r => Number.isFinite(r.latitude) && Number.isFinite(r.longitude) && r.ssid);
-    if (!rows.length) return res.status(400).json({ success:false, message:'No valid rows with ssid + lat + lng' });
-
-    // Build uniqueKey now for upsert logic
-    const keyed = rows.map((r) => {
-      const bssid = (r.bssid || '').trim().toLowerCase();
-      const uniqueKey = bssid ? `bssid:${bssid}` : `ssid:${(r.ssid||'').trim().toLowerCase()}|lat:${r.latitude}|lng:${r.longitude}`;
-      return { ...r, uniqueKey };
+    networks.forEach(async function(element, index, array) {
+      await WifiSpot.create({
+        ssid: element.ssid,
+        username: element.username,
+        password: element.password,
+        latitude: element.lat,
+        longitude: element.lng,
+        security: element.security,
+        provider: element.provider,
+        download_speed_mbps: element.download_speed_mbps,
+        upload_speed_mbps: element.upload_speed_mbps,
+        address: element.address,
+        notes: element.notes
+      });
     });
-
-    // fetch existing
-    const keys = [...new Set(keyed.map(k => k.uniqueKey))];
-    const existing = await WifiSpot.findAll({ where: { uniqueKey: keys } });
-    const map = new Map(existing.map(e => [e.uniqueKey, e]));
-
-    let created = 0, updated = 0;
-
-    // Create new
-    const toCreate = [];
-    for (const r of keyed) {
-      if (!map.has(r.uniqueKey)) {
-        toCreate.push({
-          ...r,
-          password_enc: r.password ? encrypt(String(r.password)) : null,
-        });
-        created++;
-      }
-    }
-    if (toCreate.length) await WifiSpot.bulkCreate(toCreate);
-
-    // Update existing
-    for (const r of keyed) {
-      const e = map.get(r.uniqueKey);
-      if (e) {
-        const updatePayload = { ...r };
-        if (r.password !== undefined) {
-          updatePayload.password_enc = r.password ? encrypt(String(r.password)) : null;
-        }
-        delete updatePayload.password;
-        await e.update(updatePayload);
-        updated++;
-      }
-    }
-
-    return res.status(201).json({ success:true, message:'processed', created, updated, total: keyed.length });
+    res.status(200).json({message: "NetWork upload completed"});
   } catch (e) {
-    console.error('WifiSpot.bulkUpload error', e);
-    return res.status(500).json({ success:false, message:e.message });
+    return res.status(400).json({ message: "Sorry something went wrong!"});
   }
 };
 

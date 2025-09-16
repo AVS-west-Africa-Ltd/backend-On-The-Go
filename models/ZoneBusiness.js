@@ -1,4 +1,4 @@
-
+// models/ZoneBusiness.js
 module.exports = (sequelize, DataTypes) => {
   const ZoneBusiness = sequelize.define('ZoneBusiness', {
     name: {
@@ -35,10 +35,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     radius: {
       type: DataTypes.INTEGER,
-      defaultValue: 3000, // Default radius in meters
+      defaultValue: 3000,
+    },
+    // New: array of note objects { name, note, createdAt }
+    notes: {
+      type: DataTypes.JSON,
+      defaultValue: [],
     },
   });
 
-  return  ZoneBusiness;
-    
-}
+  return ZoneBusiness;
+};

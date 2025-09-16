@@ -27,11 +27,20 @@ const upload = multer({ storage });
 // Login route
 router.post('/login', zoneBusinessController.login);
 
+
+router.post('/businesses', zoneBusinessController.createBusiness);
+
 // File upload route
 router.post('/upload', upload.array('files'), zoneBusinessController.uploadFiles);
 
 // Register business route
 router.post('/register/:id', zoneBusinessController.registerBusiness);
+
+// existing multer config above
+router.post('/businesses/:id/notes', upload.single('image'), zoneBusinessController.addBusinessNote);
+
+
+router.post('/businesses/:id/notes', zoneBusinessController.addBusinessNote);
 
 // Unregister business route
 router.post('/unregister/:id', zoneBusinessController.unregisterBusiness);

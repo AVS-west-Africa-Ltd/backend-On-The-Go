@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { Chat, User, Room, RoomMember } = require('../models');
+const { Chat, User, Room, RoomMember, BlockedUser } = require('../models');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const { io } = require('../app');
@@ -208,8 +208,6 @@ function schedulePendingReplyEmail({
 }
 
 
-
-
 // ========================= Controllers =========================
 
 // Send a message
@@ -225,14 +223,27 @@ exports.sendMessage = async (req, res) => {
     const { room_id, sender_id, content, request = false } = req.body;
 
     try {
-      // Verify room membership
-      const memberInfo = await RoomMember.findOne({ where: { room_id, user_id: sender_id } });
+      
+      const members = await RoomMember.findAll({ where: { room_id } });
+      const isMember = members.some(member => member.user_id === req.userId);
 
-      if (!memberInfo) {
+      if (!isMember) {
         return res.status(403).json({ success: false, message: "You are not a member of this room" });
       }
 
-      // Check room existence and broadcast permissions
+      const blockedUsers = await BlockedUser.findAll({ where: { blocked: req.userId }});
+
+      if(blockedUsers && blockedUsers.length == 2){
+
+        const isBlocked = blockedUsers.filter(blockedUser =>
+          members.some(member => blockedUser.user === member.user_id)
+        );
+        if (isBlocked) {
+          return res.status(405).json({ success: false, message: "Blocked by this user" });
+        }
+
+      }
+      
       const room = await Room.findOne({ where: { id: room_id } });
       if (!room) {
         return res.status(404).json({ success: false, message: "Room not found" });
@@ -335,9 +346,6 @@ exports.sendMessage = async (req, res) => {
     }
   });
 };
-
-
-
 
 // Get messages for a specific room
 exports.getRoomMessages = async (req, res) => {

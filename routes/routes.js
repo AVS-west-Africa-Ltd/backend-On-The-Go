@@ -123,11 +123,11 @@ router.post(
   catchErrors(UserController.addFollower)
 );
 router.post(
-  "/follower/block",
+  "/follower/block", authMiddleware,
   catchErrors(UserController.blockFollower)
 );
 router.post(
-  "/user/block",
+  "/user/block", authMiddleware,
   catchErrors(UserController.blockUser)
 );
 router.delete(
@@ -198,17 +198,11 @@ router.get(
 );
 
 // Post routes
-router.post("/user/post", catchErrors(PostController.createPost));
+router.post("/user/post", authMiddleware, catchErrors(PostController.createPost));
 router.get("/user/post/:postId", catchErrors(PostController.getPostById));
-router.get(
-  "/posts/user/:userId/:postType",
-  catchErrors(PostController.GetPostsByUserId)
-);
-router.put(
-  "/user/:userId/push-token",
-  catchErrors(UserController.updatePushToken)
-);
-router.get("/posts/user", catchErrors(PostController.getPosts));
+router.get("/posts/user/:userId/:postType",catchErrors(PostController.GetPostsByUserId));
+router.put("/user/:userId/push-token",catchErrors(UserController.updatePushToken));
+router.get("/posts/user", authMiddleware, catchErrors(PostController.getPosts));
 router.put("/update/post/:postId", catchErrors(PostController.updatePost));
 router.delete("/delete/post/:postId", catchErrors(PostController.deletePost));
 router.post("/:userId/likes/:postId", catchErrors(PostController.toggleLike));
@@ -218,10 +212,7 @@ router.get(
   catchErrors(PostController.getPostStatistics)
 );
 
-router.post(
-  "/:userId/bookmark/:postId",
-  catchErrors(PostController.bookmarkPost)
-);
+router.post("/:userId/bookmark/:postId", catchErrors(PostController.bookmarkPost));
 router.get(
   "/users/:userId/bookmarks",
   catchErrors(PostController.getBookmarkedPosts)

@@ -7,8 +7,8 @@ module.exports = (sequelize, DataTypes) => {
       username: { type: DataTypes.TEXT, allowNull: true },
       password: { type: DataTypes.TEXT, allowNull: true },
 
-      latitude: { type: DataTypes.DECIMAL(10, 7), allowNull: false },
-      longitude: { type: DataTypes.DECIMAL(10, 7), allowNull: false },
+      latitude: { type: DataTypes.DECIMAL(10, 7), allowNull: true },
+      longitude: { type: DataTypes.DECIMAL(10, 7), allowNull: true },
 
       security: { type: DataTypes.STRING(64), allowNull: true },
       provider: { type: DataTypes.STRING(128), allowNull: true },
@@ -23,26 +23,12 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         { fields: ['latitude', 'longitude'] },
         { fields: ['ssid'] },
-        { fields: ['approved'] },
       ],
     }
   );
-
-  WifiSpot.addHook('beforeValidate', (record) => {
-    const bssid = (record.bssid || '').trim().toLowerCase();
-    if (bssid) {
-      record.uniqueKey = `bssid:${bssid}`;
-    } else {
-      const ssid = (record.ssid || '').trim().toLowerCase();
-      const lat = record.latitude ?? 'null';
-      const lng = record.longitude ?? 'null';
-      record.uniqueKey = `ssid:${ssid}|lat:${lat}|lng:${lng}`;
-    }
-  });
-
+  
   WifiSpot.associate = (_models) => {
-    // Optionally relate to User:
-    // WifiSpot.belongsTo(models.User, { foreignKey: 'submitted_by' });
+    
   };
 
   return WifiSpot;

@@ -1,49 +1,40 @@
-// services/sendEmail.js
-require("dotenv").config();
-const nodemailer = require("nodemailer");
-
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASSWORD = process.env.EMAIL_PASS;
-
-if (!EMAIL_USER || !EMAIL_PASSWORD) {
-  console.error("Missing EMAIL_USER or EMAIL_PASS in environment variables.");
-  process.exit(1);
-}
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASSWORD,
-  },
-});
+// services/emailService.js
+const transporter = require("../config/mailer");
 
 /**
- * @param {{to:string, subject:string, text?:string, html?:string, attachments?:Array}} emailData
+ * Send an email
+ * @param {Object} options
+ * @param {string|string[]} options.to - Recipient email(s)
+ * @param {string} options.subject - Email subject
+ * @param {string} [options.text] - Plain text content
+ * @param {string} [options.html] - HTML content
+ * @param {string|string[]} [options.cc] - CC recipients
+ * @param {string|string[]} [options.bcc] - BCC recipients
+ * @param {Array} [options.attachments] - Array of attachments
  */
-const sendEmail = async (emailData) => {
-  const { to, subject, text, html, attachments } = emailData;
-
-  if (!to || !subject || (!text && !html)) {
-    throw new Error("Missing required fields: to, subject, text or html");
-  }
-
-  const mailOptions = {
-    from: `"OTG Reminder" <${EMAIL_USER}>`,
-    to,
-    subject,
-    text,
-    html,
-    attachments,
-  };
-
+async function sendEmail(options) {
   try {
-    const info = await transporter.sendMail(mailOptions);
-    return { success: true, response: info.response };
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error;
-  }
-};
+    const mailOptions = {
+      from: `"${process.env.APP_NAME || "MyApp"}" <${process.env.EMAIL_ADDRESS}>`,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+      cc: options.cc,
+      bcc: options.bcc,
+      attachments: options.attachments,
+    };
 
-module.exports = sendEmail;
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("📨 Email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("❌ Error sending email:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+module.exports = {
+  sendEmail,
+};

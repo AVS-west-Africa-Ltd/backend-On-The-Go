@@ -1,10 +1,6 @@
 const userService = require("../services/UserService");
 const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
-// const path = require("path");
-const multer = require("multer");
-const AWS = require("aws-sdk");
-const multerS3 = require("multer-s3");
 const nodemailer = require("nodemailer");
 const {
   EMAIL_HOST,
@@ -13,105 +9,61 @@ const {
 } = require("../config/config");
 const { Op } = require("sequelize");
 const crypto = require("crypto");
-const { User, DeleteRequest, Referral, sequelize, UserFollower, BlockedUser } = require("../models");
 const { uploadProfileImage } = require("../utils/upload");
 const { RandomCharacters } = require("../helpers");
 const sendEmail = require("../services/sendEmail");
+const {
+  User,
+  DeleteRequest,
+  Referral,
+  BlockedUser,
+  sequelize
+} = require("../models");
 
 
-class UserController {
-  static async CreateUser(req, res) {
+
+  exports.create =async (req, res)=> {
+    const t = await sequelize.transaction();
     try {
       const {
-        username,
         email,
         password,
         pushToken,
         phone_number,
         firstName,
         lastName,
-        isStudent,
-        university,
-        referralCode,
+        referralCode = null,
       } = req.body;
 
-      if (
-        !email ||
-        !password ||
-        !username ||
-        !firstName ||
-        !lastName
-      ) {
-        return res.status(400).json({
-          message:
-            "Email, username, password, first name, last name and gender are required",
-        });
-      }
-
-      // If student, ensure university provided
-      if (isStudent && !university) {
-        return res.status(400).json({
-          message: "University is required for student registration",
-          errors: [
-            { field: "university", message: "Please select your university" },
-          ],
-        });
-      }
-
-      // Check for existing user conflicts
-      const whereOr = [{ email }, { username }];
-      if (phone_number) whereOr.push({ phone_number });
-
-      const existingUser = await userService.getUserByEmailOrUsername({
-        where: { [Op.or]: whereOr },
+      const isExist = await User.findOne({
+        where: {
+          [Op.or]: [
+            { email: email },
+            { phone_number: phone_number }
+          ]
+        }
       });
 
-      if (existingUser) {
-        const conflicts = [];
-        if (existingUser.email === email) {
-          conflicts.push({
-            field: "email",
-            message: "Email already registered",
-          });
-        }
-        if (phone_number && existingUser.phone_number === phone_number) {
-          conflicts.push({
-            field: "phone_number",
-            message: "Phone number already used",
-          });
-        }
-        if (existingUser.username === username) {
-          conflicts.push({
-            field: "username",
-            message: "Username already taken",
-          });
-        }
-
-        if (conflicts.length > 0) {
-          return res
-            .status(400)
-            .json({ message: "Validation error", errors: conflicts });
-        }
+      if (isExist) {
+        return res.status(400).json({message: "Email or phone number exist already!"});
       }
 
       const hashedPassword = bcrypt.hashSync(password, 10);
 
-      const user = await userService.createUser({
-        ...req.body,
+      const user = await User.create({
+        firstName,
+        lastName,
+        email,
         password: hashedPassword,
         pushToken: pushToken || null,
-        followersCount: 0,
-        followingCount: 0,
-        isStudent: !!isStudent,
-        university: isStudent ? university : null,
         referralCode: `OTG-${RandomCharacters(6)}`,
-      });
+      }, { transaction: t });
 
       // Referral handling
       if (referralCode) {
         const referrerUser = await User.findOne({ where: { referralCode } });
         if (referrerUser) {
-          await sequelize.transaction(async (t) => {
+          
             await referrerUser.update(
               {
                 successfulReferrals:
@@ -123,173 +75,8 @@ class UserController {
               { referrerId: referrerUser.id, refereeId: user.id },
               { transaction: t }
             );
-          });
         }
-      }
-
-      // ---------- WELCOME EMAIL (non-blocking) ----------
-      (async () => {
-        try {
-          const subject = "Welcome to OTG — Stay Connected, Anywhere.";
-
-          // Cloudinary base (no version in base for stability)
-          const BASE = "https://res.cloudinary.com/doefjylyu/image/upload";
-          // If you prefer the exact versioned hero URL you pasted, you can swap:
-          // const HERO = "https://res.cloudinary.com/doefjylyu/image/upload/v1754925446/hero_hpg6la.png";
-
-          const IMG = {
-            hero: `${BASE}/f_auto,q_auto/hero_hpg6la.png`,
-            reviewBanner: `${BASE}/f_auto,q_auto/review-banner_c5wxhx.png`,
-            phoneShot: `${BASE}/f_auto,q_auto/phone-shot.png`,
-            business: `${BASE}/f_auto,q_auto/business_n2pxwd.png`,
-            community: `${BASE}/f_auto,q_auto/community_wgqksn.png`,
-            googleplay: `${BASE}/f_auto,q_auto/googleplay.png`,
-            appstore: `${BASE}/f_auto,q_auto/appstore.png`,
-          };
-
-          // Links (replace with your real ones)
-          const businessLink = "https://onthego.africa/business";
-          const instagram = "https://instagram.com/onthegoafrica";
-          const tiktok = "https://www.tiktok.com/@onthegoafrica";
-          const linkedin = "https://www.linkedin.com/company/onthegoafrica";
-          const youtube = "https://www.youtube.com/@onthegoafrica";
-
-          const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Welcome to OTG</title>
-<style>
-  @media only screen and (max-width:680px){
-    .container{width:100% !important}
-    .col, .col-2{display:block !important; width:100% !important; max-width:100% !important}
-    .p16{padding:16px !important}
-    .center{text-align:center !important}
-    .hide-m{display:none !important}
-  }
-  a { color:#1C46FF; }
-</style>
-</head>
-<body style="margin:0;background:#F5F6F8">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F5F6F8">
-    <tr>
-      <td align="center" style="padding:24px">
-        <table role="presentation" width="640" class="container" cellspacing="0" cellpadding="0" border="0" style="width:640px;max-width:640px;background:#ffffff;border-radius:16px;overflow:hidden">
-          <!-- Hero -->
-          <tr>
-            <td>
-              <img src="${
-                IMG.hero
-              }" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
-            </td>
-          </tr>
-
-          <!-- Greeting -->
-          <tr>
-            <td class="p16" style="padding:24px 28px 8px 28px;font-family:Arial,Helvetica,sans-serif;color:#0F172A">
-              <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;">Hey ${
-                firstName || "there"
-              },</p>
-              <p style="margin:0;font-size:16px;line-height:24px;color:#334155">
-                Welcome to the OTG community—where staying connected is no longer a hustle!
-                Whether you're catching up on schoolwork, working on the go, or just exploring,
-                we've made it super easy to discover reliable Wi-Fi wherever you go.
-              </p>
-            </td>
-          </tr>
-            <td>
-              <img src="${
-                IMG.reviewBanner
-              }" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
-            </td>
-
-
-
-          <!-- Features list -->
-          <tr>
-            <td class="p16" style="padding:8px 28px 8px 28px">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F8FAFF;border-radius:12px">
-                <tr>
-                  <td style="padding:18px 18px 6px 18px;font-family:Arial,Helvetica,sans-serif;color:#0F172A">
-                    <ul style="margin:0;padding:0 0 0 18px;color:#334155;font-size:14px;line-height:22px">
-                      <li style="margin-bottom:8px"><strong>Find Wi-Fi Hotspots</strong> — Cafes, co-working spaces, lounges, even parks.</li>
-                      <li style="margin-bottom:8px"><strong>Real-Time Reviews</strong> — Know where the Wi-Fi is fast, stable, and worth your visit.</li>
-                      <li style="margin-bottom:8px"><strong>Drop a Review</strong> — Help others and earn discounts.</li>
-                      <li style="margin-bottom:8px"><strong>Follow & Interact</strong> — Connect with friends, businesses, and your city.</li>
-                      <li><strong>Get Rewarded</strong> — Reviews and referrals unlock real-life perks.</li>
-                    </ul>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-            <td>
-              <img src="${
-                IMG.business
-              }" width="640" alt="Stay Connected, Anywhere." style="display:block;width:100%;height:auto" />
-            </td>
-
-          <!-- Business CTA -->
-          <tr>
-            <td class="p16" style="padding:8px 28px 8px 28px">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#ffffff;border:1px solid #EEF2FF;border-radius:12px">
-                <tr>
-                  <td class="col-2" valign="top" style="padding:16px">
-                     <p style="font-family:Arial,Helvetica,sans-serif;margin:0 0 12px 0;color:#334155;font-size:14px;line-height:22px">
-                      Own a business? Got a spot with Wi-Fi? List on OTG and attract the right crowd every day.
-                      Get discovered, receive real feedback, and reward users who show love.
-                    </p>
-                 
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Community banner -->
-          <tr>
-            <td style="padding:8px 28px 8px 28px">
-              <img src="${
-                IMG.community
-              }" width="100%" alt="Built by the Community, for the Community." style="display:block;border-radius:12px" />
-            </td>
-          </tr>
-
-          <!-- Social & Footer -->
-          <tr>
-            <td class="p16" style="padding:8px 28px 24px 28px;font-family:Arial,Helvetica,sans-serif;color:#334155;font-size:14px;line-height:22px">
-              <p style="margin:0 0 8px 0">Follow us to stay in the loop</p>
-              <p style="margin:0 0 14px 0">
-                <a href="${instagram}" style="color:#1C46FF;text-decoration:none">Instagram</a> |
-                <a href="${tiktok}" style="color:#1C46FF;text-decoration:none">TikTok</a> |
-                <a href="${linkedin}" style="color:#1C46FF;text-decoration:none">LinkedIn</a> |
-                <a href="${youtube}" style="color:#1C46FF;text-decoration:none">YouTube</a>
-              </p>
-            
-              <p style="margin:0 0 4px 0">Stay plugged in.</p>
-              <p style="margin:0">With 💛,<br/>The OTG Team</p>
-              <p style="margin:16px 0 0 0;color:#94A3B8;font-size:12px;text-align:center">&copy; ${new Date().getFullYear()} OnTheGo Africa. All rights reserved.</p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-          await sendEmail({ to: email, subject, html });
-          console.log("[CreateUser] Welcome email sent to:", email);
-        } catch (err) {
-          console.error(
-            "[CreateUser] Failed to send welcome email:",
-            err.message
-          );
-        }
-      })();
-      // ---------- END WELCOME EMAIL ----------
+      } 
 
       return res.status(201).json({
         message: "User registered successfully",
@@ -302,6 +89,7 @@ class UserController {
           referralCode: user.referralCode,
         },
       });
+      
     } catch (error) {
       console.error("Error in CreateUser:", error);
 
@@ -342,7 +130,7 @@ class UserController {
     }
   }
 
-  static async UpdateUserImage(req, res) {
+  exports.UpdateUserImage = async (req, res)=>{
     try {
       // First handle the file upload
       await new Promise((resolve, reject) => {
@@ -392,7 +180,7 @@ class UserController {
     }
   }
 
-  static async Login(req, res) {
+  exports.Login = (req, res) =>{
     try {
       const { email, password, pushToken } = req.body;
 
@@ -423,7 +211,7 @@ class UserController {
     }
   }
 
-  static async updatePushToken(req, res) {
+  exports.updatePushToken = (req, res) => {
     try {
       const { userId } = req.params;
       const { pushToken } = req.body;
@@ -447,7 +235,7 @@ class UserController {
     }
   }
 
-  static async getUsers(req, res) {
+  exports.getUsers = async (req, res)=>{
     try {
       const users = await userService.getUsers();
       if (!users || users.length === 0)
@@ -458,7 +246,7 @@ class UserController {
     }
   }
 
-  static async getUserById(req, res) {
+  exports.getUserById = async (req, res)=>{
     try {
       const { userId } = req.params;
 
@@ -513,7 +301,7 @@ class UserController {
     }
   }
 
-  static async deleteUser(req, res) {
+  exports.deleteUser = async (req, res) => {
     try {
       const { userId } = req.params;
 
@@ -525,7 +313,7 @@ class UserController {
     }
   }
 
-  static async updateUser(req, res) {
+  exports.updateUser = async (req, res) => {
     try {
       const { userId } = req.params;
       console.log(`[updateUser] Called with userId: ${userId}`);
@@ -592,7 +380,7 @@ class UserController {
     }
   }
 
-  static async addFollower(req, res) {
+  exports.addFollower = async(req, res) => {
     try {
       const { userId, followedId } = req.params;
       const followUser = await userService.followUser(userId, followedId);
@@ -605,7 +393,7 @@ class UserController {
     }
   }
 
-  static async removeFollower(req, res) {
+  exports.removeFollower = async (req, res)=>{
     try {
       const { userId, followedId } = req.params;
       const user = await userService.unfollowUser(userId, followedId);
@@ -618,7 +406,7 @@ class UserController {
     }
   }
 
-  static async blockUser(req, res) {
+  exports.blockUser = async (req, res)=>{
     try {
       const { followedId } = req.body;
 
@@ -638,7 +426,7 @@ class UserController {
     }
   }
 
-  static async getFollowers(req, res) {
+  exports.getFollowers = async (req, res)=>{
     try {
       const { userId } = req.params;
 
@@ -651,7 +439,7 @@ class UserController {
     }
   }
 
-  static async getFollowing(req, res) {
+  exports.getFollowing = async (req, res)=>{
     try {
       const { userId } = req.params;
 
@@ -664,7 +452,7 @@ class UserController {
     }
   }
 
-  static async getNotifications(req, res) {
+  exports.getNotifications = async (req, res)=>{
     try {
       const { userId } = req.params;
 
@@ -677,7 +465,7 @@ class UserController {
     }
   }
 
-  static async markNotificationAsRead(req, res) {
+  exports.markNotificationAsRead = async (req, res)=>{
     try {
       const { notificationId, userId } = req.params;
 
@@ -692,7 +480,7 @@ class UserController {
     }
   }
 
-  static async markAllNotificationsAsRead(req, res) {
+  exports.markAllNotificationsAsRead = async (req, res)=>{
     try {
       const { userId } = req.params;
 
@@ -707,7 +495,7 @@ class UserController {
     }
   }
 
-  static async addInterests(req, res) {
+  exports.addInterests =  async (req, res) => {
     try {
       const { userId } = req.params;
       const { icon, title, type } = req.body;
@@ -728,7 +516,7 @@ class UserController {
     }
   }
 
-  static async updateInterest(req, res) {
+  exports.updateInterest = async (req, res) => {
     try {
       const { userId, index } = req.params;
       const updatedInterest = req.body;
@@ -746,7 +534,7 @@ class UserController {
     }
   }
 
-  static async deleteInterest(req, res) {
+  exports.deleteInterest = async (req, res)=>{
     try {
       const { userId, index } = req.params;
       const updatedInterests = await userService.deleteInterest(
@@ -763,7 +551,7 @@ class UserController {
     }
   }
 
-  static async ForgotPassword(req, res) {
+  exports.ForgotPassword = async (req, res) => {
     try {
       let props = { where: { email: req.body.email } };
 
@@ -836,7 +624,7 @@ class UserController {
     }
   }
 
-  static async confirmPasswordOTP(req, res) {
+  exports.confirmPasswordOTP = async (req, res) => {
     try {
       const { otp } = req.params;
       let props = {
@@ -860,7 +648,7 @@ class UserController {
     }
   }
 
-  static async ResetPassword(req, res) {
+  exports.ResetPassword = async (req, res)=>{
     try {
       const { otp } = req.params;
 
@@ -901,7 +689,7 @@ class UserController {
     }
   }
 
-  static async UserAccountDeleteRequest(req, res) {
+  exports.UserAccountDeleteRequest = async (req, res)=>{
     try {
       const { userId, reason } = req.body;
 
@@ -973,7 +761,7 @@ class UserController {
     }
   }
 
-  static async ApproveUserDeletionRequest(req, res) {
+  exports.ApproveUserDeletionRequest = async (req, res)=>{
     try {
       const request = await DeleteRequest.findByPk(req.params.requestId);
       if (!request)
@@ -988,7 +776,7 @@ class UserController {
     }
   }
 
-  static async DenyUserDeletionRequest(req, res) {
+  exports.DenyUserDeletionRequest = async (req, res) =>{
     try {
       const request = await DeleteRequest.findByPk(req.params.requestId);
       if (!request)
@@ -1003,7 +791,7 @@ class UserController {
     }
   }
 
-  static async GetRandomUsers(req, res) {
+  exports.GetRandomUsers = async (req, res) => {
     try {
       let users = await userService.getUsers();
       if (!users || users.length === 0) {
@@ -1017,6 +805,4 @@ class UserController {
       return res.status(500).json({ error: error.message });
     }
   }
-}
 
-module.exports = UserController;

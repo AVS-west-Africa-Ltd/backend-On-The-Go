@@ -1,4 +1,4 @@
-const userService = require("../services/UserService");
+const userService = require("../services/Email");
 const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
 const nodemailer = require("nodemailer");
@@ -76,53 +76,22 @@ const {
               { transaction: t }
             );
         }
-      } 
+      }
 
+      
+
+      await t.commit();
       return res.status(201).json({
         message: "User registered successfully",
         data: {
           id: user.id,
           email: user.email,
-          username: user.username,
-          isStudent: user.isStudent,
-          university: user.university,
           referralCode: user.referralCode,
         },
       });
       
     } catch (error) {
-      console.error("Error in CreateUser:", error);
-
-      if (error.name === "SequelizeUniqueConstraintError") {
-        const errors =
-          error?.errors?.map((err) => ({
-            field: err?.path || "unknown",
-            message: err?.message || "Unique constraint failed",
-          })) || [];
-        return res.status(400).json({
-          message: "Validation error",
-          errors:
-            errors.length > 0
-              ? errors
-              : [{ field: "unknown", message: "Unique constraint failed" }],
-        });
-      }
-
-      if (error.status === 400 && Array.isArray(error.errors)) {
-        const transformedErrors = error.errors.map((err) => ({
-          field: (err.field || "").replace("users_", ""),
-          message: `${(err.field || "").replace(
-            "users_",
-            ""
-          )} is already taken`,
-        }));
-
-        return res.status(400).json({
-          message: "Registration failed",
-          errors: transformedErrors,
-        });
-      }
-
+      await t.rollback();
       return res.status(500).json({
         error: "Internal server error",
         details: error.message || "Something went wrong",

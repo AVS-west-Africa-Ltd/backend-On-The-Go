@@ -1,32 +1,20 @@
-const userService = require("../services/Email");
 const bcrypt = require("bcryptjs");
 const jwtUtil = require("../utils/jwtUtil");
-const nodemailer = require("nodemailer");
-const {
-  EMAIL_HOST,
-  EMAIL_ADDRESS,
-  EMAIL_PASSWORD,
-} = require("../config/config");
 const { Op } = require("sequelize");
-const crypto = require("crypto");
-const { uploadProfileImage } = require("../utils/upload");
-const { RandomCharacters } = require("../helpers");
-const sendEmail = require("../services/sendEmail");
+const Helpers = require("../utils/helpers");
+const Email = require("../services/Email");
+const Template = require("../constants/templates");
 const {
   User,
-  DeleteRequest,
-  Referral,
-  BlockedUser,
   sequelize
 } = require("../models");
 
 
 
-  exports.create =async (req, res)=> {
-    const t = await sequelize.transaction();
+  exports.profileSetup =async (req, res)=> {  
     try {
       const {
-        email,
+        type,
         password,
         pushToken,
         phone_number,
@@ -146,37 +134,6 @@ const {
         message: "Error updating profile picture",
         error: error.message.replace("Image upload failed: ", ""),
       });
-    }
-  }
-
-  exports.Login = (req, res) =>{
-    try {
-      const { email, password, pushToken } = req.body;
-
-      if (!email || !password)
-        return res.status(400).json({ message: "All fields are required" });
-
-      let payload = { where: { email: email } };
-      const user = await userService.getUserByEmailOrUsername(payload);
-
-      if (!user)
-        return res.status(400).json({ message: "Invalid email or password" });
-
-      const isPasswordMatch = await bcrypt.compareSync(password, user.password);
-      if (!isPasswordMatch)
-        return res.status(401).json({ message: "Invalid email or password" });
-
-      // Update push token if provided
-      if (pushToken) {
-        user.pushToken = pushToken;
-        await user.save();
-      }
-
-      const token = jwtUtil.generateToken(user);
-      return res.status(200).json({ token: token, user: user });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: error.message });
     }
   }
 

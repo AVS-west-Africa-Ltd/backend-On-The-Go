@@ -3,10 +3,13 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     "User",
     {
-      username: {
+      firstname: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       email: {
         type: DataTypes.STRING,
@@ -35,6 +38,19 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      verificationCode: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      verificationExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+
     },
     {
       tableName: "users",

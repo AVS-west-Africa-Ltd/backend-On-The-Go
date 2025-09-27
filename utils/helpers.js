@@ -1,4 +1,4 @@
-exports.RandomCharacters = (length)=>{
+exports.randomCharacters = (length)=>{
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
     for (let i = 0; i < length; i++) {
@@ -7,7 +7,7 @@ exports.RandomCharacters = (length)=>{
     return result;
 }
 
-exports.RandomNumber = (length)=>{
+exports.randomNumber = (length)=>{
     const chars = '0123456789';
     let result = '';
     for (let i = 0; i < length; i++) {

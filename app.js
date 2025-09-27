@@ -1,18 +1,11 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const http = require("http");
 const bodyParser = require("body-parser");
-const router = require("./routes/routes");
-const zoneRouter = require("./routes/zone");
+const router = require("./routes");
 const path = require("path");
-const setupSocketIO = require("./services/socketSetup");
-const compression = require("compression");
 const morgan = require("morgan");
-const errorHandler = require("./handlers/errorHandler");
-const admin = require('firebase-admin'); 
-const demoBusiness = require('./cron/populate-business'); 
-const activityLogger = require("./middlewares/activityMiddleware");
+const admin = require('firebase-admin');
 
 // Import models
 const db = require('./models');
@@ -21,7 +14,6 @@ const db = require('./models');
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
-const validateApiKey = require("./middlewares/apiMiddleWare");
 require("./cron/DeleteUserCron");
 
 const serviceAccount = require('./serviceAccountKey.json');
@@ -34,57 +26,7 @@ const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 const app = express();
 
-// Swagger definition
-const swaggerDefinition = {
-  openapi: "3.0.0",
-  info: {
-    title: "Onthego Server API",
-    version: "1.0.0",
-    description: "API documentation for Onthego server",
-    contact: {
-      name: "On The Go Africa",
-      email: "onthego@aventurestud.io",
-    },
-  },
-  servers: [
-    {
-      url: `http://localhost:${PORT}/api/v1/`,
-      description: "Development server",
-    },
-    {
-      url: "http://api-dev.onthegoafrica.com/api/v1/",
-      description: "Production server",
-    },
-  ],
-  components: {
-    securitySchemes: {
-      ApiKeyAuth: {
-        type: "apiKey",
-        in: "header",
-        name: "x-api-key",
-      },
-    },
-  },
-  security: [
-    {
-      ApiKeyAuth: [],
-    },
-  ],
-};
 
-// Options for the swagger docs
-const options = {
-  swaggerDefinition,
-  // Paths to files containing OpenAPI definitions
-  apis: [
-    "./routes/*.js", // Include all route files
-    // "./models/*.js",
-    "./swaggerModels.js",
-  ],
-};
-
-// Initialize swagger-jsdoc
-const swaggerSpec = swaggerJSDoc(options);
 
 app.use(cors());
 
@@ -112,52 +54,14 @@ app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
 // Use compression middleware
 app.use(compression());
 
-// Logging
-if (process.env.NODE_ENV === "production") {
-  app.use(morgan("combined"));
-  app.use(errorHandler.productionErrors);
-} else {
-  app.use(morgan("dev"));
-  app.use(errorHandler.developmentErrors);
-}
-
-// Serve Swagger UI
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Landing route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
 });
 
-// Route setup
-app.use(activityLogger);
 app.use("/api/v1", router);
-app.use("/zone", zoneRouter);
-app.get("/demo-business", demoBusiness);
 
-
-// Initialize HTTP server
-const server = http.createServer(app);
-
-// Setup Socket.IO - CHOOSE ONE METHOD ONLY
-// Option 1: Use setupSocketIO
-const io = setupSocketIO(server);
-app.set('io', io);
-
-// Add connection logging
-io.on('connection', (socket) => {
-  console.log(`[Socket] New connection: ${socket.id}`);
-  
-  // Handle user joining their room
-  socket.on('join_user_room', (userId) => {
-    console.log(`[Socket] User ${userId} joining room user_${userId}`);
-    socket.join(`user_${userId}`);
-  });
-
-  socket.on('disconnect', () => {
-    console.log(`[Socket] Disconnected: ${socket.id}`);
-  });
-});
 
 server.listen(PORT, HOST, () => {
   console.log(
@@ -165,4 +69,4 @@ server.listen(PORT, HOST, () => {
   );
 });
 
-module.exports = { app, io };
+module.exports = { app };

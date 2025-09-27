@@ -12,7 +12,7 @@ const transporter = require("../config/mailer");
  * @param {string|string[]} [options.bcc] - BCC recipients
  * @param {Array} [options.attachments] - Array of attachments
  */
-async function sendEmail(options) {
+ exports.sendEmail = async (options) => {
   try {
     const mailOptions = {
       from: `"${process.env.APP_NAME || "MyApp"}" <${process.env.EMAIL_ADDRESS}>`,
@@ -35,6 +35,3 @@ async function sendEmail(options) {
   }
 }
 
-module.exports = {
-  sendEmail,
-};

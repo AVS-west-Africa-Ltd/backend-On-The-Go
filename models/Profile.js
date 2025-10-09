@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       userName: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
       },
       picture: {
         type: DataTypes.TEXT,
@@ -30,11 +31,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       interests: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: []
-      },
-      amenities: {
         type: DataTypes.JSON,
         allowNull: true,
         defaultValue: []
@@ -88,23 +84,6 @@ module.exports = (sequelize, DataTypes) => {
             },
             comment: "Allowed keys: twitter, instagram, website",
       },
-      wifiDetails: {
-            type: DataTypes.JSON,
-            allowNull: true,
-            validate: {
-                isValidLinks(value) {
-                    if (value) {
-                        const allowedKeys = ["name", "password"];
-                        const keys = Object.keys(value);
-                        const invalidKeys = keys.filter((k) => !allowedKeys.includes(k));
-                        if (invalidKeys.length > 0) {
-                            throw new Error(`Invalid wifi keys: ${invalidKeys.join( ", " )}. Allowed keys are: ${allowedKeys.join(", ")}`);
-                        }
-                    }
-                },
-            },
-            comment: "Allowed keys: name, password",
-      },
       followers: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
@@ -114,7 +93,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
       },
       rating: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         defaultValue: 0,
       },
       placesVisited: {
@@ -126,47 +105,19 @@ module.exports = (sequelize, DataTypes) => {
     {
       tableName: "profiles",
       indexes: [{ fields: ["userId"] }, { fields: ["profileType"] }],
-      hooks: {
-        beforeSave: async (profile) => {
-          if (profile.planExpirationDate) {
-            profile.planStatus =
-              new Date(profile.planExpirationDate) > new Date()
-                ? "active"
-                : "expired";
-          } else {
-            profile.planStatus = "none";
-          }
-        },
-      },
     }
   );
 
   Profile.associate = (models) => {
+
     Profile.belongsTo(models.User, {
       foreignKey: "userId",
       as: "user",
-      onDelete: "CASCADE",
     });
 
     Profile.hasMany(models.Comment, {
-      foreignKey: "authorId",
-      as: "comments",
-      onDelete: "CASCADE",
-    });
-
-    Profile.hasMany(models.ProfileView, {
-      foreignKey: "profileOwnerId",
-      as: "ProfileViews",
-    });
-
-    Profile.hasMany(models.ProfileView, {
-      foreignKey: "viewerId",
-      as: "ViewedProfiles",
-    });
-
-    Profile.hasMany(models.Business, {
       foreignKey: "profileId",
-      onDelete: "CASCADE",
+      as: "comments",
     });
 
     Profile.hasOne(models.NetworkRouter, {
@@ -175,6 +126,12 @@ module.exports = (sequelize, DataTypes) => {
 
     Profile.hasMany(models.TicketProfile, {
       foreignKey: "profileId",
+    });
+
+    Profile.hasMany(models.Amenity, {
+      foreignKey: "businessId",
+      as: "amenities",
+      onDelete: "CASCADE",
     });
   };
 

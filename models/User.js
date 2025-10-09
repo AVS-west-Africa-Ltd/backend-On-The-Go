@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     "User",
     {
-      firstname: {
+      firstName: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -56,7 +56,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "users",
       indexes: [
         { unique: true, fields: ["email"] },
-        { unique: true, fields: ["username"] },
       ],
     }
   );

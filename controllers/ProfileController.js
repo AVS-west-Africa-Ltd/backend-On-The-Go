@@ -1,9 +1,7 @@
-const { Op } = require("sequelize");
-const Helpers = require("../utils/helpers");
-const Email = require("../services/Email");
-const Template = require("../constants/templates");
+const jwtUtil = require("../utils/jwtUtil");
+
 const {
-  User,
+  Amenity,
   Profile,
   sequelize,
   Document,
@@ -11,102 +9,119 @@ const {
   RewardRedeemHour
 } = require("../models");
 
-
 exports.createProfile = async (req, res) => {
+    const t = await sequelize.transaction();
+
     try {
         const {
-            userName,
-            businessType = "",
-            address = "",
-            geoLocation = {},
-            picture,
-            profileType = "personal",
-            bio,
-            profession = "",
-            skills = [],
-            gender = "",
-
+        userName,
+        businessType = "",
+        address = "",
+        geoLocation = [],
+        profileType = "personal",
+        bio,
+        profession = "",
+        skills = [],
+        gender = "",
+        amenities = []
         } = req.body;
 
         const data = {};
 
         switch (profileType) {
-            case "personal":
-                data.userName = userName;
-                data.profession = profession;
-                data.skills = skills;
-                data.gender = gender;
-                data.bio = bio;
-                data.picture = req.file.location;
-                break;
-            
-            case "business":
-                data.userName = userName;
-                data.businesType = businessType;
-                data.address = address;
-                data.geoLocation = geoLocation;
-                data.bio = bio;
-                data.picture = req.file.location;
-                break;
-        
-            default:
-                return res.status(400).json({message: "Sorry no profile type was selected!"});
-                break;
+        case "personal":
+            data.userName = userName;
+            data.profession = profession;
+            data.skills = Array.isArray(skills)
+            ? skills
+            : JSON.parse(skills || []);
+            data.gender = gender;
+            data.bio = bio;
+            data.picture = req.file?.location || null; 
+            data.profileType = profileType;
+            break;
+
+        case "business":
+            data.userName = userName;
+            data.businessType = businessType;
+            data.address = address;
+            data.geoLocation = Array.isArray(geoLocation)
+            ? geoLocation
+            : JSON.parse(geoLocation || []);
+            data.bio = bio;
+            data.picture = req.file?.location || null;
+            data.profileType = profileType;
+            break;
+
+        default:
+            await t.rollback();
+            return res.status(400).json({ message: "Sorry no profile type was selected!" });
         }
 
-        const profile = await Profile.create({userId:req.user.id, ...data });
+        const profile = await Profile.create({ userId: req.user, ...data }, { transaction: t });
 
-        return res.status(200).json({ profile, message: "Profile created successfully!"});
+        if(profileType == "business"){
+            const amenityLists = Array.isArray(amenities)
+            ? amenities
+            : JSON.parse(amenities || []);
 
+            await Amenity.bulkCreate(
+                amenityLists.map(a => ({
+                    businessId: profile.id,
+                    name: a,
+                    rating: 0,
+                })),
+                { transaction: t }
+            );
+
+        }
+        await t.commit();
+        const auth = { user: req.user, profile: profile ? { id: profile.id, type: profile.profileType } : null }
+        const token = jwtUtil.generateToken(auth);
+
+        return res.status(200).json({ profile, token, message: "Profile created successfully!" });
     } catch (error) {
-        res.status(400).json({message: "Sorry something went wrong!"});
+        console.error(error);
+        await t.rollback();
+        res.status(400).json({ message: "Sorry something went wrong!" });
     }
-    
-
-
-
-
-}
+};
 
 exports.addInterestsAndPlaces = async (req, res) => {
     try {
-        const {profileId, interests = [], placesVisited = []} = req.body;
-        const profile = await Profile.findOne({ 
-            where: { id: profileId, userId: req.user.id } 
-        });
+        const {interests = [], placesVisited = []} = req.body;
+        const profile = await Profile.update(
+            { interests: interests, placesVisited: placesVisited },
+            { 
+                where: { id:req.profile.id },
+                returning: true, 
+                plain: false 
+            }
+        );
 
-        if(!profile) res.status(400).json({ message: "Sorry profile not found!"});
-
-        profile.interests = interests;
-        profile.placesVisited = placesVisited;
-        await profile.save(); 
         res.status(200).json({profile, message: "Profile updated successfilly!"});
          
     } catch (error) {
+        console.log(error);
         res.status(400).json({message: "Sorry something went wrong!"});
     }
 }
 
 exports.uploadDocument = async (req, res) => {
     try {
-        const {profileId} = req.body;
-        const profile = await Profile.findOne({ 
-            where: { id: profileId, userId: req.user.id } 
-        });
-        if(!profile) return res.status(400).json({ message: "Sorry profile not found!"});
+        const { documentType } = req.body;
 
-        if(!req.file) return res.status(400).json({message: "Sorry no document was selected"});
-
-        const document = Document.create({
-            profileId: profileId,
-            documentType: "cac",
-            fileUrl: req.file.location,
-            fileKey: req.file.key
+        const document = await Document.create({
+            profileId: req.profile.id,
+            documentType: documentType,
+            fileUrl: req.file.location || null,
+            fileKey: req.file.key || null
         });
         
         res.status(200).json({document, message: "Document uploaded successfilly!"});
          
     } catch (error) {
+        console.log(error);
         res.status(400).json({message: "Sorry something went wrong!"});
     }
 }
@@ -114,23 +129,19 @@ exports.uploadDocument = async (req, res) => {
 exports.addOpeningHours = async (req, res) => {
     const t = await sequelize.transaction();
    try {
-        const {profileId, hours} = req.body;
-        const profile = await Profile.findOne({ 
-            where: { id: profileId, userId: req.user.id } 
-        });
-        if(!profile) return res.status(400).json({ message: "Sorry profile not found!"});
+        const { hours } = req.body;
 
         if(!Array.isArray(hours)) return res.status(400).json({message: "Sorry hours not in right format"});
 
-        await OpeningHour.destroy({ where: {businessId: profileId} });
+        await OpeningHour.destroy({ where: {businessId: req.profile.id} });
 
         const openingHours = await Promise.all( hours.map(async (hour)=>{
-                const count = await OpeningHour.count({ where: { businessId: profile.id } });
-                if (count >= 7) {
+                const count = hours.length;
+                if (count > 7) {
                     throw new Error("A business can only have up to 7 opening days");
                 }
                 return await OpeningHour.create({
-                    businessId: profile.id,
+                    businessId: req.profile.id,
                     dayOfWeek: hour.dayOfWeek,
                     openTime: hour.openTime,
                     closeTime: hour.closeTime,
@@ -138,9 +149,10 @@ exports.addOpeningHours = async (req, res) => {
             })
         );
         await t.commit();
-        return res.status(200).json({openingHours, message: "Document uploaded successfilly!"});
+        return res.status(200).json({openingHours, message: "Added opening hours successfilly!"});
          
     } catch (error) {
+        console.log(error);
         await t.rollback();
         res.status(400).json({message: "Sorry something went wrong!"});
     } 
@@ -148,73 +160,68 @@ exports.addOpeningHours = async (req, res) => {
 
 exports.addSocials = async (req, res) => {
     try {
-        const {profileId, socials} = req.body;
-        const profile = await Profile.findOne({ 
-            where: { id: profileId, userId: req.user.id } 
-        });
-        if(!profile) return res.status(400).json({ message: "Sorry profile not found!"});
-
-        profile.socialsLinks = socials;
-        profile.save();
+        const { socials } = req.body;
+        const profile = await Profile.update(
+            { socialLinks: socials },
+            { where: { id:req.profile.id }, returning: true, }
+        );
         
-        res.status(200).json({document, message: "Socials added successfilly!"});
+        res.status(200).json({profile, message: "Socials added successfilly!"});
          
     } catch (error) {
+        console.log(error);
         res.status(400).json({message: "Sorry something went wrong!"});
     }
 }
 
 exports.addWifiDetails = async (req, res) => {
     try {
-        const {profileId, ssID, password} = req.body;
-        const profile = await Profile.findOne({ 
-            where: { id: profileId, userId: req.user.id } 
-        });
-        if(!profile) return res.status(400).json({ message: "Sorry profile not found!"});
-        const wifi = { ssID, password}
-        profile.wifiDetails = wifi;
-        profile.save();
+        const { name, password } = req.body;
+        const wifi = { name, password };
+
+        const amenity = await Amenity.findOne({ where: {businessId: req.profile.id, name: "wifi" } });
+        if(!amenity) return res.status(400).json({message: "Sorry wifi amenity not found!"});
         
-        res.status(200).json({document, message: "Wifi Details added successfilly!"});
+        amenity.meta = wifi;
+        await amenity.save();
+        
+        res.status(200).json({amenity, message: "Wifi Details added successfilly!"});
          
     } catch (error) {
+
         res.status(400).json({message: "Sorry something went wrong!"});
     }
 }
 
 exports.addRedeemRewardHours = async (req, res) => {
     const t = await sequelize.transaction();
-   try {
-        const {profileId, hours} = req.body;
-        const profile = await Profile.findOne({ 
-            where: { id: profileId, userId: req.user.id } 
-        });
-        if(!profile) return res.status(400).json({ message: "Sorry profile not found!"});
+    try {
+            const { hours } = req.body;
 
-        if(!Array.isArray(hours)) return res.status(400).json({message: "Sorry hours not in right format"});
+            if(!Array.isArray(hours)) return res.status(400).json({message: "Sorry hours not in right format"});
 
-        await RewardRedeemHour.destroy({ where: {businessId: profileId} });
+            await RewardRedeemHour.destroy({ where: { businessId: req.profile.id } });
 
-        const rewardRedeemHours = await Promise.all( hours.map(async (hour)=>{
-                const count = await OpeningHour.count({ where: { businessId: profile.id } });
-                if (count >= 7) {
-                    throw new Error("A business can only have up to 7 opening days");
-                }
-                return await RewardRedeemHour.create({
-                    businessId: profile.id,
-                    dayOfWeek: hour.dayOfWeek,
-                    openTime: hour.openTime,
-                    closeTime: hour.closeTime,
-                },{ transaction: t });
-            })
-        );
-        await t.commit();
-        return res.status(200).json({rewardRedeemHours, message: "Document uploaded successfilly!"});
-         
-    } catch (error) {
-        await t.rollback();
-        res.status(400).json({message: "Sorry something went wrong!"});
-    } 
+            const rewardRedeemHours = await Promise.all( hours.map(async (hour)=>{
+                    const count = hours.length;
+                    if (count > 7) {
+                        throw new Error("A business can only have up to 7 opening days");
+                    }
+                    return await RewardRedeemHour.create({
+                        businessId: req.profile.id,
+                        dayOfWeek: hour.dayOfWeek,
+                        openTime: hour.openTime,
+                        closeTime: hour.closeTime,
+                    },{ transaction: t });
+                })
+            );
+            await t.commit();
+            return res.status(200).json({rewardRedeemHours, message: "Added reward redeem hours successfilly!"});
+            
+        } catch (error) {
+            await t.rollback();
+            res.status(400).json({message: "Sorry something went wrong!"});
+        } 
 }
 
 

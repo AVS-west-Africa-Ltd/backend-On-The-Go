@@ -15,7 +15,7 @@ const transporter = require("../config/mailer");
  exports.sendEmail = async (options) => {
   try {
     const mailOptions = {
-      from: `"${process.env.APP_NAME || "MyApp"}" <${process.env.EMAIL_ADDRESS}>`,
+      from: `"${process.env.APP_NAME || "OTG AFRICA"}" <${process.env.EMAIL_ADDRESS}>`,
       to: options.to,
       subject: options.subject,
       text: options.text,

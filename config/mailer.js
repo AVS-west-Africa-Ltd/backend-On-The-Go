@@ -10,7 +10,7 @@ const {
 } = process.env;
 
 
-exports.transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: EMAIL_HOST,
   port: Number(EMAIL_PORT) || 587,
   secure: EMAIL_SECURE === "true", 
@@ -23,3 +23,4 @@ exports.transporter = nodemailer.createTransport({
   },
 });
 
+module.exports = transporter;

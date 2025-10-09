@@ -12,8 +12,9 @@ const authMiddleware = (req, res, next) => {
   if (!decoded) {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
-
-  req.userId = decoded.id; // Attach user ID to request
+  
+  req.user = decoded.user; 
+  req.profile = decoded.profile;
   next();
 };
 

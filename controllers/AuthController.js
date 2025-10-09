@@ -6,6 +6,7 @@ const Email = require("../services/Email");
 const Template = require("../constants/templates");
 const {
   User,
+  Profile,
   sequelize
 } = require("../models");
 
@@ -32,6 +33,7 @@ exports.register = async (req, res)=> {
     });
 
     if (isExist) {
+      await t.rollback();
       return res.status(400).json({message: "Email or phone number exist already!"});
     }
 
@@ -42,10 +44,11 @@ exports.register = async (req, res)=> {
       firstName,
       lastName,
       email,
+      phone_number,
       password: hashedPassword,
       pushToken: pushToken || null,
-      referralCode: `OTG-${RandomCharacters(6)}`,
-      verificationCode: code,
+      referralCode: `OTG-${Helpers.randomCharacters(6)}`,
+      verificationCode: bcrypt.hashSync(code, 10),
       verificationExpires: new Date(Date.now() + 15 * 60 * 1000)
     }, { transaction: t });
 
@@ -67,6 +70,7 @@ exports.register = async (req, res)=> {
           );
       }
     }
+    
 
     const options = {
       html: Template.verificationCode(code),
@@ -77,7 +81,7 @@ exports.register = async (req, res)=> {
       bcc: [],
       attachments: []
     };
-
+    
     await Email.sendEmail(options);
     await t.commit();
     return res.status(201).json({
@@ -87,7 +91,7 @@ exports.register = async (req, res)=> {
     
   } catch (error) {
     await t.rollback();
-    return res.status(500).json({ message: "Sorry something went wrong!"});
+    return res.status(500).json({ log: error, message: "Sorry something went wrong!"});
   }
 }
 
@@ -112,11 +116,16 @@ exports.login = async (req, res) => {
     if(!isPassword){
       return res.status(400).json({message: "Sorry check password!"});
     }
-    const token = jwtUtil.generateToken(user);
+    const profile = await Profile.findOne({
+      where: { userId: user.id }
+    });
+    const auth = { user: user.id, profile: profile ? { id: profile.id, type: profile.profileType } : null };
+    const token = jwtUtil.generateToken(auth);
     
     return res.status(200).json({
       message: "User authenticated successfully",
       user,
+      profile,
       token
     });
     
@@ -149,8 +158,9 @@ exports.verifyEmail = async (req, res) => {
 
     user.isVerified = true;
     await user.save();
-    
+    const auth = { user: user.id, profile: null }
     return res.status(200).json({
+      token: jwtUtil.generateToken(auth),
       message: "User email verified successfully",
     });
     

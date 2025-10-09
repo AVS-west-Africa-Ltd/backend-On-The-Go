@@ -8,12 +8,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Profile",
+          model: "profiles",
           key: "id",
         },
-        onDelete: "CASCADE",
       },
-
       documentType: {
         type: DataTypes.ENUM(
           "certificate_of_incorporation",
@@ -46,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       verifiedAt: {
         type: DataTypes.DATE,
         allowNull: true,
+        defaultValue: null
       },
 
       notes: {
@@ -58,17 +57,16 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "documents",
       timestamps: true,
       indexes: [
-        { fields: ["businessId"] },
+        { fields: ["profileId"] },
         { fields: ["documentType"] },
         { fields: ["status"] },
       ],
     }
   );
 
-  BusinessDocument.associate = (models) => {
-    BusinessDocument.belongsTo(models.Profile, {
-      foreignKey: "businessId",
-      as: "businessProfile",
+  Document.associate = (models) => {
+    Document.belongsTo(models.Profile, {
+      foreignKey: "profileId",
     });
   };
 

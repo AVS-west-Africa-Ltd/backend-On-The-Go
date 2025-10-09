@@ -6,62 +6,67 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      businessId: {
+      profileId: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
       },
-      description: {
+      body: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
       postType: {
-        type: DataTypes.ENUM,
-        values: ["individual", "business"],
+        type: DataTypes.ENUM("review", "normal"),
         allowNull: false,
+        defaultValue: "normal"
+      },
+      reviewTarget: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       likes: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: [],
-      },
-      media: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: [],
-      },
-      rating: {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0,
       },
+      comments: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      media: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
+      rating: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: {},
+      },
       bookmarks: {
         type: DataTypes.JSON,
         allowNull: true,
-        defaultValue: [],
       },
+
     },
     {
-      tableName: "posts", // Explicitly set table name
+      tableName: "posts",
+      timestamps: true,
     }
   );
 
   Post.associate = (models) => {
+    
+    Post.belongsTo(models.User, { foreignKey: "userId", as: "user" });
 
-      Post.belongsTo(models.Business, { foreignKey: "businessId", as: "business" });
-      Post.belongsTo(models.User, { foreignKey: "userId", as: "user" });
-      Post.hasMany(models.Image, {
-        foreignKey: "postId",
-        as: "images",
-        onDelete: "CASCADE",
-      });
-      Post.hasMany(models.Comment, {
-        foreignKey: "postId",
-        as: "comments",
-        onDelete: "CASCADE",
-      });
+    Post.belongsTo(models.Profile, { foreignKey: "profileId", as: "profile" });
+    Post.belongsTo(models.Profile, { foreignKey: "reviewTarget", as: "business" });
+
+    Post.hasMany(models.Comment, {
+      foreignKey: "postId",
+      as: "comment",
+      onDelete: "CASCADE",
+    });
   };
 
-
   return Post;
-  
-}
+};

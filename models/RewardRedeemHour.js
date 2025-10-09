@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Profiles",
+          model: "profiles",
           key: "id",
         },
         onDelete: "CASCADE",
@@ -36,12 +36,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TIME,
         allowNull: false,
         comment: "Business closing time (HH:mm:ss)",
-      },
-
-      isClosed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        comment: "Mark true if closed on this day",
       },
     },
     {

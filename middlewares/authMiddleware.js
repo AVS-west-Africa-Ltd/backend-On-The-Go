@@ -13,7 +13,10 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
   
-  req.user = decoded.user; 
+  req.user = decoded.user;
+  if(!req.profile){
+    return res.status(400).json({ message: "Sorry select a profile!"});
+  }
   req.profile = decoded.profile;
   next();
 };

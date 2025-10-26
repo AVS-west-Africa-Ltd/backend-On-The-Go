@@ -8,88 +8,201 @@ const {
     Reaction,
     Friend
  } = require("../models");
- const { Op } = require("sequelize");
+ const { Op, fn, col, where } = require("sequelize");
 
 
-// CREATE a new post
+
 exports.createPost = async (req, res) => {
-  const t = await sequelize.transaction();
-  try {
-    const { body, postType = "normal", reviewTarget = null, amenities = null } = req.body;
+    const t = await sequelize.transaction();
+    try {
+      const {
+        body,
+        postType = "normal",
+        reviewTarget = null,
+        amenities = null,
+      } = req.body;
 
-    let media = [];
-    if(req.files){
-        media = req.files.map(file => file.location || file.path);
-    }
+      const userId = req.user;
+      const profileId = req.profile.id;
 
-    let parsedAmenities; 
+      let media = [];
+      if (req.files && Array.isArray(req.files)) {
+        media = req.files.map((file) => file.location || file.path);
+      }
 
-    if(reviewTarget || postType == "review"){
-        const profile = await Profile.findOne({id: reviewTarget, profileType: "business"});
-        if(!profile) {
+      let parsedAmenities = {};
+
+      
+      if (postType === "review" && reviewTarget) {
+        const profile = await Profile.findOne({
+          where: { id: reviewTarget, profileType: "business" },
+          transaction: t,
+        });
+
+        if (!profile) {
           await t.rollback();
-          return res.status().json({ mesaage: "Sorry only a business can be reviewed" });
-        }
-        if(amenities){
-          parsedAmenities = typeof amenities === "object" && !Array.isArray(amenities)
-            ? amenities
-            : JSON.parse( amenities || "{}");
-          Object.keys(parsedAmenities).forEach(async (key) => {
-            await Amenity.increment(
-              {  rating: parsedAmenities[key] },
-              { where: { businessId: reviewTarget, name: key}, transaction: t }
-            );
+          return res.status(400).json({
+            message: "Sorry, only a business profile can be reviewed.",
           });
         }
+
+        
+        parsedAmenities =
+          typeof amenities === "object" && !Array.isArray(amenities)
+            ? amenities
+            : JSON.parse(amenities || "{}");
+
+        
+        for (const key of Object.keys(parsedAmenities)) {
+          const ratingValue = parsedAmenities[key];
+
+          await Amenity.increment(
+            { rating: ratingValue },
+            {
+              where: { businessId: reviewTarget, name: key },
+              transaction: t,
+            }
+          );
+        }
+      }
+
+      const post = await Post.create(
+        {
+          userId,
+          profileId,
+          body,
+          postType,
+          reviewTarget: postType === "review" ? reviewTarget : null,
+          media,
+          rating: postType === "review" ? parsedAmenities : {},
+        },
+        { transaction: t }
+      );
+
+      await t.commit();
+      return res.status(201).json({ post, message: "Post created successfully!" });
+    } catch (error) {
+      await t.rollback();
+      console.error("Error creating post:", error);
+      return res.status(400).json({ message: "Sorry, something went wrong!" });
     }
-    
-    const post = await Post.create({
-        userId: req.user,
-        profileId: req.profile.id,
-        body,
-        postType,
-        reviewTarget: postType == "review" ? reviewTarget : null,
-        media,
-        rating: postType == "review" ? parsedAmenities : {},
-    }, { transaction: t });
-
-    await t.commit();
-
-    res.status(201).json({ post, message: "Post created successfully" });
-
-  } catch (error) {
-    await t.rollback();
-    console.error("Error creating post:", error);
-    res.status(500).json({ message: "Sorry something went wrong!" });
-  }
 };
 
 exports.fetchPosts = async (req, res) => {
   try {
-    const { offset = 0 } = req.query;
+    const { offset = 0, search = "" } = req.query;
+
+    const whereClause = {};
+
+    
+    if (search) {
+      whereClause[Op.or] = [
+        { body: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
     const posts = await Post.findAll({
+      where: whereClause,
       include: [
-        { model: User, as: "user", attributes: ["id", "email", "firstName", "lastName"] },
-        { model: Profile, as: "profile" },
-        {model: Profile, as: "business"},
+        {
+          model: Profile,
+          as: "author",
+          where: search
+            ? {
+                userName: { [Op.like]: `%${search}%` },
+              }
+            : undefined,
+          required: false,
+        },
+        {
+          model: Profile,
+          as: "business",
+        },
       ],
       limit: 20,
-      offset,
+      offset: parseInt(offset, 10),
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({ posts, message: "Post fetched" });
+    res.status(200).json({ posts, message: "Posts fetched successfully" });
   } catch (error) {
     console.error("Error fetching posts:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch posts" });
+    res.status(400).json({ message: "Failed to fetch posts" });
   }
 };
 
 exports.searchProfiles = async (req, res) => {
   try {
-    const { search = "", type = "", offset= 0 } = req.query;
+    const { 
+      search = "", 
+      type = "", 
+      offset= 0 , 
+      location="", 
+      amenity="", 
+      businessType 
+    } = req.query;
 
     const query = {};
+    const radius = 10000;
+
+    if (search && search.trim() !== "") {
+      query.userName= { [Op.like]: `%${search.trim()}%` };
+    }
+    if(type && type.trim() !== ""){
+      query.profileType= { [Op.eq]: type.trim() } ;
+    }
+
+    if (businessType && businessType.trim() !== "") {
+      query.businessType = { [Op.like]: `%${businessType.trim()}%` };
+    }
+
+    if (location && location.includes(",")) {
+      const [lat, lng] = location.split(",").map(Number);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        query[Op.and] = where(
+          fn(
+            "ST_Distance_Sphere",
+            col("geoLocation"),
+            fn("ST_GeomFromText", `POINT(${lng} ${lat})`)
+          ),
+          { [Op.lte]: radius }
+        );
+      }
+    }
+
+    const profiles = await Profile.findAll({
+      where: query,
+      include: [
+        {
+          model: Amenity,
+          as: "amenities",
+          required: amenity && amenity.trim() !== "" ? true : false,
+          where: amenity && amenity.trim() !== ""
+            ? {
+                name: {
+                  [Op.eq]: `%${amenity.trim()}%`,
+                },
+              }
+            : undefined,
+        },
+      ],
+      limit: 20,
+      offset: Number(offset) || 0,
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json({profiles, message:"Fetched profiles"});
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({
+      message: "Sorry something went wrong while searching profiles",
+    });
+  }
+};
+
+exports.viewProfiles = async (req, res) => {
+  try {
+   
 
     if (search && search.trim() !== "") {
       query.userName= { [Op.like]: `%${search.trim()}%` };
@@ -118,7 +231,7 @@ exports.searchProfiles = async (req, res) => {
       message: "Sorry something went wrong while searching profiles",
     });
   }
-};
+}
 
 exports.makeComment = async (req, res) => {
   const t = await sequelize.transaction();
@@ -218,12 +331,11 @@ exports.toggleReaction = async (req, res) => {
   } catch (error) {
     console.log(error);
     await t.rollback();
-    return res.status(500).json({
+    return res.status(400).json({
       message: "Sorry something went wrong! toggling reaction",
     });
   }
 };
-
 
 exports.followProfile = async (req, res) => {
   const t = await sequelize.transaction();

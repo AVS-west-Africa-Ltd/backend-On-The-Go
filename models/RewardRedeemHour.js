@@ -6,10 +6,6 @@ module.exports = (sequelize, DataTypes) => {
       businessId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: "profiles",
-          key: "id",
-        },
         onDelete: "CASCADE",
       },
 

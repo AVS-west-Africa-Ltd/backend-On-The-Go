@@ -6,10 +6,6 @@ module.exports = (sequelize, DataTypes) => {
       businessId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: "profiles",
-          key: "id",
-        },
         onDelete: "CASCADE",
       },
 
@@ -49,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: true,
       indexes: [
         { fields: ["businessId"] },
-        { unique: true, fields: ["businessId", "dayOfWeek"] }, // prevent duplicate days
+        { unique: true, fields: ["businessId", "dayOfWeek"] },
       ],
     }
   );

@@ -66,30 +66,7 @@ module.exports = (sequelize, DataTypes) => {
       as: "profiles",
       onDelete: "CASCADE",
     });
-
-    User.hasMany(models.Notification, {
-      foreignKey: "recipientId",
-      as: "ReceivedNotifications",
-    });
-
-    User.hasMany(models.Notification, {
-      foreignKey: "senderId",
-      as: "SentNotifications",
-    });
-
-    User.belongsToMany(models.User, {
-      as: "Followers",
-      through: models.UserFollower,
-      foreignKey: "followedId",
-      otherKey: "followerId",
-    });
-
-    User.belongsToMany(models.User, {
-      as: "Following",
-      through: models.UserFollower,
-      foreignKey: "followerId",
-      otherKey: "followedId",
-    });
+    
   };
 
   return User;

@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
     
     Post.belongsTo(models.User, { foreignKey: "userId", as: "user" });
 
-    Post.belongsTo(models.Profile, { foreignKey: "profileId", as: "profile" });
+    Post.belongsTo(models.Profile, { foreignKey: "profileId", as: "author" });
     Post.belongsTo(models.Profile, { foreignKey: "reviewTarget", as: "business" });
 
     Post.hasMany(models.Comment, {

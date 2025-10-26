@@ -60,29 +60,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: true,
       },
-      geoLocation: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: []
-      },
-      socialLinks: {
-            type: DataTypes.JSON,
-            allowNull: true,
-            validate: {
-                isValidLinks(value) {
-                    if (value) {
-                        const allowedKeys = ["instagram", "twitter", "website"];
-                        const keys = Object.keys(value);
-
-                        // 🚫 Check if any disallowed keys exist
-                        const invalidKeys = keys.filter((k) => !allowedKeys.includes(k));
-                        if (invalidKeys.length > 0) {
-                            throw new Error(`Invalid social keys: ${invalidKeys.join( ", " )}. Allowed keys are: ${allowedKeys.join(", ")}`);
-                        }
-                    }
-                },
-            },
-            comment: "Allowed keys: twitter, instagram, website",
+      geoLocation: { 
+        type: DataTypes.GEOMETRY("POINT"), 
+        allowNull: true
       },
       followers: {
         type: DataTypes.INTEGER,
@@ -131,6 +111,24 @@ module.exports = (sequelize, DataTypes) => {
     Profile.hasMany(models.Amenity, {
       foreignKey: "businessId",
       as: "amenities",
+      onDelete: "CASCADE",
+    });
+
+    Profile.hasMany(models.Post, {
+      foreignKey: "profileId",
+      as: "posts",
+      onDelete: "CASCADE",
+    });
+
+    Profile.hasMany(models.Post, {
+      foreignKey: "reviewTarget",
+      as: "reviews", 
+      onDelete: "CASCADE",
+    });
+
+    Profile.hasMany(models.Social, {
+      foreignKey: "businessId",
+      as: "socials",
       onDelete: "CASCADE",
     });
   };

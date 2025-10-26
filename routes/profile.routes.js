@@ -7,8 +7,11 @@ const Upload = require("../middlewares/upload");
 
 router.use(authMiddleware);
 
+router.get("/fetch", Upload.single("picture"), profileController.fetchProfile);
 
 router.post("/create", Upload.single("picture"), profileController.createProfile);
+
+router.post("/update", Upload.single("picture"), profileController.updateProfile);
 
 router.post("/interests-places", profileController.addInterestsAndPlaces);
 

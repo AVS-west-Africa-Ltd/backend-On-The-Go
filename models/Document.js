@@ -7,10 +7,6 @@ module.exports = (sequelize, DataTypes) => {
       profileId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: "profiles",
-          key: "id",
-        },
       },
       documentType: {
         type: DataTypes.ENUM(

@@ -5,28 +5,16 @@ module.exports = (sequelize, DataTypes) => {
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: 'users',
-          key: 'id',
-        },
         onDelete: 'CASCADE',
       }, 
       ownerId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: 'profiles',
-          key: 'id',
-        },
         onDelete: 'CASCADE',
       },
       friendId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: 'profiles',
-          key: 'id',
-        },
         onDelete: 'CASCADE',
       },
       status: {

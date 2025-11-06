@@ -72,6 +72,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      cacNo: {
+        type: DataTypes.STRING,
+        defaultValue: null,
+        unique: true,
+      },
       rating: {
         type: DataTypes.FLOAT,
         defaultValue: 0,

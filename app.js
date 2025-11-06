@@ -5,6 +5,8 @@ const bodyParser = require("body-parser");
 const router = require("./routes");
 const path = require("path");
 const admin = require('firebase-admin');
+const http = require('http');
+const setupSocket = require('./config/socket');
 
 // Import models
 const db = require('./models');
@@ -18,6 +20,7 @@ admin.initializeApp({
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 const app = express();
+const server = http.createServer(app);
 
 app.use(cors());
 
@@ -80,7 +83,10 @@ app.post("/sync_db", async (req, res)=>{
 app.use("/api/v1", router);
 
 
-app.listen(PORT, HOST, () => {
+setupSocket(server);
+
+
+server.listen(PORT, HOST, () => {
   console.log(
     `Server running on http://localhost:${PORT}, PID: ${process.pid}`
   );

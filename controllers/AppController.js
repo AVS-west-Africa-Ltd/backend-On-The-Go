@@ -6,7 +6,9 @@ const {
     Comment,
     User,
     Reaction,
-    Friend
+    Friend,
+    Chat,
+    Member
  } = require("../models");
  const { Op, fn, col, where } = require("sequelize");
 
@@ -399,3 +401,164 @@ exports.followProfile = async (req, res) => {
     });
   }
 };
+
+exports.createChat = async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { type, name = null, profileIds = [] } = req.body;
+
+    const creatorId = req.profile?.id;
+    const userId = req.user
+    if (!creatorId) throw new Error("creatorId is required");
+    if (!["private", "group"].includes(type)) throw new Error("Invalid chat type");
+
+    let chat;
+
+    switch (type) {
+      
+      case "private": {
+        if (profileIds.length !== 1)
+          throw new Error("Private chat requires exactly one other user");
+
+        const otherUserId = profileIds[0];
+        if (otherUserId === creatorId)
+          throw new Error("Cannot open private chat with yourself");
+
+        
+        const [minId, maxId] = [creatorId, otherUserId].sort();
+
+        
+        const existingChat = await Chat.findOne({
+          where: { type: "private" },
+          include: [
+            {
+              model: Profile,
+              as: "members",
+              through: { attributes: [] },
+              where: {
+                id: { [Op.in]: [minId, maxId] },
+              },
+            },
+          ],
+          transaction: t,
+        });
+
+        if (existingChat) {
+          await t.rollback();
+          return res.status(200).json({
+            chat: existingChat,
+            message: "Existing private chat found",
+          });
+        }
+
+        chat = await Chat.create(
+          {
+            userId,
+            profileId: creatorId,
+            type: "private",
+            createdBy: creatorId,
+          },
+          { transaction: t }
+        );
+
+        await Member.bulkCreate(
+          [
+            { profileId: creatorId, chatId: chat.id },
+            { profileId: otherUserId, chatId: chat.id },
+          ],
+          { transaction: t }
+        );
+
+        break;
+      }
+
+      case "group": {
+        if (!name) throw new Error("Group name is required");
+
+        const uniqueProfileIds = Array.from(new Set([creatorId, ...profileIds]));
+
+        chat = await Chat.create(
+          {
+            userId,
+            profileId: creatorId,
+            type: "group",
+            name,
+            createdBy: creatorId,
+          },
+          { transaction: t }
+        );
+
+        const members = uniqueProfileIds.map((profileId) => ({
+          chatId: chat.id,
+          profileId,
+          role: profileId === creatorId ? "admin" : "member",
+        }));
+
+        await Member.bulkCreate(members, { transaction: t });
+
+        break;
+      }
+
+      default:
+        throw new Error("Unsupported chat type");
+    }
+    await t.commit();
+
+    return res.status(201).json({
+      chat,
+      message: "Chat successfully opened",
+    });
+  } catch (error) {
+    await t.rollback();
+    console.error("❌ Chat creation failed:", error);
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+exports.fetchChats = async (req, res) => {
+  try {
+    const profileId = req.profile.id;
+
+    const memberLinks = await Member.findAll({
+      attributes: ["chatId"],
+      where: { profileId },
+    });
+
+    const chatIds = memberLinks.map((m) => m.chatId);
+
+    if (!chatIds.length) {
+      return res.status(200).json({ chats: [], message: "No chats found" });
+    }
+
+    
+    const chats = await Chat.findAll({
+      where: { id: chatIds },
+      include: [
+        {
+          model: Profile,
+          as: "members",
+          attributes: ["id", "userName", "picture"],
+        },
+        {
+          model: Profile,
+          as: "creator",
+          attributes: ["id", "userName", "picture"],
+        },
+      ],
+      order: [["updatedAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      message: "Chats fetched successfully!",
+      chats,
+    });
+  } catch (err) {
+    console.error("❌ fetchChats error:", err);
+    return res.status(400).json({ message: err.message });
+  }
+};
+
+
+
+

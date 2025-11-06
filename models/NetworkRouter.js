@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique:true,
         references: {
-          model: 'users', // or the actual table name
+          model: 'users',
           key: 'id'
         },
         onDelete: 'CASCADE'

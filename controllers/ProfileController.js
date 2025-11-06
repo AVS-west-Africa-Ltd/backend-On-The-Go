@@ -27,6 +27,7 @@ exports.createProfile = async (req, res) => {
         skills = [],
         gender = "",
         amenities = [],
+        cacNo
         } = req.body;
 
         const data = {};
@@ -55,6 +56,7 @@ exports.createProfile = async (req, res) => {
                 ? geoLocation
                 : JSON.parse(geoLocation || "[]")
             }
+            data.cacNo = cacNo;
             data.bio = bio;
             data.picture = req.file?.location || null;
             data.profileType = profileType;

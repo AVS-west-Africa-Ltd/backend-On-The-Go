@@ -3,10 +3,8 @@ const path = require("path");
 const AWS3 = require("../config/aws-s3");
 const multerS3 = require("multer-s3");
 
-// Maximum file size (20MB)
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
-// Allowed file types
 const ALLOWED_FILE_TYPES = {
   "image/jpeg": "jpg",
   "image/jpg": "jpg",

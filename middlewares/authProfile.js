@@ -1,6 +1,6 @@
 const jwtUtil = require('../utils/jwtUtil');
 
-const auth = (req, res, next) => {
+const authProfile = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Sorry no token provided' });
@@ -14,11 +14,12 @@ const auth = (req, res, next) => {
   }
   
   req.user = decoded.user;
-  if(!req.profile){
+
+  if(!decoded.profile || decoded.profile == null){
     return res.status(400).json({ message: "Sorry select a profile!"});
   }
   req.profile = decoded.profile;
   next();
 };
+module.exports = authProfile;
 
-module.exports = auth;

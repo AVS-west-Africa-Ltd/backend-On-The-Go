@@ -40,11 +40,10 @@ module.exports = (sequelize, DataTypes) => {
       as: "messages",
       onDelete: "CASCADE",
     });
-    
-    Chat.belongsToMany(models.Profile, {
-      through: models.Member,
-      as: "members",
-      foreignKey: "chatId",
+
+    Chat.hasMany(models.Member, {
+      foreignKey: 'targetId',
+      constraints: false,
     });
 
     Chat.belongsTo(models.Profile, {

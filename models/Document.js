@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
           "utility_bill",
           "business_license",
           "other",
-          "cac"
+          "cac",
+          "bank_statment"
         ),
         allowNull: false,
       },

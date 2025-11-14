@@ -1,5 +1,5 @@
 exports.randomCharacters = (length)=>{
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -31,4 +31,29 @@ exports.getBoundingBox = ( latitude, longitude, radiusKm = 10 ) => {
     };
     console.log(result);
     return result
+}
+
+exports.validateGeolocation = (geoLocation) => {
+    try {
+        if (geoLocation && geoLocation.length !== 0) {
+            const parsedLocation = typeof geoLocation === 'string' 
+                ? JSON.parse(geoLocation) 
+                : geoLocation;
+                
+            if (Array.isArray(parsedLocation) && parsedLocation.length === 2) {
+                console.log('Valid coordinates:', parsedLocation);
+                return parsedLocation;
+            }else {
+                console.log(geoLocation);
+                return [];
+            }
+
+        } else {
+            console.log('Empty or null geoLocation');
+            return [];
+        }
+    } catch (error) {
+        console.error('Error parsing geoLocation:', error);
+        return [];
+    }
 }

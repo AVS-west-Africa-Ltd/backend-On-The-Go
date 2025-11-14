@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const appController = require("../controllers/AppController");
 const Upload = require("../middlewares/upload");
-const authMiddleware = require("../middlewares/auth");
+const authProfile = require("../middlewares/authProfile");
 
-router.use(authMiddleware);
+router.use(authProfile);
 
 router.post("/create-post", Upload.array("media", 5), appController.createPost);
 router.get("/fetch-posts", appController.fetchPosts);

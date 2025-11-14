@@ -1,0 +1,12 @@
+const express = require("express");
+const router = express.Router();
+const communityController = require("../controllers/CommunityController");
+const Upload = require("../middlewares/upload");
+const authProfile = require("../middlewares/authProfile");
+
+router.use(authProfile);
+
+router.post("/create", Upload.single("photo"), communityController.create);
+router.post("/add-members",  communityController.addMembers);
+router.get("/fetch-members", communityController.fetchMembers);
+module.exports = router;

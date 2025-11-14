@@ -8,11 +8,11 @@ const {
     Reaction,
     Friend,
     Chat,
-    Member
+    Member,
+    Community,
+    Branch
  } = require("../models");
  const { Op, fn, col, where } = require("sequelize");
-
-
 
 exports.createPost = async (req, res) => {
     const t = await sequelize.transaction();
@@ -172,7 +172,7 @@ exports.searchProfiles = async (req, res) => {
       }
     }
 
-    const profiles = await Profile.findAll({
+    const profiles = await Branch.findAll({
       where: query,
       include: [
         {
@@ -433,11 +433,12 @@ exports.createChat = async (req, res) => {
           where: { type: "private" },
           include: [
             {
-              model: Profile,
+              model: Member,
               as: "members",
               through: { attributes: [] },
               where: {
-                id: { [Op.in]: [minId, maxId] },
+                profileId: { [Op.in]: [minId, maxId] },
+                memberType: "chat"
               },
             },
           ],
@@ -464,8 +465,8 @@ exports.createChat = async (req, res) => {
 
         await Member.bulkCreate(
           [
-            { profileId: creatorId, chatId: chat.id },
-            { profileId: otherUserId, chatId: chat.id },
+            { profileId: creatorId, targetId: chat.id, memberType: "chat" },
+            { profileId: otherUserId, chatId: chat.id, memberType: "chat" },
           ],
           { transaction: t }
         );
@@ -490,9 +491,10 @@ exports.createChat = async (req, res) => {
         );
 
         const members = uniqueProfileIds.map((profileId) => ({
-          chatId: chat.id,
+          targetId: chat.id,
           profileId,
           role: profileId === creatorId ? "admin" : "member",
+          memberType: "chat"
         }));
 
         await Member.bulkCreate(members, { transaction: t });
@@ -558,6 +560,51 @@ exports.fetchChats = async (req, res) => {
     return res.status(400).json({ message: err.message });
   }
 };
+
+exports.joinCommunity = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { communityId } = req.body;
+    const profileId = req.profile.id;
+
+    const community = await Community.findByPk(communityId);
+
+    if (!community) {
+      await transaction.rollback();
+      return res.status(404).json({ message: "Sorry community not found" });
+    }
+
+    if (community.visibility === "invite_only") {
+      await transaction.rollback();
+      return res.status(403).json({
+        message: "Sorry this community is invite-only. You need an invitation to join.",
+      });
+    }
+
+    const [member, created] = await CommunityMember.findOrCreate({
+      where: { communityId, profileId },
+      defaults: { role: "member" },
+      transaction,
+    });
+
+    await transaction.commit();
+
+    if (!created) {
+      return res.status(200).json({ message: "Sorry you are already a member" });
+    }
+
+    return res.status(201).json({
+      message: "Successfully joined the community!",
+      member,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Join community error:", error);
+    return res.status(500).json({ message: "Sorry failed to join community" });
+  }
+};
+
 
 
 

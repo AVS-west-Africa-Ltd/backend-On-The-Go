@@ -52,11 +52,27 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
-      university: {
-        type: DataTypes.STRING,
+      closeUniversity: {
+        type: DataTypes.BOOLEAN,
         allowNull: true,
       },
-      address: {
+      fullAddress: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      streetAddress: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      state: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      country: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      city: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -74,12 +90,20 @@ module.exports = (sequelize, DataTypes) => {
       },
       cacNo: {
         type: DataTypes.STRING,
-        defaultValue: null,
-        unique: true,
+        allowNull: true,
+      },
+      website: {
+        type: DataTypes.STRING,
+        allowNull: true
       },
       rating: {
         type: DataTypes.FLOAT,
         defaultValue: 0,
+      },
+      businessCategory: {
+        type: DataTypes.ENUM("sme", "large_enterprise"),
+        allowNull: false,
+        defaultValue: "sme",
       },
       placesVisited: {
         type: DataTypes.JSON,
@@ -140,3 +164,4 @@ module.exports = (sequelize, DataTypes) => {
 
   return Profile;
 };
+

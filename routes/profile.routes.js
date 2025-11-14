@@ -1,28 +1,33 @@
 const express = require("express");
 const router = express.Router();
 const profileController = require("../controllers/ProfileController");
-const authMiddleware = require("../middlewares/authMiddleware");
+const authUser = require("../middlewares/authUser");
+const authProfile = require("../middlewares/authProfile");
 const Upload = require("../middlewares/upload");
 
 
-router.use(authMiddleware);
+router.get("/fetch", authUser, Upload.single("picture"), profileController.fetchProfile);
 
-router.get("/fetch", Upload.single("picture"), profileController.fetchProfile);
+router.post("/create", authUser, Upload.single("picture"), profileController.createProfile);
 
-router.post("/create", Upload.single("picture"), profileController.createProfile);
+router.post("/add-more-information", authProfile, profileController.addMoreInfomation);
 
-router.post("/update", Upload.single("picture"), profileController.updateProfile);
+router.post("/add-amenities", authProfile, profileController.addAmenities);
 
-router.post("/interests-places", profileController.addInterestsAndPlaces);
+router.post('/add-photos', authProfile, Upload.array('photos', 5), profileController.addPhotos);
 
-router.post("/upload-document", Upload.single("document"), profileController.uploadDocument);
+router.post("/update", authProfile, Upload.single("picture"), profileController.updateProfile);
 
-router.post("/opening-hours", profileController.addOpeningHours);
+router.post("/interests-places", authProfile, profileController.addInterestsAndPlaces);
 
-router.post("/socials", profileController.addSocials);
+router.post("/upload-document", authProfile, Upload.single("document"), profileController.uploadDocument);
 
-router.post("/wifi", profileController.addWifiDetails);
+router.post("/opening-hours", authProfile, profileController.addOpeningHours);
 
-router.post("/reward-redeem-hours", profileController.addRedeemRewardHours);
+router.post("/socials", authProfile, profileController.addSocials);
+
+router.post("/wifi", authProfile, profileController.addWifiDetails);
+
+router.post("/reward-redeem-hours", authProfile, profileController.addRedeemRewardHours);
 
 module.exports = router;

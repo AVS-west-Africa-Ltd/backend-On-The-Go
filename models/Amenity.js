@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
+      branchId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      
       name: {
         type: DataTypes.ENUM("wifi", "coffee"),
         allowNull: false,

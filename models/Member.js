@@ -1,31 +1,42 @@
 module.exports = (sequelize, DataTypes) => {
   const Member = sequelize.define("Member", {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    chatId: {
-      type: DataTypes.UUID,
+    targetId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     profileId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        onDelete: 'CASCADE',
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    memberType: {
+      type: DataTypes.ENUM("community", "chat"),
+      allowNull: false,
     },
     role: {
       type: DataTypes.ENUM("member", "admin"),
       defaultValue: "member",
     },
-    },{
-      tableName: 'members',
-      timestamps: true,
+
+  }, {
+    tableName: "members",
+    indexes: [{ unique: true, fields: ["targetId", "profileId", "memberType"] }],
+  });
+
+  
+  Member.associate = (models) => {
+    
+    Member.belongsTo(models.Community, {
+      foreignKey: "targetId",
+      as: "community",
+      onDelete: "CASCADE",
     });
 
-  Member.associate = (models) => {
-    Member.belongsTo(models.Chat, { foreignKey: "chatId" });
-    Member.belongsTo(models.Profile, { foreignKey: "profileId" });
+    
+    Member.belongsTo(models.Profile, {
+      foreignKey: "profileId",
+      as: "profile",
+      onDelete: "CASCADE",
+    });
   };
 
   return Member;

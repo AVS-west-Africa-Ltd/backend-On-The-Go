@@ -7,6 +7,7 @@ const Template = require("../constants/templates");
 const {
   User,
   Profile,
+  Branch,
   sequelize
 } = require("../models");
 
@@ -119,7 +120,20 @@ exports.login = async (req, res) => {
     const profile = await Profile.findOne({
       where: { userId: user.id }
     });
-    const auth = { user: user.id, profile: profile ? { id: profile.id, type: profile.profileType } : null };
+
+    const branch = await Branch.finOne({
+      where: {
+        profileId: profile.id,
+        isHQ: true
+      }
+    });
+
+    const auth = { 
+      user: user.id, 
+      profile: profile ? { id: profile.id, type: profile.profileType } : null,
+      branch: branch ? branch.id  : null
+    };
+    
     const token = jwtUtil.generateToken(auth);
     
     return res.status(200).json({

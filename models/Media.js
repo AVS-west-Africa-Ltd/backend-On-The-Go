@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
                 notEmpty: { msg: 'File path cannot be empty' },
                 isUrl: {
                     msg: 'File path should be a valid URL or path',
-                    args: { require_protocol: false } // Allow both URLs and local paths
+                    args: { require_protocol: false }
                 }
             }
         },

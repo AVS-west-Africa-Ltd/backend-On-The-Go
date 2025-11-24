@@ -160,6 +160,15 @@ module.exports = (sequelize, DataTypes) => {
       as: "socials",
       onDelete: "CASCADE",
     });
+
+    Profile.hasMany(models.Media, {
+      foreignKey: "targetId",
+      as: "media",
+      constraints: false,
+      scope: {
+        targetType: "profile"
+      }
+    });
   };
 
   return Profile;

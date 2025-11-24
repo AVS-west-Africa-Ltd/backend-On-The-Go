@@ -15,40 +15,48 @@ const {
  const { Op, fn, col, where } = require("sequelize");
 
 exports.createPost = async (req, res) => {
-    const t = await sequelize.transaction();
-    try {
-      const {
-        body,
-        postType = "normal",
-        reviewTarget = null,
-        amenities = null,
-      } = req.body;
+  const t = await sequelize.transaction();
+  try {
+    const {
+      body,
+      postType = "normal",
+      target = null,
+      amenities = null,
+    } = req.body;
 
-      const userId = req.user;
-      const profileId = req.profile.id;
+    const userId = req.user;
+    const profileId = req.profile.id;
+    const branchId = req.branch || null;
 
-      let media = [];
-      if (req.files && Array.isArray(req.files)) {
-        media = req.files.map((file) => file.location || file.path);
-      }
+    let media = [];
+    if (req.files && Array.isArray(req.files)) {
+      media = req.files.map((file) => file.location || file.path);
+    }
 
-      let parsedAmenities = {};
+    let parsedAmenities = {};
+    let finalBranchId = null;
+    let finalReviewTarget = null;
+    let finalRating = {};
+    
+    switch (postType) {
+      case "normal":
+        finalBranchId = branchId;
+        break;
 
-      
-      if (postType === "review" && reviewTarget) {
-        const profile = await Profile.findOne({
-          where: { id: reviewTarget, profileType: "business" },
+      case "review":
+        
+        const branch = await Branch.findOne({
+          where: { id: target },
           transaction: t,
         });
 
-        if (!profile) {
+        if (!branch) {
           await t.rollback();
           return res.status(400).json({
             message: "Sorry, only a business profile can be reviewed.",
           });
         }
 
-        
         parsedAmenities =
           typeof amenities === "object" && !Array.isArray(amenities)
             ? amenities
@@ -61,101 +69,136 @@ exports.createPost = async (req, res) => {
           await Amenity.increment(
             { rating: ratingValue },
             {
-              where: { businessId: reviewTarget, name: key },
+              where: { branchId: target, businessId: branch.profileId, name: key },
               transaction: t,
             }
           );
         }
-      }
 
-      const post = await Post.create(
-        {
-          userId,
-          profileId,
-          body,
-          postType,
-          reviewTarget: postType === "review" ? reviewTarget : null,
-          media,
-          rating: postType === "review" ? parsedAmenities : {},
-        },
-        { transaction: t }
-      );
+        finalReviewTarget = target;
+        finalRating = parsedAmenities;
+        break;
 
-      await t.commit();
-      return res.status(201).json({ post, message: "Post created successfully!" });
-    } catch (error) {
-      await t.rollback();
-      console.error("Error creating post:", error);
-      return res.status(400).json({ message: "Sorry, something went wrong!" });
+      default:
+        
+        await t.rollback();
+        return res.status(400).json({
+          message: `Invalid post type: ${postType}`,
+        });
     }
+
+    const post = await Post.create(
+      {
+        userId,
+        profileId,
+        branchId: finalBranchId,
+        body,
+        postType,
+        reviewTarget: finalReviewTarget,
+        media,
+        rating: finalRating,
+      },
+      { transaction: t }
+    );
+
+    await t.commit();
+    return res.status(201).json({ post, message: "Post created successfully!" });
+  } catch (error) {
+    await t.rollback();
+    console.error("Error creating post:", error);
+    return res.status(400).json({ message: "Sorry, something went wrong!" });
+  }
 };
 
 exports.fetchPosts = async (req, res) => {
   try {
-    const { offset = 0, search = "" } = req.query;
+    const { offset = 0, search = "", type = null } = req.query;
 
     const whereClause = {};
 
-    
     if (search) {
-      whereClause[Op.or] = [
-        { body: { [Op.like]: `%${search}%` } },
-      ];
+      whereClause[Op.or] = [{ body: { [Op.like]: `%${search}%` } }];
+    }
+
+    let includeArray = [];
+
+    switch (type) {
+      case "normal":
+        whereClause.postType = "normal";
+        includeArray = [
+          {
+            model: Branch,
+            as: "branch",
+            required: false,
+            include: [
+              {
+                model: Profile,
+                as: "profile",
+                required: false,
+                attributes: ["id", "userName", "profileType", "avatar"],
+              },
+            ],
+          },
+        ];
+        break;
+
+      case "review":
+        whereClause.postType = "review";
+        includeArray = [
+          {
+            model: Profile,
+            as: "business",
+            required: false,
+            attributes: ["id", "userName", "profileType", "avatar"],
+          },
+          {
+            model: Profile,
+            as: "author",
+            required: false,
+            attributes: ["id", "userName", "profileType", "avatar"],
+          },
+        ];
+        break;
+
+      default:
+        return res.status(400).json({
+          message: "Invalid type. Allowed types: 'normal' or 'review'.",
+        });
     }
 
     const posts = await Post.findAll({
       where: whereClause,
-      include: [
-        {
-          model: Profile,
-          as: "author",
-          where: search
-            ? {
-                userName: { [Op.like]: `%${search}%` },
-              }
-            : undefined,
-          required: false,
-        },
-        {
-          model: Profile,
-          as: "business",
-        },
-      ],
+      include: includeArray,
       limit: 20,
       offset: parseInt(offset, 10),
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({ posts, message: "Posts fetched successfully" });
+    return res.status(200).json({
+      posts,
+      message: "Posts fetched successfully",
+    });
   } catch (error) {
     console.error("Error fetching posts:", error);
-    res.status(400).json({ message: "Failed to fetch posts" });
+    return res.status(400).json({ message: "Failed to fetch posts" });
   }
 };
 
-exports.searchProfiles = async (req, res) => {
+exports.searchBusinesses = async (req, res) => {
   try {
     const { 
       search = "", 
-      type = "", 
-      offset= 0 , 
-      location="", 
-      amenity="", 
+      offset = 0, 
+      location = "", 
+      amenity = "", 
       businessType 
     } = req.query;
 
     const query = {};
-    const radius = 10000;
+    const radius = 10000; // in meters
 
     if (search && search.trim() !== "") {
-      query.userName= { [Op.like]: `%${search.trim()}%` };
-    }
-    if(type && type.trim() !== ""){
-      query.profileType= { [Op.eq]: type.trim() } ;
-    }
-
-    if (businessType && businessType.trim() !== "") {
-      query.businessType = { [Op.like]: `%${businessType.trim()}%` };
+      query.name = { [Op.like]: `%${search.trim()}%` }; // search by branch name
     }
 
     if (location && location.includes(",")) {
@@ -172,20 +215,28 @@ exports.searchProfiles = async (req, res) => {
       }
     }
 
-    const profiles = await Branch.findAll({
+    
+    const branches = await Branch.findAll({
       where: query,
       include: [
+        {
+          model: Profile,
+          as: "profile", // the profile the branch belongs to
+          required: true,
+          where: {
+            profileType: { [Op.eq]: type.trim() },
+            ...(businessType && { businessType: { [Op.like]: `%${businessType.trim()}%` } }),
+          },
+          attributes: ["id", "userName", "profileType", "avatar", "businessType"],
+        },
         {
           model: Amenity,
           as: "amenities",
           required: amenity && amenity.trim() !== "" ? true : false,
-          where: amenity && amenity.trim() !== ""
-            ? {
-                name: {
-                  [Op.eq]: `%${amenity.trim()}%`,
-                },
-              }
-            : undefined,
+          where:
+            amenity && amenity.trim() !== ""
+              ? { name: { [Op.eq]: amenity.trim() } }
+              : undefined,
         },
       ],
       limit: 20,
@@ -193,7 +244,10 @@ exports.searchProfiles = async (req, res) => {
       order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({profiles, message:"Fetched profiles"});
+    res.status(200).json({
+      branches,
+      message: "Branches with profiles fetched successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(400).json({
@@ -202,38 +256,59 @@ exports.searchProfiles = async (req, res) => {
   }
 };
 
-exports.viewProfiles = async (req, res) => {
+exports.viewBusiness = async (req, res) => {
   try {
-   
+    const { branchId } = req.params;
 
-    if (search && search.trim() !== "") {
-      query.userName= { [Op.like]: `%${search.trim()}%` };
-    }
-    if(type && type.trim() !== ""){
-      query.profileType= { [Op.eq]: type.trim() } ;
-    }
-
-    const profiles = await Profile.findAll({
-      where: query,
+    const branch = await Branch.findOne({
+      where: { id: branchId },
       include: [
+        {
+          model: Profile,
+          as: "profile",
+          include: [
+            {
+              model: Media,
+              as: "media"
+            },{
+              model: Post,
+              as: "reviews",
+              where: {
+                postType: "review"
+              },
+              required: false,
+              include: [
+                {
+                  model: Profile,
+                  as: "author"
+                }
+              ]
+            }
+          ]
+        },
         {
           model: Amenity,
           as: "amenities",
         },
       ],
-      limit: 20,
-      offset: Number(offset) || 0,
-      order: [["createdAt", "DESC"]],
     });
 
-    res.status(200).json({profiles, message:"Fetched profiles"});
+    if (!branch) {
+      return res.status(404).json({ message: "Sorry business not found" });
+    }
+
+    return res.status(200).json({
+      branch,
+      message: "Business fetched successfully!",
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(400).json({
-      message: "Sorry something went wrong while searching profiles",
+    return res.status(400).json({
+      message: "Something went wrong while fetching business details",
     });
   }
-}
+};
 
 exports.makeComment = async (req, res) => {
   const t = await sequelize.transaction();
@@ -465,7 +540,7 @@ exports.createChat = async (req, res) => {
 
         await Member.bulkCreate(
           [
-            { profileId: creatorId, targetId: chat.id, memberType: "chat" },
+            { profileId: creatorId, targetId: chat.id, memberType: "chat", isAccepted: true },
             { profileId: otherUserId, chatId: chat.id, memberType: "chat" },
           ],
           { transaction: t }
@@ -521,10 +596,14 @@ exports.createChat = async (req, res) => {
 exports.fetchChats = async (req, res) => {
   try {
     const profileId = req.profile.id;
+    const { limit = 20, offset = 0, memberLimit = 10 } = req.query;
 
+    
     const memberLinks = await Member.findAll({
       attributes: ["chatId"],
       where: { profileId },
+      limit: Number(limit),
+      offset: Number(offset),
     });
 
     const chatIds = memberLinks.map((m) => m.chatId);
@@ -541,6 +620,8 @@ exports.fetchChats = async (req, res) => {
           model: Profile,
           as: "members",
           attributes: ["id", "userName", "picture"],
+          through: { attributes: [] },
+          limit: Number(memberLimit),  
         },
         {
           model: Profile,
@@ -549,12 +630,15 @@ exports.fetchChats = async (req, res) => {
         },
       ],
       order: [["updatedAt", "DESC"]],
+      limit: Number(limit),
+      offset: Number(offset),
     });
 
     return res.status(200).json({
       message: "Chats fetched successfully!",
       chats,
     });
+
   } catch (err) {
     console.error("❌ fetchChats error:", err);
     return res.status(400).json({ message: err.message });

@@ -17,6 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: "member",
     },
 
+    isAccepted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+
   }, {
     tableName: "members",
     indexes: [{ unique: true, fields: ["targetId", "profileId", "memberType"] }],

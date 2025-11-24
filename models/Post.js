@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      branchId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       body: {
         type: DataTypes.TEXT,
         allowNull: false,
@@ -19,9 +23,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "normal"
       },
-      reviewTarget: {
+      target: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
+      },
+      targetType: {
+        type: DataTypes.ENUM("community", "business"),
+        allowNull: false,
+        defaultValue: "normal"
       },
       likes: {
         type: DataTypes.INTEGER,
@@ -59,7 +68,8 @@ module.exports = (sequelize, DataTypes) => {
     Post.belongsTo(models.User, { foreignKey: "userId", as: "user" });
 
     Post.belongsTo(models.Profile, { foreignKey: "profileId", as: "author" });
-    Post.belongsTo(models.Profile, { foreignKey: "reviewTarget", as: "business" });
+    Post.belongsTo(models.Profile, { foreignKey: "target", as: "business" });
+    Post.belongsTo(models.Branch, { foreignKey: "branchId", as: "branch" });
 
     Post.hasMany(models.Comment, {
       foreignKey: "postId",

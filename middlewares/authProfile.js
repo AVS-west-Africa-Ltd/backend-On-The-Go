@@ -19,6 +19,7 @@ const authProfile = (req, res, next) => {
     return res.status(400).json({ message: "Sorry select a profile!"});
   }
   req.profile = decoded.profile;
+  req.branch = decoded.branch;
   next();
 };
 module.exports = authProfile;

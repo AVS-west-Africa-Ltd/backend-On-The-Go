@@ -121,7 +121,7 @@ exports.login = async (req, res) => {
       where: { userId: user.id }
     });
 
-    const branch = await Branch.finOne({
+    const branch = await Branch.findOne({
       where: {
         profileId: profile.id,
         isHQ: true

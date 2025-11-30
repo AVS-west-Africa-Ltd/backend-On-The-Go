@@ -15,7 +15,7 @@ const socket = async (socket, next) => {
     socket.user = decoded.user;
     socket.profile = decoded.profile;
 
-    console.log(`🔐 Socket authenticated: ${}`);
+    console.log(`🔐 Socket authenticated: ${''}`);
     next();
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);

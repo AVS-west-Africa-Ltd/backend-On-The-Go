@@ -11,11 +11,11 @@ const setupSocket = require('./config/socket');
 // Import models
 const db = require('./models');
 
-const serviceAccount = require('./serviceAccountKey.json');
+// const serviceAccount = require('./serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
@@ -78,6 +78,10 @@ app.post("/sync_db", async (req, res)=>{
     res.status(500).json({ error: err.message });
   }
   
+});
+
+app.get("/api/v1", (req, res) => {
+  res.status(200).json({ success: true, message: "Welcome to On The Go API v1" });
 });
 
 app.use("/api/v1", router);

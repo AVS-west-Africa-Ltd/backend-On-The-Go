@@ -2,6 +2,11 @@ module.exports = (sequelize, DataTypes) => {
   const Amenity = sequelize.define(
     "Amenity",
     {
+      // id: {
+      //   type: DataTypes.UUID,
+      //   defaultValue: DataTypes.UUIDV4,
+      //   primaryKey: true,
+      // },
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -18,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       
       name: {
-        type: DataTypes.ENUM("wifi", "coffee"),
+        type: DataTypes.ENUM("wifi", "coffee", "parking", "air_conditioning"),
         allowNull: false,
       },
 
@@ -64,6 +69,12 @@ module.exports = (sequelize, DataTypes) => {
   Amenity.associate = (models) => {
 
     Amenity.belongsTo(models.Profile, { foreignKey: "businessId", as: "amenities" });
+
+     Amenity.belongsTo(models.Branch, {
+      foreignKey: "branchId",
+      as: "branch",
+      onDelete: "CASCADE",
+    });
 
   };
 

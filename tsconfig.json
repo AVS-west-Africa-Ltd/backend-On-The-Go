@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "rootDir": ".",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,           // set to true later when conversion is stable
+    "skipLibCheck": true,
+    "allowJs": true,           // ⚠️ Allows JS + TS side by side
+    "checkJs": false
+  },
+  "include": ["./**/*"],
+  "exclude": ["dist", "node_modules"]
+}

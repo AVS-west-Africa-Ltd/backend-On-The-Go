@@ -10,12 +10,13 @@ const setupSocket = require('./config/socket');
 
 // Import models
 const db = require('./models');
+import { connectDB } from "./config/database";
 
-const serviceAccount = require('./serviceAccountKey.json');
+// const serviceAccount = require('./serviceAccountKey.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
@@ -86,10 +87,29 @@ app.use("/api/v1", router);
 setupSocket(server);
 
 
-server.listen(PORT, HOST, () => {
-  console.log(
-    `Server running on http://localhost:${PORT}, PID: ${process.pid}`
-  );
-});
+// server.listen(PORT, HOST, () => {
+//   console.log(
+//     `Server running on http://localhost:${PORT}, PID: ${process.pid}`
+//   );
+// });
+
+async function startServer() {
+  try {
+    console.log('?????????');
+    
+    await connectDB();
+    console.log("Database connected successfully.");
+
+    server.listen(PORT, HOST, () => {
+      console.log(`Server running on http://localhost:${PORT}, PID: ${process.pid}`);
+    });
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
+    process.exit(1); // exit if DB fails
+  }
+}
+
+startServer();
+
 
 module.exports = { app };

@@ -3,9 +3,7 @@ const router = express.Router();
 const appController = require("../controllers/AppController");
 const Upload = require("../middlewares/upload");
 const authProfile = require("../middlewares/authProfile");
-
 router.use(authProfile);
-
 router.post("/create-post", Upload.array("media", 5), appController.createPost);
 router.get("/fetch-posts", appController.fetchPosts);
 // router.get("/fetch-businesses", appController.searchProfiles);
@@ -14,6 +12,4 @@ router.post("/toggle-reaction", appController.toggleReaction);
 router.post("/follow-profile", appController.followProfile);
 router.post("/create-chat", appController.createChat);
 router.get("/fetch-chats", appController.fetchChats);
-
-
 module.exports = router;

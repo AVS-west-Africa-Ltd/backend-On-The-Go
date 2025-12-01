@@ -81,6 +81,10 @@ app.post("/sync_db", async (req, res)=>{
   
 });
 
+app.get("/api/v1", (req, res) => {
+  res.status(200).json({ success: true, message: "Welcome to On The Go API v1" });
+});
+
 app.use("/api/v1", router);
 
 

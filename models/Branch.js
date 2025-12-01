@@ -2,7 +2,11 @@ module.exports = (sequelize, DataTypes) => {
   const Branch = sequelize.define(
     "Branch",
     {
-      
+      //  id: {
+      //   type: DataTypes.UUID,
+      //   defaultValue: DataTypes.UUIDV4,
+      //   primaryKey: true,
+      // },
       profileId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -26,6 +30,11 @@ module.exports = (sequelize, DataTypes) => {
       },
 
       fullAddress: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+
+      description: {
         type: DataTypes.TEXT,
         allowNull: true,
       },
@@ -85,6 +94,18 @@ module.exports = (sequelize, DataTypes) => {
     Branch.belongsTo(models.Profile, {
       foreignKey: "profileId",
       as: "profile",
+      onDelete: "CASCADE",
+    });
+
+    Branch.hasMany(models.Amenity, {
+      foreignKey: "branchId",
+      as: "amenities",
+      onDelete: "CASCADE",
+    });
+
+    Branch.hasMany(models.OpeningHour, {
+      foreignKey: "branchId",
+      as: "openingHours",
       onDelete: "CASCADE",
     });
   };

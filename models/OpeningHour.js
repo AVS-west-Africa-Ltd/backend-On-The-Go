@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       },
 
+       branchId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+
       dayOfWeek: {
         type: DataTypes.ENUM(
           "monday",
@@ -24,13 +29,13 @@ module.exports = (sequelize, DataTypes) => {
 
       openTime: {
         type: DataTypes.TIME,
-        allowNull: false,
+        allowNull: true,
         comment: "Business opening time (HH:mm:ss)",
       },
 
       closeTime: {
         type: DataTypes.TIME,
-        allowNull: false,
+        allowNull: true,
         comment: "Business closing time (HH:mm:ss)",
       },
 
@@ -54,6 +59,12 @@ module.exports = (sequelize, DataTypes) => {
     OpeningHour.belongsTo(models.Profile, {
       foreignKey: "businessId",
       as: "businessProfile",
+    });
+
+      OpeningHour.belongsTo(models.Branch, {
+      foreignKey: "branchId",
+      as: "branch",
+      onDelete: "CASCADE",
     });
   };
 

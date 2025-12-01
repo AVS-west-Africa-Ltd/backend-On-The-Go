@@ -87,7 +87,7 @@ exports.createProfile = async (req, res) => {
             data.profileType = profileType;
             data.businessCategory = businessCategory;
 
-            branch.name = `${data.userName} ( HQ ${data.state} ${data.city} )`;
+            branch.name = `${data.userName} ( HQ ${data.city} ${data.state})`;
             branch.streetAddress = data.streetAddress;
             branch.state = data.state;
             branch.country = data.country;
@@ -654,6 +654,10 @@ exports.fetchProfile = async (req, res ) => {
     try {
         const user = req.user;
         const selectedProfile = req.profile;
+
+        if (!selectedProfile) {
+            return res.status(400).json({success: false, message:"No profile selected."});
+        }
 
         const includes = [];
 

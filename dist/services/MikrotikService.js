@@ -1,10 +1,14 @@
-const RouterOSClient = require('sy5-routeros-client').RouterOSClient;
-const { NetworkRouter } = require('../models');
-const { RandomCharacters } = require('../helpers');
-exports.getSystemResource = async (credentials) => {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.connector = exports.generateTicket = exports.fetchRouterProfile = exports.getSystemResource = void 0;
+// services/routerOsService.ts
+const sy5_routeros_client_1 = require("sy5-routeros-client");
+const helpers_1 = require("../utils/helpers");
+const NetworkRouter_1 = require("../models/NetworkRouter");
+const getSystemResource = async (credentials) => {
     let client;
     try {
-        client = new RouterOSClient(credentials);
+        client = new sy5_routeros_client_1.RouterOSClient(credentials);
         const router = await client.connect();
         const systemInfo = await router.menu("/system/resource").getOnly();
         if (!systemInfo)
@@ -20,10 +24,11 @@ exports.getSystemResource = async (credentials) => {
             await client.close();
     }
 };
-exports.fetchProfile = async (credentials) => {
+exports.getSystemResource = getSystemResource;
+const fetchRouterProfile = async (credentials) => {
     let client;
     try {
-        client = new RouterOSClient(credentials);
+        client = new sy5_routeros_client_1.RouterOSClient(credentials);
         const router = await client.connect();
         const profiles = await router.menu("/tool/user-manager/profile").getAll();
         if (!profiles)
@@ -39,11 +44,12 @@ exports.fetchProfile = async (credentials) => {
             await client.close();
     }
 };
-exports.generateTicket = async (ticketProfile) => {
+exports.fetchRouterProfile = fetchRouterProfile;
+const generateTicket = async (ticketProfile) => {
     let client;
     try {
         // Fetch router from DB
-        const networkRouter = await NetworkRouter.findOne({
+        const networkRouter = await NetworkRouter_1.NetworkRouter.findOne({
             where: { id: ticketProfile.routerId },
         });
         if (!networkRouter)
@@ -53,11 +59,11 @@ exports.generateTicket = async (ticketProfile) => {
             user: networkRouter.username,
             password: networkRouter.password,
         };
-        client = new RouterOSClient(credentials);
+        client = new sy5_routeros_client_1.RouterOSClient(credentials);
         const router = await client.connect();
         // Add new user in User Manager
         const userManagerMenu = router.menu("/tool/user-manager/user");
-        const ticketInfo = { username: RandomCharacters(6), password: RandomCharacters(6) };
+        const ticketInfo = { username: (0, helpers_1.randomCharacters)(6), password: (0, helpers_1.randomCharacters)(6) };
         const ticket = await userManagerMenu.add({
             ...ticketInfo,
             customer: ticketProfile.owner,
@@ -79,3 +85,10 @@ exports.generateTicket = async (ticketProfile) => {
             await client.close();
     }
 };
+exports.generateTicket = generateTicket;
+const connector = async (credentials) => {
+    const client = new sy5_routeros_client_1.RouterOSClient(credentials);
+    const router = await client.connect();
+    return { router, client };
+};
+exports.connector = connector;

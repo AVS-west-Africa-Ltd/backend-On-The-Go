@@ -1,3 +1,4 @@
+"use strict";
 const crypto = require('crypto');
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY
     ? Buffer.from(process.env.ENCRYPTION_KEY, 'hex').slice(0, 32)

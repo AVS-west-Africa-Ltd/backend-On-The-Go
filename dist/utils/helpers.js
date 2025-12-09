@@ -1,19 +1,24 @@
-exports.randomCharacters = (length) => {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.validateGeolocation = exports.randomNumber = exports.randomCharacters = void 0;
+const randomCharacters = (length) => {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
 };
-exports.randomNumber = (length) => {
-    const chars = '0123456789';
-    let result = '';
+exports.randomCharacters = randomCharacters;
+const randomNumber = (length) => {
+    const chars = "0123456789";
+    let result = "";
     for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
 };
+exports.randomNumber = randomNumber;
 exports.getBoundingBox = (latitude, longitude, radiusKm = 10) => {
     const earthRadiusKm = 6371;
     // Approximate degree difference for 1 km
@@ -28,28 +33,28 @@ exports.getBoundingBox = (latitude, longitude, radiusKm = 10) => {
     console.log(result);
     return result;
 };
-exports.validateGeolocation = (geoLocation) => {
+const validateGeolocation = (geoLocation) => {
     try {
-        if (geoLocation && geoLocation.length !== 0) {
-            const parsedLocation = typeof geoLocation === 'string'
-                ? JSON.parse(geoLocation)
-                : geoLocation;
-            if (Array.isArray(parsedLocation) && parsedLocation.length === 2) {
-                console.log('Valid coordinates:', parsedLocation);
-                return parsedLocation;
-            }
-            else {
-                console.log(geoLocation);
-                return [];
-            }
-        }
-        else {
+        if (!geoLocation) {
             console.log('Empty or null geoLocation');
-            return [];
+            return null;
         }
+        const parsedLocation = typeof geoLocation === 'string'
+            ? JSON.parse(geoLocation)
+            : geoLocation;
+        if (Array.isArray(parsedLocation) &&
+            parsedLocation.length === 2 &&
+            typeof parsedLocation[0] === "number" &&
+            typeof parsedLocation[1] === "number") {
+            console.log("Valid coordinates:", parsedLocation);
+            return parsedLocation;
+        }
+        console.log(geoLocation);
+        return null;
     }
     catch (error) {
         console.error('Error parsing geoLocation:', error);
-        return [];
+        return null;
     }
 };
+exports.validateGeolocation = validateGeolocation;

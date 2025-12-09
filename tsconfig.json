@@ -2,15 +2,21 @@
   "compilerOptions": {
     "target": "es2020",
     "module": "commonjs",
-    "rootDir": ".",
+    "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": false,           // set to true later when conversion is stable
+    "strict": true,           // set to true later when conversion is stable
     "skipLibCheck": true,
-    "allowJs": true,           // ⚠️ Allows JS + TS side by side
-    "checkJs": false
+    "allowJs": false,           // ⚠️ Allows JS + TS side by side
+    // "checkJs": false,
+    "noImplicitAny": true,
+   "typeRoots": [
+     "./src/types",
+      "./node_modules/@types",
+    ]
+
   },
-  "include": ["./**/*"],
+  "include": ["./src/**/*", "./src/types/**/*" ],
   "exclude": ["dist", "node_modules"]
 }

@@ -1,3 +1,4 @@
+"use strict";
 const { Post, Business, User, Comment, UserFollower, BlockedUser } = require("../models");
 const { Op, Sequelize } = require("sequelize");
 const multer = require("multer");

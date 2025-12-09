@@ -1,3 +1,4 @@
+"use strict";
 exports.welcome = () => {
     const BASE = "https://res.cloudinary.com/doefjylyu/image/upload";
     const IMG = {

@@ -1,3 +1,4 @@
+"use strict";
 const cron = require('node-cron');
 const { Op } = require('sequelize');
 const User = require('../models/User');

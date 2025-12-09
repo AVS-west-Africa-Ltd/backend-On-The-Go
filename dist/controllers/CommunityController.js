@@ -1,6 +1,15 @@
-const { sequelize, Community, Member, Profile } = require("../models");
-const Helpers = require("../utils/helpers");
-exports.create = async (req, res) => {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fetchMembers = exports.addMembers = exports.create = void 0;
+const responseHandlers_1 = require("../handlers/responseHandlers");
+const sequelize_1 = require("sequelize");
+const models_1 = __importDefault(require("../models"));
+const helpers_1 = require("../utils/helpers");
+const { sequelize, Community, Member, Profile } = models_1.default;
+const create = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { name, description, type, visibility } = req.body;
@@ -8,7 +17,7 @@ exports.create = async (req, res) => {
         const profileId = req.profile.id;
         if (!name) {
             await transaction.rollback();
-            return res.status(400).json({ message: "Community name is required" });
+            return (0, responseHandlers_1.errorHandler)(res, "Community name is required", 400);
         }
         const community = await Community.create({
             userId,
@@ -18,7 +27,7 @@ exports.create = async (req, res) => {
             description,
             type: type || "public",
             visibility: visibility || "public",
-            inviteCode: Helpers.randomCharacters(6)
+            inviteCode: (0, helpers_1.randomCharacters)(6)
         }, { transaction });
         await Member.create({
             profileId: profileId,
@@ -35,24 +44,25 @@ exports.create = async (req, res) => {
     catch (error) {
         await transaction.rollback();
         console.error("Create community error:", error);
-        return res.status(500).json({ message: "Failed to create community" });
+        return (0, responseHandlers_1.errorHandler)(res, "Failed to create community", 500);
     }
 };
-exports.addMembers = async (req, res) => {
+exports.create = create;
+const addMembers = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { communityId, members = [] } = req.body;
         const profileId = req.profile.id;
         if (!communityId || !Array.isArray(members) || members.length === 0) {
             await transaction.rollback();
-            return res.status(400).json({ message: "Sorry community ID and members are required" });
+            return (0, responseHandlers_1.errorHandler)(res, "Sorry community ID and members are required", 400);
         }
         const admin = await Member.findOne({
             where: { targetId: communityId, profileId, role: "admin", memberType: "community" },
         });
         if (!admin) {
             await transaction.rollback();
-            return res.status(403).json({ message: "Sorry you are not an admin of this community" });
+            return (0, responseHandlers_1.errorHandler)(res, "Unauthorized. Only admins can add members", 403);
         }
         const entries = members.map((memberId) => ({
             targetId: communityId,
@@ -70,21 +80,24 @@ exports.addMembers = async (req, res) => {
     catch (error) {
         await transaction.rollback();
         console.error("Add members error:", error);
-        return res.status(500).json({ message: "Sorry, failed to add members" });
+        return (0, responseHandlers_1.errorHandler)(res, "Failed to add members", 500);
     }
 };
-exports.fetchMembers = async (req, res) => {
+exports.addMembers = addMembers;
+const fetchMembers = async (req, res) => {
     try {
-        const { communityId, search = "", page = 1, limit = 20 } = req.query;
+        const { communityId, search = "", page = "1", limit = "20" } = req.query;
         if (!communityId) {
-            return res.status(400).json({ message: "Sorry, communityId is required" });
+            return (0, responseHandlers_1.errorHandler)(res, "CommunityId is required", 400);
         }
-        const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const offset = (pageNum - 1) * limitNum;
         const searchFilter = search
             ? {
-                [Op.or]: [
-                    { "$profile.userName$": { [Op.iLike]: `%${search}%` } },
-                    { "$profile.profileType$": { [Op.iLike]: `%${search}%` } },
+                [sequelize_1.Op.or]: [
+                    { "$profile.userName$": { [sequelize_1.Op.like]: `%${search}%` } },
+                    { "$profile.profileType$": { [sequelize_1.Op.like]: `%${search}%` } },
                 ],
             }
             : {};
@@ -101,21 +114,20 @@ exports.fetchMembers = async (req, res) => {
                     attributes: ["id", "userName", "profileType", "picture"],
                 },
             ],
-            limit: parseInt(limit, 10),
+            limit: limitNum,
             offset,
             order: [["createdAt", "DESC"]],
         });
         return res.status(200).json({
             total: count,
-            currentPage: parseInt(page, 10),
-            totalPages: Math.ceil(count / limit),
+            currentPage: pageNum,
+            totalPages: Math.ceil(count / limitNum),
             members,
         });
     }
     catch (error) {
         console.error("❌ Fetch members error:", error);
-        return res.status(500).json({
-            message: "Sorry, failed to fetch members",
-        });
+        return (0, responseHandlers_1.errorHandler)(res, "Failed to fetch members", 500);
     }
 };
+exports.fetchMembers = fetchMembers;

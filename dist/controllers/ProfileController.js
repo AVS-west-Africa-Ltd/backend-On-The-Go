@@ -1,76 +1,34 @@
-const jwtUtil = require("../utils/jwtUtil");
-const { Amenity, Profile, sequelize, Document, OpeningHour, User, Social, Post, Media, Branch } = require("../models");
-const Helpers = require("../utils/helpers");
-exports.createProfile = async (req, res) => {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.fetchProfile = exports.updateProfile = exports.addRedeemRewardHours = exports.addWifiDetails = exports.addSocials = exports.addPhotos = exports.addAmenities = exports.addOpeningHours = exports.uploadDocument = exports.addInterestsAndPlaces = exports.addMoreInfomation = exports.createProfile = void 0;
+const Amenity_1 = require("../models/Amenity");
+const Profile_1 = require("../models/Profile");
+const Document_1 = require("../models/Document");
+const OpeningHour_1 = require("../models/OpeningHour");
+const User_1 = require("../models/User");
+const Social_1 = require("../models/Social");
+const Post_1 = require("../models/Post");
+const Media_1 = require("../models/Media");
+const Branch_1 = require("../models/Branch");
+const RewardRedeemHour_1 = require("../models/RewardRedeemHour");
+const index_1 = __importDefault(require("../models/index"));
+const profile_types_1 = require("../models/types/profile.types");
+const responseHandlers_1 = require("../handlers/responseHandlers");
+const BranchAmenity_1 = require("../models/BranchAmenity");
+const amenity_types_1 = require("../models/types/amenity.types");
+const profile_service_1 = require("../services/profile.service");
+const media_types_1 = require("../models/types/media.types");
+const { sequelize } = index_1.default;
+const createProfile = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const { userName, streetAddress = "", fullAddress = "", state = "", city = "", country = "", geoLocation = [], profileType = "personal", bio = "", profession = "", skills = [], gender = "", amenities = [], cacNo, interests = [], placesVisited = [], occupation = "", businessCategory = "" } = req.body;
-        const data = {};
+        const data = req.body;
         const branch = {};
         const userId = req.user;
-        switch (profileType) {
-            case "personal":
-                data.userName = userName;
-                data.profession = profession;
-                data.skills = Array.isArray(skills)
-                    ? skills
-                    : JSON.parse(skills || "[]");
-                data.gender = gender;
-                data.bio = bio;
-                data.picture = req.file?.location || null;
-                data.profileType = profileType;
-                data.interests = Array.isArray(interests)
-                    ? interests
-                    : JSON.parse(interests || "[]"),
-                    data.placesVisited = Array.isArray(placesVisited)
-                        ? placesVisited
-                        : JSON.parse(placesVisited || "[]"),
-                    data.occupation = occupation;
-                break;
-            case "business":
-                if (state.trim() == "" || country.trim() == "" || city.trim() == "" || streetAddress.trim() == "" || cacNo.trim() == "") {
-                    return res.status(400).json({ message: "Sorry state, country, city, street address CAC number are all required!" });
-                }
-                data.userName = userName;
-                data.streetAddress = streetAddress;
-                data.state = state;
-                data.country = country;
-                data.city = city;
-                const parsedLocation = Helpers.validateGeolocation(geoLocation);
-                if (parsedLocation.length == 2) {
-                    data.geoLocation = {
-                        type: "Point",
-                        coordinates: parsedLocation
-                    };
-                }
-                data.cacNo = cacNo;
-                data.picture = req.file?.location || null;
-                data.profileType = profileType;
-                data.businessCategory = businessCategory;
-                branch.name = `${data.userName} ( HQ ${data.state} ${data.city} )`;
-                branch.streetAddress = data.streetAddress;
-                branch.state = data.state;
-                branch.country = data.country;
-                branch.city = data.city;
-                branch.geoLocation = data.geoLocation;
-                branch.isHQ = true;
-                break;
-            default:
-                await t.rollback();
-                return res
-                    .status(400)
-                    .json({ message: "Invalid profile type selected!" });
-        }
-        const profile = await Profile.create({ userId, ...data }, { transaction: t });
-        branch.profileId = profile.id;
-        await Branch.create({ ...branch }, { transaction: t });
-        await t.commit();
-        const auth = {
-            user: req.user,
-            profile: profile ? { id: profile.id, type: profile.profileType } : null,
-            branch: branch.id
-        };
-        const token = jwtUtil.generateToken(auth);
+        const { profile, token } = await profile_service_1.ProfileService.createProfile(data, userId);
         return res
             .status(200)
             .json({ profile, token, message: "Profile created successfully!" });
@@ -78,23 +36,24 @@ exports.createProfile = async (req, res) => {
     catch (error) {
         console.error("Profile creation failed:", error);
         await t.rollback();
-        return res.status(400).json({ message: "Sorry, something went wrong!" });
+        return res.status(400).json({ message: "Something went wrong!" });
     }
 };
-exports.addMoreInfomation = async (req, res) => {
+exports.createProfile = createProfile;
+const addMoreInfomation = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { bio, businessType, website } = req.body;
         const profileId = req.profile.id;
         const userId = req.user;
-        const profile = await Profile.findOne({
-            where: { userId, id: profileId, profileType: "business" },
+        const profile = await Profile_1.Profile.findOne({
+            where: { userId, id: profileId, profileType: profile_types_1.ProfileType.BUSINESS },
             transaction: t,
             lock: t.LOCK.UPDATE
         });
         if (!profile) {
             await t.rollback();
-            return res.status(400).json({ message: "Sorry profile not in record!" });
+            return (0, responseHandlers_1.errorHandler)(res, "Profile not found!", 400);
         }
         await profile.update({ bio, businessType, website }, { transaction: t });
         await t.commit();
@@ -105,7 +64,8 @@ exports.addMoreInfomation = async (req, res) => {
         res.status(400).json({ message: "Sorry adding more information failed!" });
     }
 };
-exports.addInterestsAndPlaces = async (req, res) => {
+exports.addMoreInfomation = addMoreInfomation;
+const addInterestsAndPlaces = async (req, res) => {
     try {
         const profileId = req.profile.id;
         const userId = req.user;
@@ -126,11 +86,11 @@ exports.addInterestsAndPlaces = async (req, res) => {
                 placesVisited = [];
             }
         }
-        const [updated] = await Profile.update({ interests, placesVisited }, { where: { id: profileId, userId } });
+        const [updated] = await Profile_1.Profile.update({ interests, placesVisited }, { where: { id: profileId, userId } });
         if (updated === 0) {
             return res.status(400).json({ message: "Sorry no attached profile!" });
         }
-        const profile = await Profile.findOne({
+        const profile = await Profile_1.Profile.findOne({
             where: { id: profileId, userId }
         });
         return res.status(200).json({
@@ -144,13 +104,14 @@ exports.addInterestsAndPlaces = async (req, res) => {
         });
     }
 };
-exports.uploadDocument = async (req, res) => {
+exports.addInterestsAndPlaces = addInterestsAndPlaces;
+const uploadDocument = async (req, res) => {
     try {
         const { documentType } = req.body;
-        const document = await Document.create({
+        const document = await Document_1.Document.create({
             profileId: req.profile.id,
             documentType: documentType,
-            fileUrl: req.file?.location || null,
+            fileUrl: req.file?.location || "",
             fileKey: req.file?.key || null
         });
         res.status(200).json({ document, message: "Document uploaded successfilly!" });
@@ -160,20 +121,23 @@ exports.uploadDocument = async (req, res) => {
         res.status(400).json({ message: "Sorry something went wrong!" });
     }
 };
-exports.addOpeningHours = async (req, res) => {
+exports.uploadDocument = uploadDocument;
+const addOpeningHours = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { hours } = req.body;
+        const branchId = req.params.branchId;
         if (!Array.isArray(hours))
             return res.status(400).json({ message: "Sorry hours not in right format" });
-        await OpeningHour.destroy({ where: { businessId: req.profile.id } });
+        await OpeningHour_1.OpeningHour.destroy({ where: { businessId: req.profile.id, branchId: branchId } });
         const openingHours = await Promise.all(hours.map(async (hour) => {
             const count = hours.length;
             if (count > 7) {
                 throw new Error("A business can only have up to 7 opening days");
             }
-            return await OpeningHour.create({
+            return await OpeningHour_1.OpeningHour.create({
                 businessId: req.profile.id,
+                branchId: Number(branchId),
                 dayOfWeek: hour.dayOfWeek,
                 openTime: hour.openTime,
                 closeTime: hour.closeTime,
@@ -188,21 +152,22 @@ exports.addOpeningHours = async (req, res) => {
         res.status(400).json({ message: "Sorry something went wrong!" });
     }
 };
-exports.addAmenities = async (req, res) => {
+exports.addOpeningHours = addOpeningHours;
+const addAmenities = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { amenities } = req.body;
         const profileId = req.profile.id;
         const branchId = req.branch;
         const userId = req.user;
-        const branch = await Branch.findOne({
+        const branch = await Branch_1.Branch.findOne({
             where: { id: branchId, profileId },
             transaction: t,
             lock: t.LOCK.UPDATE
         });
         if (!branch) {
             await t.rollback();
-            return res.status(400).json({ message: "Sorry branch not in record!" });
+            return res.status(400).json({ message: "Branch not found!" });
         }
         let parsedAmenities = amenities;
         if (!Array.isArray(parsedAmenities)) {
@@ -214,13 +179,13 @@ exports.addAmenities = async (req, res) => {
             }
         }
         if (parsedAmenities.length > 0) {
-            const rows = parsedAmenities.map(name => ({
+            const rows = parsedAmenities.map((name) => ({
                 userId,
                 businessId: profileId,
                 branchId,
                 name
             }));
-            await Amenity.bulkCreate(rows, {
+            await Amenity_1.Amenity.bulkCreate(rows, {
                 updateOnDuplicate: ["updatedAt"],
                 transaction: t
             });
@@ -238,11 +203,14 @@ exports.addAmenities = async (req, res) => {
         });
     }
 };
-exports.addPhotos = async (req, res) => {
+exports.addAmenities = addAmenities;
+const addPhotos = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { targetType, targetId } = req.body;
-        const files = req.files;
+        // const files = req.files;
+        // const files = Array.isArray(req.files) ? req.files : [];
+        const files = Array.isArray(req.files) ? req.files : [];
         const userId = req.user;
         if (!targetType || !targetId) {
             await transaction.rollback();
@@ -256,18 +224,18 @@ exports.addPhotos = async (req, res) => {
                 message: "No files uploaded"
             });
         }
-        const validTargetTypes = ['profile', 'post'];
+        const validTargetTypes = ['profile', 'post', 'product'];
         if (!validTargetTypes.includes(targetType)) {
             await transaction.rollback();
             return res.status(400).json({
-                message: `Invalid target type. Must be one of: ${validTargetTypes.join(', ')}`
+                message: `Invalid target type. Must be one of: ${Object.values(media_types_1.MediaTargetTypes).join(', ')}`
             });
         }
         const mediaEntries = files.map((file, index) => ({
             targetId: parseInt(targetId),
             targetType,
             userId,
-            filePath: file.location,
+            filePath: file.location || "",
             fileName: file.originalname,
             fileSize: file.size,
             mimeType: file.mimetype,
@@ -283,7 +251,7 @@ exports.addPhotos = async (req, res) => {
             updatedAt: new Date()
         }));
         console.log(mediaEntries);
-        const createdMedia = await Media.bulkCreate(mediaEntries, {
+        const createdMedia = await Media_1.Media.bulkCreate(mediaEntries, {
             transaction,
             returning: true,
             validate: true
@@ -300,7 +268,7 @@ exports.addPhotos = async (req, res) => {
         if (error.name === 'SequelizeValidationError') {
             return res.status(400).json({
                 message: 'Validation failed for uploaded files',
-                errors: error.errors.map(err => err.message)
+                errors: error.errors.map((err) => err.message)
             });
         }
         return res.status(500).json({
@@ -308,7 +276,8 @@ exports.addPhotos = async (req, res) => {
         });
     }
 };
-exports.addSocials = async (req, res) => {
+exports.addPhotos = addPhotos;
+const addSocials = async (req, res) => {
     try {
         const { socials = {} } = req.body;
         const { profile, user: userId } = req;
@@ -317,13 +286,16 @@ exports.addSocials = async (req, res) => {
                 message: "Socials data is required"
             });
         }
-        const socialEntries = Object.entries(socials).map(([platform, url]) => ({
-            userId,
-            profileId: profile.id,
-            platform: platform.toLowerCase().trim(),
-            url: url.trim(),
-        }));
-        const createdSocials = await Social.bulkCreate(socialEntries, {
+        const socialEntries = Object.entries(socials).map(([platform, url]) => {
+            const normalized = platform.toLowerCase().trim();
+            return {
+                userId,
+                profileId: profile.id,
+                platform: normalized,
+                url: url.trim(),
+            };
+        });
+        const createdSocials = await Social_1.Social.bulkCreate(socialEntries, {
             updateOnDuplicate: ["url", "updatedAt"],
             returning: true,
         });
@@ -340,7 +312,8 @@ exports.addSocials = async (req, res) => {
         });
     }
 };
-exports.addWifiDetails = async (req, res) => {
+exports.addSocials = addSocials;
+const addWifiDetails = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { name, password } = req.body;
@@ -348,17 +321,29 @@ exports.addWifiDetails = async (req, res) => {
             await t.rollback();
             return res.status(400).json({ message: "WiFi name and password are required." });
         }
-        const amenity = await Amenity.findOne({
-            where: { businessId: req.profile.id, name: "wifi" },
+        const amenity = await Amenity_1.Amenity.findOne({
+            where: { name: "wifi" },
             transaction: t
         });
         if (!amenity) {
             await t.rollback();
-            return res.status(400).json({ message: "Sorry, WiFi amenity not found!" });
+            return res.status(400).json({ message: "WiFi amenity not found!" });
+        }
+        const branchAmenity = await BranchAmenity_1.BranchAmenity.findOne({
+            where: {
+                businessId: req.profile.id,
+                branchId: req.branch,
+                amenityId: amenity?.id
+            },
+            transaction: t
+        });
+        if (!branchAmenity) {
+            await t.rollback();
+            return res.status(400).json({ message: "You have not added the WiFi amenity to this branch" });
         }
         const wifiDetails = { name, password };
-        amenity.meta = wifiDetails;
-        await amenity.save({ transaction: t });
+        branchAmenity.meta = wifiDetails;
+        await branchAmenity.save({ transaction: t });
         await t.commit();
         return res.status(200).json({
             amenity,
@@ -371,7 +356,8 @@ exports.addWifiDetails = async (req, res) => {
         return res.status(400).json({ message: "Sorry, something went wrong!" });
     }
 };
-exports.addRedeemRewardHours = async (req, res) => {
+exports.addWifiDetails = addWifiDetails;
+const addRedeemRewardHours = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { hours } = req.body;
@@ -411,11 +397,11 @@ exports.addRedeemRewardHours = async (req, res) => {
                 message: "Sorry invalid hours data provided",
             });
         }
-        await RewardRedeemHour.destroy({
+        await RewardRedeemHour_1.RewardRedeemHour.destroy({
             where: { businessId: profile.id },
             transaction
         });
-        const rewardRedeemHours = await RewardRedeemHour.bulkCreate(hours.map(hour => ({
+        const rewardRedeemHours = await RewardRedeemHour_1.RewardRedeemHour.bulkCreate(hours.map(hour => ({
             businessId: profile.id,
             dayOfWeek: hour.dayOfWeek,
             openTime: hour.openTime,
@@ -435,13 +421,14 @@ exports.addRedeemRewardHours = async (req, res) => {
         });
     }
 };
-exports.updateProfile = async (req, res) => {
+exports.addRedeemRewardHours = addRedeemRewardHours;
+const updateProfile = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { userName, businessType = "", address = "", bio, profession = "", skills = [], amenities = [], } = req.body;
         const userId = req.user;
         const selectedProfile = req.profile;
-        const profile = await Profile.findOne({
+        const profile = await Profile_1.Profile.findOne({
             where: { id: selectedProfile.id, userId, profileType: selectedProfile.type },
             transaction: t,
         });
@@ -450,7 +437,7 @@ exports.updateProfile = async (req, res) => {
             return res.status(400).json({ message: "Sorry, can't locate profile!" });
         }
         switch (selectedProfile.type) {
-            case "personal":
+            case profile_types_1.ProfileType.PERSONAL:
                 profile.userName = userName || profile.userName;
                 profile.profession = profession || profile.profession;
                 profile.skills = skills
@@ -460,12 +447,12 @@ exports.updateProfile = async (req, res) => {
                     : profile.skills;
                 profile.bio = bio || profile.bio;
                 profile.picture = req.file?.location || profile.picture;
-                profile.address = address || profile.address;
+                profile.streetAddress = address || profile.streetAddress;
                 break;
-            case "business":
+            case profile_types_1.ProfileType.BUSINESS:
                 profile.userName = userName || profile.userName;
                 profile.businessType = businessType || profile.businessType;
-                profile.address = address || profile.address;
+                profile.streetAddress = address || profile.streetAddress;
                 profile.bio = bio || profile.bio;
                 profile.picture = req.file?.location || profile.picture;
                 break;
@@ -477,16 +464,16 @@ exports.updateProfile = async (req, res) => {
         const parsedAmenities = Array.isArray(amenities)
             ? amenities
             : JSON.parse(amenities || "[]");
-        if (selectedProfile.type === "business" && Array.isArray(parsedAmenities) && parsedAmenities.length > 0) {
-            const entries = parsedAmenities.map((name) => ({
-                userId,
-                businessId: profile.id,
-                name,
-            }));
-            await Amenity.bulkCreate(entries, {
-                updateOnDuplicate: ["updatedAt", "url"],
-                transaction: t,
-            });
+        if (selectedProfile.type === profile_types_1.ProfileType.BUSINESS && parsedAmenities.length > 0) {
+            for (const amenity of parsedAmenities) {
+                await BranchAmenity_1.BranchAmenity.upsert({
+                    businessId: profile.id,
+                    branchId: req.branch,
+                    amenityId: amenity.id,
+                    status: amenity.status ?? amenity_types_1.Status.ACTIVE,
+                    meta: amenity.meta ?? null,
+                }, { transaction: t });
+            }
         }
         await t.commit();
         return res.status(200).json({ profile, message: "Profile updated successfully!" });
@@ -497,20 +484,24 @@ exports.updateProfile = async (req, res) => {
         return res.status(400).json({ message: "Sorry, something went wrong!" });
     }
 };
-exports.fetchProfile = async (req, res) => {
+exports.updateProfile = updateProfile;
+const fetchProfile = async (req, res) => {
     try {
         const user = req.user;
         const selectedProfile = req.profile;
+        if (!selectedProfile) {
+            return res.status(400).json({ success: false, message: "No profile selected." });
+        }
         const includes = [];
         switch (selectedProfile.type) {
-            case "personal":
+            case profile_types_1.ProfileType.PERSONAL:
                 includes.push({
-                    model: User,
+                    model: User_1.User,
                     as: "user",
                     attributes: ["id", "email", "firstName", "lastName"],
                 });
                 includes.push({
-                    model: Post,
+                    model: Post_1.Post,
                     as: "reviews",
                     where: {
                         postType: "review",
@@ -518,7 +509,7 @@ exports.fetchProfile = async (req, res) => {
                     required: false,
                 });
                 includes.push({
-                    model: Post,
+                    model: Post_1.Post,
                     as: "posts",
                     where: {
                         postType: "normal",
@@ -528,20 +519,20 @@ exports.fetchProfile = async (req, res) => {
                 break;
             case "business":
                 includes.push({
-                    model: User,
+                    model: User_1.User,
                     as: "user",
                     attributes: ["id", "email", "firstName", "lastName"],
                 });
                 includes.push({
-                    model: Amenity,
+                    model: Amenity_1.Amenity,
                     as: "amenities",
                 });
                 includes.push({
-                    model: Social,
+                    model: Social_1.Social,
                     as: "socials",
                 });
                 includes.push({
-                    model: Post,
+                    model: Post_1.Post,
                     as: "posts",
                     where: {
                         postType: "normal",
@@ -553,11 +544,11 @@ exports.fetchProfile = async (req, res) => {
                 return res.status(400).json({ message: "Sorry select a profile!" });
                 break;
         }
-        const profile = await Profile.findOne({
+        const profile = await Profile_1.Profile.findOne({
             where: { id: selectedProfile.id, userId: user },
             include: includes,
         });
-        profile["recentVisits"] = [];
+        // profile["recentVisits"] = [];
         res.status(200).json({ profile, message: "Profile fetched flushed!" });
     }
     catch (error) {
@@ -565,3 +556,4 @@ exports.fetchProfile = async (req, res) => {
         res.status(400).json({ message: "Sorry something went wrong!" });
     }
 };
+exports.fetchProfile = fetchProfile;

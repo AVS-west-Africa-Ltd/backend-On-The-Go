@@ -1,3 +1,4 @@
+"use strict";
 const { Message } = require("../models"); // Sequelize import
 const chat = (io, socket) => {
     socket.on("joinRoom", ({ username, chatId }) => {

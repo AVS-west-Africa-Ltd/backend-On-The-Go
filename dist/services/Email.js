@@ -1,3 +1,4 @@
+"use strict";
 // services/emailService.js
 const transporter = require("../config/mailer");
 /**

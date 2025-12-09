@@ -1,0 +1,117 @@
+export const verificationCodeEmail = (code: string)=>{
+   return  `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verification Code</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      color: #333333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .header {
+      padding: 20px;
+      text-align: center;
+    }
+    .header img {
+      height: 40px;
+    }
+    .nav {
+      text-align: right;
+      font-size: 14px;
+      margin-top: -30px;
+      padding-right: 20px;
+    }
+    .nav a {
+      margin-left: 15px;
+      color: #333333;
+      text-decoration: none;
+    }
+    .content {
+      padding: 30px 40px;
+      line-height: 1.6;
+    }
+    .code-box {
+      margin: 25px 0;
+      background: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      letter-spacing: 8px;
+      border-radius: 6px;
+    }
+    .footer {
+      padding: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: #888888;
+    }
+    .footer img {
+      height: 30px;
+      margin-top: 10px;
+    }
+    @media (max-width: 600px) {
+      .content {
+        padding: 20px;
+      }
+      .code-box {
+        font-size: 28px;
+        letter-spacing: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="https://via.placeholder.com/60x40?text=DUX" alt="Logo" />
+      <div class="nav">
+        <a href="#">Home</a>
+        <a href="#">Facebook</a>
+        <a href="#">Twitter</a>
+        <a href="#">Apple</a>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <p>Hi there,</p>
+      <p>This is your one time verification code.</p>
+
+      <div class="code-box">
+        ${code}
+      </div>
+
+      <p>
+        This code is only active for the next 90 minutes. Once the code expires
+        you will have to resubmit a request for a code.
+      </p>
+      <p>
+        Keep making awesome stuff!<br />
+        UIDux
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <img src="https://via.placeholder.com/60x40?text=DUX" alt="Logo" />
+    </div>
+  </div>
+</body>
+</html>`
+
+}

@@ -1,6 +1,5 @@
-import { create } from "domain";
 import express from "express";
-import { addMembers, fetchMembers } from "../controllers/CommunityController";
+import { create, addMembers, fetchMembers } from "../controllers/CommunityController";
 import { authProfile } from "../middlewares/authProfile";
 import { upload } from "../middlewares/upload";
 

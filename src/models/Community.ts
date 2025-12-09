@@ -8,6 +8,8 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
+import { User } from "./User";
+import { Profile } from "./Profile";
 
 export class Community extends Model<
   InferAttributes<Community>,
@@ -27,8 +29,8 @@ export class Community extends Model<
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare user?: NonAttribute<any>;
-  declare profile?: NonAttribute<any>;
+  declare user?: NonAttribute<User>;
+  declare profile?: NonAttribute<Profile>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
@@ -68,7 +70,7 @@ export class Community extends Model<
         },
         photo: {
           type: DataTypes.STRING,
-          allowNull: false,
+          allowNull: true,
         },
         description: {
           type: DataTypes.TEXT,

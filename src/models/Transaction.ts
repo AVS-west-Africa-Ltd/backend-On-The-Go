@@ -17,6 +17,7 @@ export class Transaction extends Model<
   declare reference: string;
   declare userId: number;
   declare businessId: number;
+  declare branchId: number;
   declare ticketId: number;
   declare amount: number;
   declare status: CreationOptional<"pending" | "completed">;
@@ -53,6 +54,10 @@ export class Transaction extends Model<
           allowNull: false,
         },
         businessId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        branchId: {
           type: DataTypes.INTEGER,
           allowNull: false,
         },

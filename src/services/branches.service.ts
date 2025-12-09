@@ -13,6 +13,8 @@ import { Product } from "../models/Product";
 import { BranchStaffRole } from "../models/types/branchStaff.types";
 import { IBasicUser } from "./interfaces/common.interface";
 import { AppError } from "../utils/errors";
+import { Post } from "../models/Post";
+import { Transaction as TransactionModel } from "../models/Transaction";
 
 const { sequelize } = db;
 
@@ -261,6 +263,28 @@ export class BranchService {
 
             if (!branch) {
                 return false;
+            }
+
+            const branchPosts = await Post.findAll({
+                where: {
+                    branchId,
+                    profileId,
+                }
+            })
+
+            if (branchPosts && branchPosts.length !== 0) {
+                throw new AppError("Cannot delete branch with linked posts", 400);
+            }
+
+            const branchTransactions = await TransactionModel.findAll({
+                where: {
+                    branchId,
+                    businessId: profileId,
+                }
+            })
+
+            if (branchTransactions && branchTransactions.length !== 0) {
+                throw new AppError("Cannot delete branch with linked transactions", 400);
             }
 
             // considering other linked data, should soft delete be used instead?

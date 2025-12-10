@@ -1,0 +1,139 @@
+
+import db from "../models";
+import { Op } from "sequelize";
+import { randomCharacters } from "../utils/helpers";
+import { Community } from "../models/Community";
+import { Member } from "../models/Member";
+import { Profile } from "../models/Profile";
+
+const { sequelize } = db;
+
+export class CommunityService {
+
+    static async create(data: any, userId: number, profileId: number, photo: string | null) {
+        const transaction = await sequelize.transaction();
+        try {
+            const { name, description, type, visibility } = data;
+
+            if (!name) {
+                throw new Error("Community name is required");
+            }
+
+            const community = await Community.create(
+                {
+                    userId,
+                    profileId,
+                    name,
+                    photo: photo as any,
+                    description,
+                    type: type || "public",
+                    visibility: visibility || "public",
+                    inviteCode: randomCharacters(6)
+                },
+                { transaction }
+            );
+
+            await Member.create(
+                {
+                    profileId: profileId,
+                    targetId: community.id,
+                    role: "admin",
+                    memberType: "community"
+                },
+                { transaction }
+            );
+
+            await transaction.commit();
+            return community;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    static async addMembers(communityId: string, members: number[], profileId: number) {
+        const transaction = await sequelize.transaction();
+        try {
+            if (!communityId || !Array.isArray(members) || members.length === 0) {
+                throw new Error("Sorry community ID and members are required");
+            }
+
+            const admin = await Member.findOne({
+                where: { targetId: communityId, profileId, role: "admin", memberType: "community" },
+            });
+
+            if (!admin) {
+                throw new Error("Unauthorized. Only admins can add members");
+            }
+
+            const entries = members.map((memberId) => ({
+                targetId: communityId,
+                profileId: memberId,
+                memberType: "community",
+                role: "member",
+            }));
+
+            await Member.bulkCreate(entries as any, {
+                transaction,
+                ignoreDuplicates: true,
+            });
+
+            await transaction.commit();
+            return true;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    static async fetchMembers(query: any) {
+        const {
+            communityId,
+            search = "",
+            page = "1",
+            limit = "20"
+        } = query;
+
+        if (!communityId) {
+            throw new Error("CommunityId is required");
+        }
+
+        const pageNum = parseInt(page as string, 10);
+        const limitNum = parseInt(limit as string, 10);
+        const offset = (pageNum - 1) * limitNum;
+
+        const searchFilter = search
+            ? {
+                [Op.or]: [
+                    { "$profile.userName$": { [Op.like]: `%${search}%` } },
+                    { "$profile.profileType$": { [Op.like]: `%${search}%` } },
+                ],
+            }
+            : {};
+
+        const { rows: members, count } = await Member.findAndCountAll({
+            where: {
+                targetId: communityId,
+                memberType: "community",
+                ...searchFilter,
+            },
+            include: [
+                {
+                    model: Profile,
+                    as: "profile",
+                    attributes: ["id", "userName", "profileType", "picture"],
+                },
+            ],
+            limit: limitNum,
+            offset,
+            order: [["createdAt", "DESC"]],
+        });
+
+        return {
+            total: count,
+            currentPage: pageNum,
+            totalPages: Math.ceil(count / limitNum),
+            members,
+        };
+    }
+}

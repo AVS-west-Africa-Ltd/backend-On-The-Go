@@ -1,0 +1,240 @@
+import db from "../models";
+import bcrypt from "bcryptjs";
+import { Op } from "sequelize";
+import { randomCharacters } from "../utils/helpers";
+import { sendEmail } from "../services/email.service";
+import { verificationCodeEmail } from "../templates/verificationEmail";
+import * as jwtUtil from "../utils/jwtUtil";
+
+const { User, Profile, Referral, Branch, sequelize } = db;
+
+export class AuthService {
+    static async register(data: any) {
+        const t = await sequelize.transaction();
+        try {
+            const {
+                email,
+                password,
+                pushToken,
+                phone_number,
+                firstName,
+                lastName,
+                referralCode = null,
+            } = data;
+
+            const isExist = await User.findOne({
+                where: {
+                    [Op.or]: [
+                        { email: email },
+                        { phone_number: phone_number }
+                    ]
+                },
+                transaction: t // added transaction for safety although findOne reads
+            });
+
+            if (isExist) {
+                await t.rollback();
+                // using error message to propagate to controller
+                throw new Error("Email or phone number exist already!");
+            }
+
+            const hashedPassword = bcrypt.hashSync(password, 10);
+            const code = randomCharacters(6);
+
+            const user = await User.create({
+                firstName,
+                lastName,
+                email,
+                phone_number,
+                password: hashedPassword,
+                pushToken: pushToken || null,
+                referralCode: `OTG-${randomCharacters(6)}`,
+                verificationCode: bcrypt.hashSync(code, 10),
+                verificationExpires: new Date(Date.now() + 15 * 60 * 1000)
+            }, { transaction: t });
+
+
+            if (referralCode) {
+                const referrerUser = await User.findOne({ where: { referralCode }, transaction: t });
+                if (referrerUser) {
+                    await referrerUser.update(
+                        {
+                            successfulReferrals: (referrerUser.successfulReferrals || 0) + 1,
+                        },
+                        { transaction: t }
+                    );
+                    await Referral.create(
+                        { referrerId: referrerUser.id, refereeId: user.id },
+                        { transaction: t }
+                    );
+                }
+            }
+
+
+            const options = {
+                html: verificationCodeEmail(code),
+                text: "",
+                to: email,
+                subject: "Email Verification Code",
+                cc: [],
+                bcc: [],
+                attachments: []
+            };
+
+            await sendEmail(options);
+            await t.commit();
+
+            const userPlain = user.toJSON();
+            delete userPlain.password;
+            delete userPlain.verificationCode;
+
+            return userPlain;
+
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
+
+    static async login(data: any) {
+        const { email, password } = data;
+
+        if (!User) {
+            throw new Error("Internal Server Error: DB Misconfiguration");
+        }
+
+        const user = await User.findOne({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new Error("Sorry email does not exist !");
+        }
+
+        const isPassword = await bcrypt.compare(password, user.password);
+
+        if (!isPassword) {
+            throw new Error("Sorry check password!");
+        }
+
+        const profile = await Profile.findOne({
+            where: { userId: user.id }
+        });
+
+        let branch = null;
+        if (profile) {
+            branch = await Branch.findOne({
+                where: {
+                    profileId: profile.id,
+                    isHQ: true
+                }
+            });
+        }
+
+        const auth = {
+            user: user.id,
+            profile: profile ? { id: profile.id, type: profile.profileType } : null,
+            branch: branch ? branch.id : null
+        };
+
+        const token = jwtUtil.generateToken(auth);
+
+        return { user, profile, token };
+    }
+
+    static async verifyEmail(data: any) {
+        const { email, code } = data;
+
+        const user = await User.findOne({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new Error("Sorry email does not exist !");
+        }
+
+        if (!user.verificationCode) {
+            throw new Error("Invalid code");
+        }
+
+        const isCode = await bcrypt.compare(code, user.verificationCode);
+        const isExpired = user.verificationExpires ? (new Date() > user.verificationExpires) : false;
+
+        if (!isCode) {
+            throw new Error("Invalid code");
+        }
+
+        if (isExpired) {
+            throw new Error("Expired code");
+        }
+
+        user.isVerified = true;
+        await user.save();
+
+        const auth = { user: user.id, profile: null, branch: null };
+        const token = jwtUtil.generateToken(auth);
+
+        return { token };
+    }
+
+    static async sendCode(email: string) {
+        const user = await User.findOne({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new Error("Email does not exist !");
+        }
+
+        const code = randomCharacters(6);
+
+        user.verificationCode = bcrypt.hashSync(code, 10);
+        user.verificationExpires = new Date(Date.now() + 15 * 60 * 1000);
+        await user.save();
+
+        const options = {
+            html: verificationCodeEmail(code),
+            text: "",
+            to: email,
+            subject: "Email Verification Code",
+            cc: [],
+            bcc: [],
+            attachments: []
+        };
+
+        await sendEmail(options);
+        return true;
+    }
+
+    static async resetPassword(data: any) {
+        const { email, code, password } = data;
+
+        const user = await User.findOne({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new Error("User not found!");
+        }
+
+        if (!user.verificationCode) {
+            throw new Error("Invalid code");
+        }
+
+        const isCode = await bcrypt.compare(code, user.verificationCode);
+        const isExpired = user.verificationExpires ? (new Date() > user.verificationExpires) : false;
+
+        if (!isCode) {
+            throw new Error("Invalid code");
+        }
+
+        if (isExpired) {
+            throw new Error("Expired code");
+        }
+
+        user.password = bcrypt.hashSync(password, 10);
+        await user.save();
+
+        return true;
+    }
+}

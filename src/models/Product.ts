@@ -25,8 +25,10 @@ export class Product extends Model<
   declare name: string;
   declare description: string;
   declare price: number;
+  declare currency: CreationOptional<string>;
   declare status: CreationOptional<TProductStatus>;
   declare rating: CreationOptional<number | null>;
+  declare isFeatured: CreationOptional<boolean>;
   declare meta: CreationOptional<Record<string, unknown> | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -35,7 +37,7 @@ export class Product extends Model<
 
   declare media?: NonAttribute<Media[]>;
   // declare branch_amenity?: NonAttribute<BranchAmenity>;
-  declare branch_amenity?: NonAttribute<BranchAmenity & { amenity: Amenity }>;
+  declare branch_amenity: NonAttribute<BranchAmenity & { amenity: Amenity }>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.Profile) {
@@ -53,7 +55,7 @@ export class Product extends Model<
       });
     }
 
-   if (models.BranchAmenity) {
+    if (models.BranchAmenity) {
       Product.belongsTo(models.BranchAmenity, {
         foreignKey: "branchAmenityId",
         as: "branch_amenity",
@@ -71,7 +73,7 @@ export class Product extends Model<
     }
   }
 
-static initModel(sequelize: Sequelize): ModelStatic<Product> {
+  static initModel(sequelize: Sequelize): ModelStatic<Product> {
     Product.init(
       {
         id: {
@@ -103,6 +105,11 @@ static initModel(sequelize: Sequelize): ModelStatic<Product> {
           type: DataTypes.FLOAT,
           allowNull: false,
         },
+        currency: {
+          type: DataTypes.STRING,
+          allowNull: true,
+          defaultValue: "NGN",
+        },
         status: {
           type: DataTypes.ENUM(...Object.values(ProductStatus)),
           allowNull: true,
@@ -111,6 +118,10 @@ static initModel(sequelize: Sequelize): ModelStatic<Product> {
         rating: {
           type: DataTypes.FLOAT,
           allowNull: true,
+        },
+        isFeatured: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false,
         },
         meta: {
           type: DataTypes.JSON,
@@ -140,10 +151,10 @@ static initModel(sequelize: Sequelize): ModelStatic<Product> {
         paranoid: true,
         timestamps: true,
         indexes: [
-          { fields: ["businessId"] },
+          { fields: ["businessId", "branchId"] },
           {
             unique: true,
-            fields: ["businessId", "name"],
+            fields: ["branchId", "name"],
           },
         ],
       }

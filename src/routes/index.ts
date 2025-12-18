@@ -6,6 +6,10 @@ import communityRoutes from "./community.routes";
 import branchRoutes from "./branch.routes";
 import productRoutes from "./product.routes";
 import amenitiesRoutes from "./amenities.routes";
+import orderRoutes from "./order.routes";
+import webhookRoutes from "./webhook.routes";
+import transactionRoutes from "./transaction.routes";
+import bookmarkRoutes from "./bookmark.routes";
 
 const router = express.Router();
 
@@ -18,5 +22,9 @@ router.use("/branches", branchRoutes);
 
 router.use("/products", productRoutes);
 router.use("/amenities", amenitiesRoutes);
+router.use("/orders", orderRoutes);
+router.use("/transactions", transactionRoutes);
+router.use("/bookmarks", bookmarkRoutes);
+
 
 export default router;

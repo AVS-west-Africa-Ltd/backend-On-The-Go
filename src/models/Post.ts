@@ -13,6 +13,7 @@ import { User } from "./User";
 import { Profile } from "./Profile";
 import { Branch } from "./Branch";
 import { Comment } from "./Comment";
+import { Bookmark } from "./Bookmark";
 
 export class Post extends Model<
   InferAttributes<Post>,
@@ -41,6 +42,7 @@ export class Post extends Model<
   declare business?: NonAttribute<Profile>;
   declare branch?: NonAttribute<Branch>;
   declare comment?: NonAttribute<Comment[]>;
+  declare bookmarkList?: NonAttribute<Bookmark[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
@@ -48,15 +50,34 @@ export class Post extends Model<
     }
     if (models.Profile) {
       Post.belongsTo(models.Profile, { foreignKey: "profileId", as: "author" });
-      Post.belongsTo(models.Profile, { foreignKey: "target", as: "business" });
+      Post.belongsTo(models.Profile, {
+        foreignKey: "targetId",
+        as: "business",
+        constraints: false,
+      });
     }
     if (models.Branch) {
       Post.belongsTo(models.Branch, { foreignKey: "branchId", as: "branch" });
+    }
+
+    if (models.Community) {
+      Post.belongsTo(models.Community, {
+        foreignKey: "targetId",
+        as: "community",
+        constraints: false,
+      });
     }
     if (models.Comment) {
       Post.hasMany(models.Comment, {
         foreignKey: "postId",
         as: "comment",
+        onDelete: "CASCADE",
+      });
+    }
+    if (models.Bookmark) {
+      Post.hasMany(models.Bookmark, {
+        foreignKey: "postId",
+        as: "bookmarkList",
         onDelete: "CASCADE",
       });
     }

@@ -10,12 +10,14 @@ import {
 } from "sequelize";
 import { User } from "./User";
 import { Profile } from "./Profile";
+import { Member } from "./Member";
+import { Post } from "./Post";
 
 export class Community extends Model<
   InferAttributes<Community>,
   InferCreationAttributes<Community>
 > {
-  declare id: CreationOptional<string>;
+  declare id: CreationOptional<number>;
   declare userId: number;
   declare profileId: number;
   declare name: string;
@@ -24,13 +26,15 @@ export class Community extends Model<
   declare type: CreationOptional<"public" | "private">;
   declare visibility: CreationOptional<"public" | "invite_only">;
   declare inviteCode: string;
-  
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
   declare user?: NonAttribute<User>;
   declare profile?: NonAttribute<Profile>;
+  declare communityMembers?: NonAttribute<Member[]>;
+  declare posts?: NonAttribute<Post[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
@@ -39,14 +43,28 @@ export class Community extends Model<
     if (models.Profile) {
       Community.belongsTo(models.Profile, { foreignKey: "profileId", as: "profile" });
     }
+    if (models.Member) {
+      Community.hasMany(models.Member, {
+        foreignKey: "targetId",
+        as: "communityMembers",
+        constraints: false,
+      });
+    }
+    if (models.Post) {
+      Community.hasMany(models.Post, {
+        foreignKey: "targetId",
+        as: "posts",
+        constraints: false,
+      });
+    }
   }
 
   static initModel(sequelize: Sequelize): ModelStatic<Community> {
     Community.init(
       {
         id: {
-          type: DataTypes.UUID,
-          defaultValue: DataTypes.UUIDV4,
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
           primaryKey: true,
         },
         userId: {

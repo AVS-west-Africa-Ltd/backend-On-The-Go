@@ -108,7 +108,7 @@ export class AuthService {
         });
 
         if (!user) {
-            throw new Error("Sorry email does not exist !");
+            throw new Error("Email does not exist!");
         }
 
         const isPassword = await bcrypt.compare(password, user.password);
@@ -236,5 +236,82 @@ export class AuthService {
         await user.save();
 
         return true;
+    }
+
+    static async completeInvite(data: any) {
+        const t = await sequelize.transaction();
+        try {
+            const { token, password, firstName, lastName } = data;
+
+            const decoded: any = jwtUtil.verifyToken(token);
+            if (!decoded || !decoded.invite) {
+                throw new Error("Invalid or expired invite token");
+            }
+
+            const { email, branch: branchId, invite: inviteInfo } = decoded;
+
+            // 1. Check if user already exists
+            let user = await User.findOne({ where: { email }, transaction: t });
+
+            if (user) {
+                // If user exists, we just update their status if they were pending
+                // Actually, if they exist, they should just login and join
+                // But the user said "input their password for their account and profile to be created"
+                // implying they don't have one.
+            } else {
+                const hashedPassword = bcrypt.hashSync(password, 10);
+                user = await User.create({
+                    firstName,
+                    lastName,
+                    email,
+                    password: hashedPassword,
+                    isVerified: true, // Email is verified via the invite link
+                    referralCode: `OTG-${randomCharacters(6)}`,
+                }, { transaction: t });
+            }
+
+            // 2. Create Profile if not exists
+            let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
+            if (!profile) {
+                profile = await Profile.create({
+                    userId: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    userName: user.email.split('@')[0] + randomCharacters(4),
+                    profileType: 'personal', // Default to personal, they can change or add business later
+                    isActivated: true
+                }, { transaction: t });
+            }
+
+            // 3. Update BranchStaff
+            const staff = await db.BranchStaff.findOne({
+                where: { id: inviteInfo.id, email },
+                transaction: t
+            });
+
+            if (!staff) {
+                throw new Error("Invite record not found");
+            }
+
+            await staff.update({
+                userId: user.id,
+                isActive: true
+            }, { transaction: t });
+
+            await t.commit();
+
+            const auth = {
+                user: user.id,
+                profile: { id: profile.id, type: profile.profileType },
+                branch: branchId
+            };
+            const authToken = jwtUtil.generateToken(auth);
+
+            return { user, profile, token: authToken };
+
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
     }
 }

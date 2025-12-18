@@ -1,0 +1,588 @@
+import db from '../models';
+import { Op, WhereOptions } from 'sequelize';
+import { PaymentService } from './payment.service';
+import { ICreateOrderPayload, ICheckoutResponse, IGetUserOrdersPayload, IOrderSummary } from '../interfaces/order.interface';
+import { randomCharacters } from '../utils/helpers';
+import { AppError } from '../utils/errors';
+import { OrderItem } from '../models/OrderItem';
+import { Product } from '../models/Product';
+import { Voucher } from '../models/Voucher';
+import { Order } from '../models/Order';
+import { Transaction } from '../models/Transaction';
+import { Branch } from '../models/Branch';
+import { Profile } from '../models/Profile';
+import { User } from '../models/User';
+import { OrderPaymentStatus, OrderStatus } from '../models/types/order.types';
+import { PaymentMethod, PaymentProvider, TransactionStatus, TPaymentMethod } from '../models/types/transaction.types';
+import { PAYSTACK_EVENT, TPaystackEventData } from '../subscribers/types';
+import { BranchAmenity } from '../models/BranchAmenity';
+import { Amenity } from '../models/Amenity';
+
+const { sequelize } = db;
+
+export class OrderService {
+
+    static async createOrder(payload: ICreateOrderPayload, profileId: number, userId: number) {
+        const t = await sequelize.transaction();
+
+        try {
+            const { businessId, branchId, items, voucherId } = payload;
+
+            if (businessId && branchId) {
+                const branchExist = await Branch.findOne({ where: { id: branchId, profileId: businessId } });
+                if (!branchExist) {
+                    throw new AppError("Branch not found", 404);
+                }
+            }
+
+            let subTotal = 0;
+            const orderItemsData = [];
+            const orderAmenitiesCategorySet = new Set<string>();
+
+            for (const item of items) {
+                const product = await Product.findByPk(item.productId,
+                    {
+                        include: [
+                            {
+                                model: BranchAmenity,
+                                as: "branch_amenity",
+                                include: [
+                                    {
+                                        model: Amenity,
+                                        as: "amenity",
+                                        attributes: ["id", "name"]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                );
+                if (!product) {
+                    throw new AppError(`Product with ID ${item.productId} not found`, 404);
+                }
+
+                if (product.branchId !== branchId) {
+                    throw new AppError(`Product ${product.name} does not belong to the specified branch`, 400);
+                }
+
+                const itemTotal = product.price * item.quantity;
+                subTotal += itemTotal;
+
+                orderItemsData.push({
+                    productId: product.id,
+                    quantity: item.quantity,
+                    amount: product.price,
+                    totalAmount: itemTotal,
+                });
+
+                if (product.branch_amenity?.amenity?.name) {
+                    orderAmenitiesCategorySet.add(product.branch_amenity.amenity.name);
+                }
+            }
+
+            let discountAmount = 0;
+            let appliedVoucherCode = null;
+
+            if (voucherId) {
+                const voucher = await Voucher.findOne({
+                    where: { id: voucherId, userId },
+                    lock: t.LOCK.UPDATE, // Lock for update to prevent race conditions
+                    transaction: t
+                });
+
+                if (!voucher) {
+                    throw new AppError("Invalid voucher code", 400);
+                }
+
+                if (voucher.status !== 'UNUSED') {
+                    throw new AppError("Voucher has already been used or expired", 400);
+                }
+
+                if (new Date() > voucher.validUntil) {
+                    throw new AppError("Voucher has expired", 400);
+                }
+
+                if (voucher.businessId !== businessId) {
+                    throw new AppError("Voucher is not valid for this business", 400);
+                }
+
+                if (voucher.discountType === 'PERCENTAGE') {
+                    discountAmount = (subTotal * voucher.value) / 100;
+                } else {
+                    discountAmount = 0;
+                }
+
+                if (discountAmount > subTotal) {
+                    discountAmount = subTotal;
+                }
+
+                appliedVoucherCode = voucher.code;
+
+                await voucher.update({ status: 'USED' }, { transaction: t });
+            }
+
+            const totalAmount = subTotal - discountAmount;
+
+            const orderId = `ORD-${randomCharacters(8).toUpperCase()}`;
+
+            const order = await Order.create({
+                orderId,
+                customerId: profileId,
+                businessId,
+                branchId,
+                subTotal,
+                discountAmount,
+                totalAmount: totalAmount > 0 ? totalAmount : 0,
+                voucherId,
+                voucherCode: appliedVoucherCode,
+                status: 'new',
+                paymentStatus: 'pending',
+                amenitiesCategory: Array.from(orderAmenitiesCategorySet),
+            }, { transaction: t });
+
+            const itemsToCreate = orderItemsData.map(item => ({
+                ...item,
+                orderId: order.id
+            }));
+
+            await OrderItem.bulkCreate(itemsToCreate, { transaction: t });
+
+            await t.commit();
+            return order;
+
+        } catch (error) {
+            console.error("Failed to create order:--", error);
+
+            await t.rollback();
+            throw error;
+        }
+    }
+
+    static async getUserOrders(profileId: number, filters: IGetUserOrdersPayload) {
+        const { status, cursor, from, to, branchId, businessId, limit = 10, search } = filters;
+
+        const whereClause: WhereOptions<Order> = {
+            customerId: profileId,
+        };
+        if (status) {
+            whereClause.status = status;
+        }
+
+        if (from && to) {
+            whereClause.createdAt = {
+                [Op.gte]: from,
+                [Op.lte]: to,
+            };
+        }
+
+        if (branchId) {
+            whereClause.branchId = branchId;
+        }
+
+        if (businessId) {
+            whereClause.businessId = businessId;
+        }
+
+        if (cursor) {
+            const [lastCreatedAt, lastId] = cursor.split("_");
+            (whereClause as any)[Op.or] = [
+                { createdAt: { [Op.lt]: lastCreatedAt } },
+                {
+                    createdAt: lastCreatedAt,
+                    id: { [Op.lt]: lastId },
+                },
+            ];
+        }
+
+        if (search) {
+            whereClause.orderId = {
+                [Op.like]: `%${search}%`
+            };
+        }
+
+        const orders = await Order.findAll({
+            where: whereClause,
+            limit: Number(limit) + 1,
+            order: [['createdAt', 'DESC'], ['id', 'DESC']]
+        });
+
+        let nextCursor: string | null = null;
+        const hasNextPage = orders.length > Number(limit);
+
+        if (hasNextPage) {
+            orders.pop();
+            const lastOrder = orders[orders.length - 1];
+            if (lastOrder) {
+                nextCursor = `${lastOrder.createdAt.toISOString()}_${lastOrder.id}`;
+            }
+        }
+
+        return {
+            orders,
+            total: orders.length,
+            nextCursor,
+            hasNextPage
+        };
+    }
+
+    static async getOrderById(profileId: number, id: string): Promise<IOrderSummary> {
+        try {
+            const whereClause: WhereOptions<Order> = {
+                customerId: profileId,
+                id: id,
+            };
+
+            const order = await Order.findOne({
+                where: whereClause,
+                include: [
+                    {
+                        model: OrderItem,
+                        as: "items",
+                        include: [
+                            {
+                                model: Product,
+                                as: "product",
+                                include: [
+                                    {
+                                        model: BranchAmenity,
+                                        as: "branch_amenity",
+                                        include: [
+                                            {
+                                                model: Amenity,
+                                                as: "amenity",
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        model: Branch,
+                        as: "branch",
+                        attributes: ["id", "name", "streetAddress", "city"],
+                        required: true,
+                    },
+                ],
+            });
+
+            if (!order) {
+                throw new AppError("Order not found", 404);
+            }
+
+
+
+            return {
+                id: order.id,
+                orderId: order.orderId,
+                status: order.status,
+                paymentStatus: order.paymentStatus,
+                amounts: {
+                    subTotal: order.subTotal,
+                    discount: order.discountAmount,
+                    total: order.totalAmount,
+                },
+                items: (order.items ?? []).map((item: OrderItem) => ({
+                    id: item.id,
+                    quantity: item.quantity,
+                    amount: item.amount,
+                    totalAmount: item.totalAmount,
+                    product: {
+                        id: item.product!.id,
+                        name: item.product!.name,
+                        description: item.product!.description,
+                        price: item.product!.price,
+                        currency: item.product!.currency,
+                        amenity: {
+                            id: item.product!.branch_amenity!.amenity.id,
+                            name: item.product!.branch_amenity!.amenity.name,
+                        },
+                    },
+                })),
+                branch: {
+                    id: order.branch!.id,
+                    name: order.branch!.name,
+                    streetAddress: order.branch!.streetAddress,
+                    city: order.branch!.city,
+                },
+                createdAt: order.createdAt,
+                amenitiesCategory: order.amenitiesCategory || [],
+            };
+        } catch (error) {
+            console.error("Error fetching order details:", error);
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw new AppError("Failed to fetch order details");
+        }
+    }
+
+    static async getBusinessOrders(businessId: number, branchId: number | undefined, filters: any = {}) {
+        const { status, cursor, limit = 10, startDate, endDate } = filters;
+
+        const whereClause: any = { businessId };
+
+        if (branchId) {
+            whereClause.branchId = branchId;
+        }
+
+        if (status) {
+            whereClause.status = status;
+        }
+
+        if (startDate && endDate) {
+            whereClause.createdAt = {
+                [Op.between]: [new Date(startDate), new Date(endDate)]
+            };
+        }
+
+        if (cursor) {
+            const [lastCreatedAt, lastId] = cursor.split("_");
+            whereClause[Op.or] = [
+                { createdAt: { [Op.lt]: lastCreatedAt } },
+                {
+                    createdAt: lastCreatedAt,
+                    id: { [Op.lt]: lastId },
+                },
+            ];
+        }
+
+        const orders = await Order.findAll({
+            where: whereClause,
+            include: [
+                { model: OrderItem, as: 'items' },
+                { model: Profile, as: 'customer', attributes: ['id', 'userId', 'firstName', 'lastName'] }
+            ],
+            limit: Number(limit) + 1,
+            order: [['createdAt', 'DESC'], ['id', 'DESC']]
+        });
+
+        let nextCursor: string | null = null;
+        const hasNextPage = orders.length > Number(limit);
+
+        if (hasNextPage) {
+            orders.pop();
+            const lastOrder = orders[orders.length - 1];
+            if (lastOrder) {
+                nextCursor = `${lastOrder.createdAt.toISOString()}_${lastOrder.id}`;
+            }
+        }
+
+        return {
+            orders,
+            total: orders.length,
+            nextCursor,
+            hasNextPage
+        };
+    }
+
+
+    static async initiateCheckout(orderId: string, profileId: number, userId: number): Promise<ICheckoutResponse> {
+        const order = await Order.findOne({
+            where: { id: orderId, customerId: profileId }
+        });
+
+        if (!order) {
+            throw new AppError("Order not found", 404);
+        }
+
+        if (order.paymentStatus === 'paid') {
+            throw new AppError("Order is already paid", 400);
+        }
+
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new AppError("User not found", 404);
+        }
+
+        const reference = `TXN-${randomCharacters(25).toUpperCase()}`;
+
+        const paystackData = await PaymentService.initializeTransaction(
+            user.email,
+            order.totalAmount,
+            undefined,
+            {
+                orderId: order.id,
+                transaction_reference: reference,
+                profileId: profileId,
+                userId: userId
+            }
+        );
+
+        const orderTxn = await Transaction.findOne({
+            where: { orderId: order.id },
+        });
+
+        if (orderTxn) {
+            throw new AppError("Initialization already in progress", 400);
+        }
+
+        await Transaction.create({
+            orderId: order.id,
+            customerId: userId,
+            businessId: order.businessId,
+            branchId: order.branchId,
+            amount: order.totalAmount,
+            currency: 'NGN',
+            // paymentMethod: PaymentMethod.CARD, // check this later!!!!! put null at first??
+            reference: reference,
+            provider_reference: paystackData.reference,
+            provider: PaymentProvider.PAYSTACK,
+            status: TransactionStatus.PENDING
+        });
+
+        return {
+            paymentUrl: paystackData.authorization_url,
+            reference: paystackData.reference,
+            accessCode: paystackData.access_code
+        };
+    }
+
+    static async verifyPayment(reference: string): Promise<boolean> {
+        const t = await sequelize.transaction();
+
+        try {
+            const paystackData = await PaymentService.verifyTransaction(reference);
+
+            const transaction = await Transaction.findOne({
+                where: { provider_reference: reference },
+                transaction: t
+            });
+
+            if (!transaction) {
+                throw new AppError("Transaction record not found", 404);
+            }
+
+            if (transaction.status === TransactionStatus.SUCCESS) {
+                await t.rollback();
+                return true;
+            }
+
+            if (paystackData.status === 'success') {
+                await transaction.update({
+                    status: TransactionStatus.SUCCESS,
+                    paymentMethod: paystackData.channel as TPaymentMethod,
+                    meta: {
+                        customer_first_name: paystackData.customer.first_name,
+                        customer_last_name: paystackData.customer.last_name,
+                        customer_email: paystackData.customer.email,
+                        customer_phone: paystackData.customer.phone,
+                        customer_id: paystackData.customer.id,
+                        customer_code: paystackData.customer.customer_code,
+                    }
+                }, { transaction: t });
+
+                const order = await Order.findByPk(transaction.orderId, { transaction: t });
+                if (order) {
+                    await order.update({
+                        status: OrderStatus.ONGOING,
+                        paymentStatus: OrderPaymentStatus.PAID
+                    }, { transaction: t });
+                }
+
+                await t.commit();
+            }
+
+            const FAILED_STATUSES = ['failed', 'abandoned'];
+
+            if (FAILED_STATUSES.includes(paystackData.status)) {
+                await transaction.update({
+                    status: TransactionStatus.FAILED,
+                    paymentMethod: paystackData.channel as TPaymentMethod,
+                    meta: {
+                        customer_first_name: paystackData.customer.first_name,
+                        customer_last_name: paystackData.customer.last_name,
+                        customer_email: paystackData.customer.email,
+                        customer_phone: paystackData.customer.phone,
+                        customer_id: paystackData.customer.id,
+                        customer_code: paystackData.customer.customer_code,
+                    }
+                }, { transaction: t });
+
+                await Order.update({
+                    paymentStatus: OrderPaymentStatus.FAILED
+                }, {
+                    where: { id: transaction.orderId },
+                    transaction: t
+                });
+
+                await t.commit();
+                return false;
+            }
+
+            // pending / ongoing
+            await transaction.update({
+                status: TransactionStatus.PENDING,
+                meta: paystackData
+            }, { transaction: t });
+
+            await t.commit();
+
+            return false;
+
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
+
+
+    static async processWebhookEvent(event: any) {
+        if (event.event !== PAYSTACK_EVENT.CHARGE_SUCCESS) {
+            return { ignored: true };
+        }
+
+        const data = event.data as TPaystackEventData;
+        const reference = data.reference;
+
+        const t = await sequelize.transaction();
+        try {
+            const transaction = await Transaction.findOne({
+                where: { provider_reference: reference },
+                transaction: t
+            });
+
+            if (!transaction) {
+                console.warn(`Webhook: Transaction with ref ${reference} not found.`);
+                await t.commit();
+                return { success: true };
+            }
+
+            if (transaction.status === 'success') {
+                await t.commit();
+                return { success: true, message: "Already processed" };
+            }
+
+            await transaction.update({
+                status: TransactionStatus.SUCCESS,
+                paymentMethod: data.channel as TPaymentMethod,
+                meta: {
+                    customer_first_name: data.customer.first_name,
+                    customer_last_name: data.customer.last_name,
+                    customer_email: data.customer.email,
+                    customer_phone: data.customer.phone,
+                    customer_id: data.customer.id,
+                    customer_code: data.customer.customer_code,
+                }
+            }, { transaction: t });
+
+            const order = await Order.findByPk(transaction.orderId, { transaction: t });
+            if (order) {
+                await order.update({
+                    status: OrderStatus.ONGOING,
+                    paymentStatus: OrderPaymentStatus.PAID
+                }, { transaction: t });
+            }
+
+            await t.commit();
+            console.log('Transaction processed successfully');
+
+            return { success: true };
+
+        } catch (error) {
+            await t.rollback();
+            console.error("Webhook Processing Error:", error);
+            throw error;
+        }
+    }
+}

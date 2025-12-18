@@ -16,7 +16,8 @@ router.post("/verify-email", authController.verifyEmail);
 router.post("/send-code", authController.sendCode);
 
 router.post("/reset-password", authController.resetPassword);
+router.post("/complete-invite", authController.completeInvite);
 
 
 
- export default router;
+export default router;

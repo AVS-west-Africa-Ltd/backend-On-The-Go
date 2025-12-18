@@ -9,13 +9,17 @@ import {
   ModelStatic,
 } from "sequelize";
 import { TMemberRole, TMemberType } from "./types/member.types";
+import { Chat } from "./Chat";
+import { CommunityService } from "../services/community.service";
+import { Community } from "./Community";
+import { Profile } from "./Profile";
 
 export class Member extends Model<
   InferAttributes<Member>,
   InferCreationAttributes<Member>
 > {
   declare id: CreationOptional<number>;
-  declare targetId: string;
+  declare targetId: number;
   declare profileId: number;
   declare memberType: TMemberType;
   declare role: CreationOptional<TMemberRole>;
@@ -25,24 +29,27 @@ export class Member extends Model<
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare community?: NonAttribute<any>;
-  declare profile?: NonAttribute<any>;
+  declare community?: NonAttribute<Community>;
+  declare profile?: NonAttribute<Profile>;
+  declare chat?: NonAttribute<Chat>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.Community) {
       Member.belongsTo(models.Community, {
         foreignKey: "targetId",
         as: "community",
+        onDelete: "CASCADE",
         constraints: false,
       });
     }
 
-    if (models.Chat){
-    Member.belongsTo(models.Chat, {
-  foreignKey: "targetId",
-  as: "chat",
-  constraints: false
-});
+    if (models.Chat) {
+      Member.belongsTo(models.Chat, {
+        foreignKey: "targetId",
+        as: "chat",
+        onDelete: "CASCADE",
+        constraints: false
+      });
     }
 
     if (models.Profile) {
@@ -63,7 +70,7 @@ export class Member extends Model<
           primaryKey: true,
         },
         targetId: {
-          type: DataTypes.UUID,
+          type: DataTypes.INTEGER,
           allowNull: false,
         },
         profileId: {

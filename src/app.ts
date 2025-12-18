@@ -11,8 +11,15 @@ import admin from "firebase-admin";
 import db from "./models";
 import { connectDB } from "./config/database";
 import router from "./routes";
+import webhookRoutes from "./routes/webhook.routes";
+import { seedAmenities } from "./scripts/seedAmenities";
+import { registerWebhookListeners } from "./subscribers/webhook.subscriber";
+import { verifyPendingTransactionsCron } from "./schedulers/update-transactions.scheduler";
 
 const serviceAccount = require('../global/serviceAccountKey.json');
+
+// Register Event Listeners
+registerWebhookListeners();
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -40,15 +47,20 @@ app.use((req, res, next) => {
 // Apply middleware
 
 // app.use(validateApiKey);
+// Webhook route (must be before bodyParser to access raw body for signature verification)
+// Mounted at /webhooks (so full path is /webhooks/ce57.../paystack)
+// bypassing /api/v1 prefix
+app.use("/webhooks", express.raw({ type: 'application/json' }), webhookRoutes);
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
-
 
 // Landing route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landing.html"));
 });
+
 
 app.post("/query", async (req, res) => {
   try {
@@ -61,16 +73,16 @@ app.post("/query", async (req, res) => {
   }
 });
 
-app.post("/sync_db", async (req: express.Request, res: express.Response)=>{
+app.post("/sync_db", async (req: express.Request, res: express.Response) => {
   try {
     const { model } = req.body;
     await db.sequelize.query('SET unique_checks = 0;');
     await db.sequelize.query('SET foreign_key_checks = 0;');
-    db[model].sync({ alter: true }) 
+    db[model].sync({ alter: true })
       .then(async () => {
         await db.sequelize.query('SET unique_checks = 1;');
         await db.sequelize.query('SET foreign_key_checks = 1;');
-        res.json({ success: true,});
+        res.json({ success: true, });
       })
       .catch((err: any) => {
         res.status(500).json({ error: err.message });
@@ -78,7 +90,7 @@ app.post("/sync_db", async (req: express.Request, res: express.Response)=>{
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
-  
+
 });
 
 app.get("/api/v1", (req, res) => {
@@ -93,9 +105,15 @@ setupSocket(server);
 async function startServer() {
   try {
     // console.log('?????????');
-    
+
     await connectDB();
     console.log("Database connected successfully.");
+
+    // Seed Amenities on startup
+    await seedAmenities();
+
+    // Start Schedulers
+    verifyPendingTransactionsCron();
 
     server.listen(PORT, HOST, () => {
       console.log(`Server running on http://localhost:${PORT}, PID: ${process.pid}`);

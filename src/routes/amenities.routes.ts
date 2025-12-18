@@ -7,6 +7,6 @@ const router = express.Router();
 router.use(authProfile);
 
 router.get("/global", AmenitiesController.getAllAmenities);
-router.get("/branch", AmenitiesController.getBranchAmenities);
+router.get("/branch/:branchId", AmenitiesController.getBranchAmenities);
 router.put("/branch", AmenitiesController.updateBranchAmenities);
 export default router;

@@ -312,7 +312,7 @@ export class BranchService {
                     {
                         model: Order,
                         as: "orders",
-                        required: true,
+                        required: false,
                         include: [
                             {
                                 model: Profile,
@@ -334,6 +334,7 @@ export class BranchService {
             });
 
             if (!branch) return null;
+
 
             const hasAccess = await this.checkAccess(branch, profileId, userId);
             if (!hasAccess) {

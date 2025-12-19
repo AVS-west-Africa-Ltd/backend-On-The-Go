@@ -14,12 +14,14 @@ import router from "./routes";
 import webhookRoutes from "./routes/webhook.routes";
 import { seedAmenities } from "./scripts/seedAmenities";
 import { registerWebhookListeners } from "./subscribers/webhook.subscriber";
+import { registerStaffListeners } from "./subscribers/staff.subscriber";
 import { verifyPendingTransactionsCron } from "./schedulers/update-transactions.scheduler";
 
 const serviceAccount = require('../global/serviceAccountKey.json');
 
 // Register Event Listeners
 registerWebhookListeners();
+registerStaffListeners();
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)

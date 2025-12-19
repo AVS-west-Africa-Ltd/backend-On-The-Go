@@ -6,6 +6,11 @@ export enum PAYMENT_EVENT {
     PAYSTACK_WEBHOOK = 'paystack.webhook',
 }
 
+export enum STAFF_EVENT {
+    STAFF_INVITED = 'staff.invited',
+}
+
+
 export type TPaystackEventData = {
     id: number,
     domain: string,

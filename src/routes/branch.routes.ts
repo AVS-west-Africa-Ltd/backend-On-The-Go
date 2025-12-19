@@ -21,6 +21,7 @@ router.delete("/:branchId", BranchController.deleteBranch);
 router.patch("/:branchId/status", BranchController.updateBranchStatus);
 router.post("/:branchId/invite", BranchController.inviteStaff);
 router.get("/:branchId/orders", BranchController.getBranchOrders);
+router.get("/:branchId/staff", BranchController.getBranchStaff);
 router.get("/:branchId/wifi-infrastructure", BranchController.getBranchWifi);
 
 

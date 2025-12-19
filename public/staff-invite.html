@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Invitation - OnTheGo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 480px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1C46FF 0%, #0F3AD6 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 30px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .info-section {
+            background: #F8FAFF;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 4px solid #1C46FF;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #64748B;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #0F172A;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            padding-right: 50px;
+            border: 2px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1C46FF;
+            box-shadow: 0 0 0 3px rgba(28, 70, 255, 0.1);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #64748B;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: #1C46FF;
+        }
+
+        .password-requirements {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        .password-requirements ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .password-requirements li {
+            padding: 4px 0;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .password-requirements li::before {
+            content: "○";
+            position: absolute;
+            left: 0;
+            color: #CBD5E1;
+        }
+
+        .password-requirements li.valid::before {
+            content: "✓";
+            color: #10B981;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1C46FF 0%, #0F3AD6 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(28, 70, 255, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(28, 70, 255, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            border-left: 4px solid #DC2626;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .success-message {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            border-left: 4px solid #10B981;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748B;
+            font-size: 13px;
+            background: #F8FAFF;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🎉</div>
+            <h1>Welcome to the Team!</h1>
+            <p>Complete your registration to get started</p>
+        </div>
+
+        <div class="content">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="info-section">
+                <div class="info-item">
+                    <div class="info-label">Your Email</div>
+                    <div class="info-value" id="userEmail">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Branch</div>
+                    <div class="info-value" id="branchName">Loading...</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Role</div>
+                    <div class="info-value" id="userRole">Loading...</div>
+                </div>
+            </div>
+
+            <form id="inviteForm">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="Enter your first name">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required placeholder="Enter your last name">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Create Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" required
+                            placeholder="Enter a strong password">
+                        <button type="button" class="toggle-password" id="togglePassword">
+                            👁️
+                        </button>
+                    </div>
+                    <div class="password-requirements">
+                        <ul id="passwordChecks">
+                            <li id="check-length">At least 8 characters</li>
+                            <li id="check-uppercase">One uppercase letter</li>
+                            <li id="check-lowercase">One lowercase letter</li>
+                            <li id="check-number">One number</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span id="btnText">Complete Registration</span>
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <span>Processing...</span>
+                    </div>
+                </button>
+            </form>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 OnTheGo Africa. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:5006/api/v1';
+        // const API_BASE_URL = 'https://2b9b0778487b.ngrok-free.app/api/v1';
+
+
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        // DOM Elements
+        const form = document.getElementById('inviteForm');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        // Decode JWT to get invite info
+        function decodeToken(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // Initialize form with token data
+        function initializeForm() {
+            if (!token) {
+                showError('Invalid or missing invitation token. Please check your invitation link.');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            const decoded = decodeToken(token);
+            if (!decoded || !decoded.invite) {
+                showError('Invalid invitation token. Please contact your administrator.');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            // Display invite information
+            document.getElementById('userEmail').textContent = decoded.invite.email || 'N/A';
+            document.getElementById('branchName').textContent = (decoded.branchName || 'N/A');
+            document.getElementById('userRole').textContent = (decoded.invite.role || 'staff').toUpperCase();
+        }
+
+        // Toggle password visibility
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePasswordBtn.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Password validation
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+
+            // Check length
+            const hasLength = password.length >= 8;
+            document.getElementById('check-length').classList.toggle('valid', hasLength);
+
+            // Check uppercase
+            const hasUppercase = /[A-Z]/.test(password);
+            document.getElementById('check-uppercase').classList.toggle('valid', hasUppercase);
+
+            // Check lowercase
+            const hasLowercase = /[a-z]/.test(password);
+            document.getElementById('check-lowercase').classList.toggle('valid', hasLowercase);
+
+            // Check number
+            const hasNumber = /[0-9]/.test(password);
+            document.getElementById('check-number').classList.toggle('valid', hasNumber);
+        });
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.add('show');
+            errorMessage.classList.remove('show');
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate password
+            const password = passwordInput.value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
+            if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+                showError('Password must contain uppercase, lowercase, and numbers');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            loading.classList.add('active');
+            errorMessage.classList.remove('show');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/complete-invite`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: token,
+                        password: password,
+                        firstName: firstName,
+                        lastName: lastName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to complete registration');
+                }
+
+                // Success!
+                showSuccess('Registration completed successfully! Redirecting...');
+                form.reset();
+
+                // Store token and redirect after 2 seconds
+                localStorage.setItem('authToken', data.token);
+
+                setTimeout(() => {
+                    // Redirect to dashboard or login page
+                    window.location.href = '/dashboard'; // Update this URL as needed
+                }, 2000);
+
+            } catch (error) {
+                showError(error.message || 'An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                loading.classList.remove('active');
+            }
+        });
+
+        // Initialize on page load
+        initializeForm();
+    </script>
+</body>
+
+</html>

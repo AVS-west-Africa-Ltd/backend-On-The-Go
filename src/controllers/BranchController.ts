@@ -179,6 +179,18 @@ export const getBranchOrders = async (req: Request, res: Response) => {
     }
 }
 
+export const getBranchStaff = async (req: Request, res: Response) => {
+    try {
+        const { branchId } = req.params;
+        const profileId = req.profile!.id;
+        const userId = req.user;
+        const result = await BranchService.getBranchStaff(parseInt(branchId, 10), profileId, userId, req.query as any);
+        return successHandler(res, "Branch staff fetched successfully", 200, result || {});
+    } catch (error: any) {
+        return errorHandler(res, error.message || "Failed to fetch staff", error.statusCode || 500, error);
+    }
+}
+
 export const getBranchWifi = async (req: Request, res: Response) => {
     try {
         const { branchId } = req.params;

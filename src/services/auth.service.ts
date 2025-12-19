@@ -5,6 +5,7 @@ import { randomCharacters } from "../utils/helpers";
 import { sendEmail } from "../services/email.service";
 import { verificationCodeEmail } from "../templates/verificationEmail";
 import * as jwtUtil from "../utils/jwtUtil";
+import { BranchStaff } from "../models/BranchStaff";
 
 const { User, Profile, Referral, Branch, sequelize } = db;
 
@@ -248,22 +249,61 @@ export class AuthService {
                 throw new Error("Invalid or expired invite token");
             }
 
-            const { email, branch: branchId, invite: inviteInfo } = decoded;
+            const { branch: branchId, invite: inviteInfo } = decoded;
+            const { email, role, id } = inviteInfo;
 
             // 1. Check if user already exists
             let user = await User.findOne({ where: { email }, transaction: t });
 
             if (user) {
-                // If user exists, we just update their status if they were pending
-                // Actually, if they exist, they should just login and join
-                // But the user said "input their password for their account and profile to be created"
-                // implying they don't have one.
+                // Verify their existing password
+                const isPasswordValid = await bcrypt.compare(password, user.password);
+                if (!isPasswordValid) {
+                    throw new Error("Invalid password. Please use your existing account password.");
+                }
+
+                // Check if they already have a profile
+                let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
+
+                // Update the BranchStaff record
+                const staff = await db.BranchStaff.findOne({
+                    where: { id: inviteInfo.id, email },
+                    transaction: t
+                });
+
+                if (!staff) {
+                    throw new Error("Invite record not found");
+                }
+
+                // Check if already linked
+                if (staff.userId && staff.userId === user.id) {
+                    throw new Error("You have already accepted this invitation");
+                }
+
+                await staff.update({
+                    userId: user.id,
+                    isActive: true
+                }, { transaction: t });
+
+                await t.commit();
+
+                const auth = {
+                    user: user.id,
+                    profile: profile ? { id: profile.id, type: profile.profileType } : null,
+                    branch: branchId
+                };
+                const authToken = jwtUtil.generateToken(auth);
+
+                return { user, profile, token: authToken };
+
             } else {
+                // New user - create account
                 const hashedPassword = bcrypt.hashSync(password, 10);
                 user = await User.create({
                     firstName,
                     lastName,
                     email,
+                    phone_number: '09037484346',
                     password: hashedPassword,
                     isVerified: true, // Email is verified via the invite link
                     referralCode: `OTG-${randomCharacters(6)}`,
@@ -283,8 +323,7 @@ export class AuthService {
                 }, { transaction: t });
             }
 
-            // 3. Update BranchStaff
-            const staff = await db.BranchStaff.findOne({
+            const staff = await BranchStaff.findOne({
                 where: { id: inviteInfo.id, email },
                 transaction: t
             });

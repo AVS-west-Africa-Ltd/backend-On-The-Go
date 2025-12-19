@@ -28,6 +28,8 @@ import { ActivityLog } from "../models/ActivityLog";
 import { NetworkRouter } from "../models/NetworkRouter";
 import { TicketProfile } from "../models/TicketProfile";
 import { IGetBranchLogsQuery, IGetBranchMediaQuery, IGetBranchOrdersQuery, IGetBranchReviewsQuery } from "../interfaces/branches.interface";
+import { appEvents } from "../utils/events";
+import { STAFF_EVENT } from "../subscribers/types";
 import { IGetBranchProductsResponse, IGetProductsQuery } from "../interfaces/product.interface";
 import { ProductService } from "./product.service";
 
@@ -105,13 +107,44 @@ export class BranchService {
                     fullName,
                     email,
                     role,
-                    isActive: true,
+                    isActive: false,
                 }));
 
-                await BranchStaff.bulkCreate(staffEntries, { transaction });
+                const createdStaff = await BranchStaff.bulkCreate(staffEntries, { transaction });
+                console.log('created staff');
 
-                // TO-DO:
-                //  send email to staff with login info
+
+                // Commit transaction first
+                await transaction.commit();
+
+                // Emit events for background email sending (after commit)
+                for (let i = 0; i < createdStaff.length; i++) {
+                    const staffMember = createdStaff[i];
+                    const inviteToken = jwtUtil.generateToken({
+                        user: -1,
+                        profile: null,
+                        branch: branchId,
+                        branchName: branch.name,
+                        invite: {
+                            id: staffMember.id,
+                            email: staffMember.email,
+                            role: staffMember.role
+                        }
+                    } as any);
+
+                    const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/complete-invite?token=${inviteToken}`;
+
+                    // Emit event for background processing
+                    appEvents.emit(STAFF_EVENT.STAFF_INVITED, {
+                        fullName: staffMember.fullName,
+                        email: staffMember.email,
+                        branchName: branch.name,
+                        role: staffMember.role,
+                        inviteLink
+                    });
+                }
+
+                return branch;
             }
 
 
@@ -508,14 +541,16 @@ export class BranchService {
             }
         } as any);
 
-        // Send Email
+        // Generate invite link
         const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/complete-invite?token=${inviteToken}`;
 
-        await sendEmail({
-            to: data.email,
-            subject: `Invitation to join ${branch.name}`,
-            html: `<h1>Hello ${data.fullName}</h1><p>You have been invited to join <b>${branch.name}</b> as <b>${data.role}</b>. Click the link below to set up your account:</p><a href="${inviteLink}">Complete Registration</a>`,
-            text: `Hello ${data.fullName}, you have been invited to join ${branch.name} as ${data.role}. Visit ${inviteLink} to complete registration.`
+        // Emit event for background email sending
+        appEvents.emit(STAFF_EVENT.STAFF_INVITED, {
+            fullName: data.fullName,
+            email: data.email,
+            branchName: branch.name,
+            role: data.role,
+            inviteLink
         });
 
         return { message: "Invitation sent successfully", staff: staffEntry };
@@ -575,6 +610,74 @@ export class BranchService {
         }
 
         return { orders, total: count, nextCursor };
+    }
+    static async getBranchStaff(branchId: number, profileId: number, userId: number, filters: IGetBranchOrdersQuery) {
+        const { cursor, limit = 10, status, startDate, endDate } = filters;
+        const branch = await Branch.findByPk(branchId);
+        if (!branch) throw new AppError("Branch not found", 404);
+
+        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        if (!hasAccess) throw new AppError("Branch not found", 404);
+
+        const where: any = { branchId };
+        if (status) where.paymentStatus = status;
+        if (startDate || endDate) {
+            where.createdAt = {};
+            if (startDate) where.createdAt[Op.gte] = new Date(startDate);
+            if (endDate) where.createdAt[Op.lte] = new Date(endDate);
+        }
+
+        if (cursor) {
+            const [lastCreatedAt, lastId] = cursor.split("_");
+            where[Op.or] = [
+                { createdAt: { [Op.lt]: new Date(lastCreatedAt) } },
+                {
+                    createdAt: new Date(lastCreatedAt),
+                    id: { [Op.lt]: lastId },
+                },
+            ];
+        }
+
+        const { count, rows: staff } = await BranchStaff.findAndCountAll({
+            where,
+            include: [
+                {
+                    model: Profile,
+                    as: "business",
+                    attributes: ["id", "userName", "picture"]
+                },
+                {
+                    model: User,
+                    as: "account",
+                    attributes: ["id", "firstName", "lastName", "email"],
+                    include: [
+                        {
+                            model: Profile,
+                            as: "profiles",
+                            attributes: ["id", "userName", "picture", "profileType"],
+                            // Optionally limit to just one profile if staff only have one
+                            limit: 1
+                        }
+                    ]
+                },
+            ],
+            order: [
+                ["createdAt", "DESC"],
+                ["id", "DESC"],
+            ],
+            limit: limit + 1,
+            distinct: true,
+        });
+
+        let nextCursor: string | null = null;
+        const hasNextPage = staff.length > limit;
+        if (hasNextPage) {
+            staff.pop();
+            const last = staff[staff.length - 1];
+            nextCursor = `${last.createdAt.toISOString()}_${last.id}`;
+        }
+
+        return { staff, total: count, nextCursor };
     }
 
     static async getBranchWifi(branchId: number, profileId: number, userId: number) {

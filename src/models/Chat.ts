@@ -18,7 +18,7 @@ export class Chat extends Model<
   InferCreationAttributes<Chat>
 > {
   // UUIDs are often strings in TS, but handled as UUID in DB
-  declare id: CreationOptional<number>;
+  declare id: CreationOptional<string>;
   declare name: CreationOptional<string | null>;
   declare type: CreationOptional<"private" | "group">;
   declare lastMessageAt: CreationOptional<Date | null>;
@@ -75,8 +75,8 @@ export class Chat extends Model<
     Chat.init(
       {
         id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
+          type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
           primaryKey: true,
         },
         name: {

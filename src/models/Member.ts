@@ -19,7 +19,7 @@ export class Member extends Model<
   InferCreationAttributes<Member>
 > {
   declare id: CreationOptional<number>;
-  declare targetId: number;
+  declare targetId: number | string;
   declare profileId: number;
   declare memberType: TMemberType;
   declare role: CreationOptional<TMemberRole>;
@@ -34,23 +34,26 @@ export class Member extends Model<
   declare chat?: NonAttribute<Chat>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
-    if (models.Community) {
-      Member.belongsTo(models.Community, {
-        foreignKey: "targetId",
-        as: "community",
-        onDelete: "CASCADE",
-        constraints: false,
-      });
-    }
+    // Polymorphic association - constraints disabled to support both INTEGER and UUID
+    // if (models.Community) {
+    //   Member.belongsTo(models.Community, {
+    //     foreignKey: "targetId",
+    //     as: "community",
+    //     onDelete: "CASCADE",
+    //     constraints: false,
+    //   });
+    // }
 
-    if (models.Chat) {
-      Member.belongsTo(models.Chat, {
-        foreignKey: "targetId",
-        as: "chat",
-        onDelete: "CASCADE",
-        constraints: false
-      });
-    }
+
+    // Polymorphic association - constraints disabled to support both INTEGER and UUID
+    // if (models.Chat) {
+    //   Member.belongsTo(models.Chat, {
+    //     foreignKey: "targetId",
+    //     as: "chat",
+    //     onDelete: "CASCADE",
+    //     constraints: false
+    //   });
+    // }
 
     if (models.Profile) {
       Member.belongsTo(models.Profile, {
@@ -70,7 +73,7 @@ export class Member extends Model<
           primaryKey: true,
         },
         targetId: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.STRING,
           allowNull: false,
         },
         profileId: {

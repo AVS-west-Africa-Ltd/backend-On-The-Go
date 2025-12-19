@@ -13,7 +13,7 @@ export class Message extends Model<
   InferCreationAttributes<Message>
 > {
   declare id: CreationOptional<string>;
-  declare chatId: string;
+  declare chatId: number;
   declare senderId: number;
   declare content: string;
 
@@ -44,7 +44,7 @@ export class Message extends Model<
           primaryKey: true,
         },
         chatId: {
-          type: DataTypes.UUID,
+          type: DataTypes.INTEGER,
           allowNull: false,
         },
         senderId: {

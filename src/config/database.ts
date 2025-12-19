@@ -23,7 +23,7 @@ export async function connectDB() {
 
     // await sequelize.sync();
     // await sequelize.sync({ alter: true });
-    // console.log("All models were synchronized successfully.");
+    console.log("All models were synchronized successfully.");
   } catch (error: any) {
     console.error("Unable to connect to the database: ", error);
     if (error.original && error.original.code === 'ER_ACCESS_DENIED_ERROR') {

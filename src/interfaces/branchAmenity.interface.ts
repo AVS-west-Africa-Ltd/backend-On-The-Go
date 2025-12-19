@@ -1,4 +1,4 @@
-import { TStatus } from "../../models/types/amenity.types";
+import { TStatus } from "../models/types/amenity.types";
 
 export interface IBranchAmenityPayload {
     amenityId: string;

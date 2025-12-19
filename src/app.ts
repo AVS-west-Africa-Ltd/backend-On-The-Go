@@ -46,21 +46,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Apply middleware
 
 // app.use(validateApiKey);
-// Webhook route (must be before bodyParser to access raw body for signature verification)
-// Mounted at /webhooks (so full path is /webhooks/ce57.../paystack)
-// bypassing /api/v1 prefix
+
 app.use("/webhooks", express.raw({ type: 'application/json' }), webhookRoutes);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(__dirname, "./uploads")));
+
+const isProduction = process.env.NODE_ENV === "production";
+
+const publicPath = isProduction
+  ? path.join(__dirname, "public")      // dist/public
+  : path.join(__dirname, "../public");  // src/../public
+
+app.use("/uploads", express.static(publicPath));
 
 // Landing route
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "landing.html"));
+  res.sendFile(path.join(publicPath, "landing.html"));
 });
 
 

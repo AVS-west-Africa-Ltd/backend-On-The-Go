@@ -33,9 +33,9 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(cors({
-  origin: "*", // tighten later
+  origin: "*", // allow all origins
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  // allowedHeaders: ["Content-Type", "Authorization"], // removed to allow all headers
 }));
 
 

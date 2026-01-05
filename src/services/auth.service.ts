@@ -303,7 +303,7 @@ export class AuthService {
                     firstName,
                     lastName,
                     email,
-                    phone_number: '09037484346',
+                    phone_number: '1234567890',
                     password: hashedPassword,
                     isVerified: true, // Email is verified via the invite link
                     referralCode: `OTG-${randomCharacters(6)}`,

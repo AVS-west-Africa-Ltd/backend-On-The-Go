@@ -16,6 +16,7 @@ export class Message extends Model<
   declare chatId: string;
   declare senderId: number;
   declare content: string;
+  declare media: CreationOptional<string[]>;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -54,6 +55,10 @@ export class Message extends Model<
         content: {
           type: DataTypes.TEXT,
           allowNull: false,
+        },
+        media: {
+          type: DataTypes.JSON,
+          allowNull: true,
         },
         createdAt: {
           type: DataTypes.DATE,

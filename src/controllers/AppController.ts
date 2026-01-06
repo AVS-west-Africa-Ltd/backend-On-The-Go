@@ -168,8 +168,6 @@ export const joinCommunity = async (req: Request, res: Response) => {
     const profileId = req.profile!.id;
     const { communityId } = req.body;
 
-    // Check validation in service? Service took communityId.
-
     const result = await AppService.joinCommunity(communityId, profileId);
 
     if (!result.created) {
@@ -189,6 +187,38 @@ export const joinCommunity = async (req: Request, res: Response) => {
       return res.status(403).json({ message: error.message });
     }
     return res.status(500).json({ message: error.message || "Failed to join community" });
+  }
+};
+
+export const leaveCommunity = async (req: Request, res: Response) => {
+  try {
+    const profileId = req.profile!.id;
+    const { communityId } = req.body;
+
+    const result = await AppService.leaveCommunity(communityId, profileId);
+
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error("Leave community error:", error);
+    if (error.message === "You are not a member of this community") {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: error.message || "Failed to leave community" });
+  }
+
+};
+
+export const fetchCommunities = async (req: Request, res: Response) => {
+  try {
+    const result = await AppService.fetchCommunities(req.query);
+
+    return res.status(200).json({
+      message: "Communities fetched successfully!",
+      ...result,
+    });
+  } catch (error: any) {
+    console.error("Fetch communities error:", error);
+    return res.status(500).json({ message: error.message || "Failed to fetch communities" });
   }
 };
 

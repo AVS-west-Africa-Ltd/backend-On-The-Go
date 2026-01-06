@@ -136,4 +136,100 @@ export class CommunityService {
             members,
         };
     }
+
+    static async update(communityId: string, data: any, profileId: number, photo: string | null) {
+        const transaction = await sequelize.transaction();
+        try {
+            const community = await Community.findByPk(communityId);
+
+            if (!community) {
+                throw new Error("Community not found");
+            }
+
+            // Check if user is admin
+            const member = await Member.findOne({
+                where: { targetId: communityId, profileId, role: "admin", memberType: "community" },
+            });
+
+            if (!member) {
+                throw new Error("Unauthorized. Only admins can update the community settings.");
+            }
+
+            const { name, description, type, visibility } = data;
+
+            if (name) community.name = name;
+            if (description !== undefined) community.description = description;
+            if (type) community.type = type;
+            if (visibility) community.visibility = visibility;
+            if (photo) community.photo = photo;
+
+            await community.save({ transaction });
+            await transaction.commit();
+            return community;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    static async fetchCommunity(query: any) {
+        const { limit = "20", offset = "0", search = "" } = query;
+
+        const whereClause: any = {};
+
+        if (search) {
+            whereClause[Op.or] = [
+                { name: { [Op.like]: `%${search}%` } },
+                { description: { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        const { rows: communities, count } = await Community.findAndCountAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Profile,
+                    as: "profile",
+                    attributes: ["id", "userName", "picture"],
+                },
+            ],
+            limit: Number(limit),
+            offset: Number(offset),
+            order: [["createdAt", "DESC"]],
+        });
+
+        return {
+            total: count,
+            communities,
+            page: Math.floor(Number(offset) / Number(limit)) + 1,
+            totalPages: Math.ceil(count / Number(limit)),
+        };
+    }
+
+    static async fetchCommunityById(communityId: string) {
+        const community = await Community.findOne({
+            where: { id: communityId },
+            include: [
+                {
+                    model: Profile,
+                    as: "profile",
+                    attributes: ["id", "userName", "picture"],
+                },
+            ],
+        });
+
+        if (!community) {
+            throw new Error("Community not found");
+        }
+
+        // Fetch member count
+        const memberCount = await Member.count({
+            where: { targetId: communityId, memberType: "community" },
+        });
+
+        return {
+            ...community.toJSON(),
+            memberCount,
+        };
+    }
 }

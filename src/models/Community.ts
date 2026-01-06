@@ -24,7 +24,7 @@ export class Community extends Model<
   declare type: CreationOptional<"public" | "private">;
   declare visibility: CreationOptional<"public" | "invite_only">;
   declare inviteCode: string;
-  
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 

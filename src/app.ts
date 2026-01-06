@@ -61,16 +61,16 @@ app.post("/query", async (req, res) => {
   }
 });
 
-app.post("/sync_db", async (req: express.Request, res: express.Response)=>{
+app.post("/sync_db", async (req: express.Request, res: express.Response) => {
   try {
     const { model } = req.body;
     await db.sequelize.query('SET unique_checks = 0;');
     await db.sequelize.query('SET foreign_key_checks = 0;');
-    db[model].sync({ alter: true }) 
+    db[model].sync({ alter: true })
       .then(async () => {
         await db.sequelize.query('SET unique_checks = 1;');
         await db.sequelize.query('SET foreign_key_checks = 1;');
-        res.json({ success: true,});
+        res.json({ success: true, });
       })
       .catch((err: any) => {
         res.status(500).json({ error: err.message });
@@ -78,7 +78,7 @@ app.post("/sync_db", async (req: express.Request, res: express.Response)=>{
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
-  
+
 });
 
 app.get("/api/v1", (req, res) => {
@@ -93,7 +93,7 @@ setupSocket(server);
 async function startServer() {
   try {
     // console.log('?????????');
-    
+
     await connectDB();
     console.log("Database connected successfully.");
 

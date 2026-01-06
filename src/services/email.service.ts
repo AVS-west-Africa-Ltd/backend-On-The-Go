@@ -1,7 +1,7 @@
 
 import transporter from "../config/mailer";
 import nodemailer, { SendMailOptions, SentMessageInfo } from "nodemailer";
-import { EmailOptions, EmailResult } from "./interfaces/email.interface";
+import { EmailOptions, EmailResult } from "../interfaces/email.interface";
 
 /**
  * Send an email

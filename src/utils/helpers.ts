@@ -16,6 +16,15 @@ export const randomNumber = (length: number) => {
     return result;
 }
 
+export const generateRandomHexString = (length: number) => {
+    const chars = "0123456789abcdef";
+    let result = "";
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 export interface BoundingBox {
     minLat: number;
     maxLat: number;
@@ -23,7 +32,7 @@ export interface BoundingBox {
     maxLng: number;
 }
 
-exports.getBoundingBox = (latitude: number, longitude: number, radiusKm = 10): BoundingBox => {
+export const getBoundingBox = (latitude: number, longitude: number, radiusKm = 10): BoundingBox => {
     const earthRadiusKm = 6371;
 
     // Approximate degree difference for 1 km
@@ -53,13 +62,13 @@ export const validateGeolocation = (geoLocation: unknown): [number, number] | nu
             : geoLocation;
 
         if (
-          Array.isArray(parsedLocation) &&
-          parsedLocation.length === 2 &&
-          typeof parsedLocation[0] === "number" &&
-          typeof parsedLocation[1] === "number"
+            Array.isArray(parsedLocation) &&
+            parsedLocation.length === 2 &&
+            typeof parsedLocation[0] === "number" &&
+            typeof parsedLocation[1] === "number"
         ) {
-          console.log("Valid coordinates:", parsedLocation);
-          return parsedLocation as [number, number];
+            console.log("Valid coordinates:", parsedLocation);
+            return parsedLocation as [number, number];
         }
         console.log(geoLocation);
 

@@ -2,8 +2,8 @@
 import express from "express";
 import * as ProductController from "../controllers/ProductController";
 import { authProfile } from "../middlewares/authProfile";
-import { validateBody } from "../middlewares/validateMiddleware";
-import { createProductSchema, updateProductSchema } from "../validators/product.validator";
+import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
+import { createProductSchema, filterBranchProductsSchema, updateProductSchema } from "../validators/product.validator";
 import { upload } from "../middlewares/upload";
 
 const router = express.Router();
@@ -14,5 +14,6 @@ router.get("/", ProductController.getBranchProducts);
 router.get("/:productId", ProductController.getProduct);
 router.patch("/:productId", upload.array("media"), validateBody(updateProductSchema), ProductController.update);
 router.delete("/:productId", ProductController.deleteProduct);
+router.get("/branch/filter", validateQuery(filterBranchProductsSchema), ProductController.filterBranchProducts);
 
 export default router;

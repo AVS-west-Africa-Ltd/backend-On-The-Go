@@ -6,8 +6,9 @@
   "scripts": {
     "start": "npm run build && node dist/app.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "build": "tsc",
+    "build": "tsc && cpx \"public/**/*\" dist/public",
     "dev": "nodemon --exec ts-node ./src/app.ts",
+    "seed:api": "ts-node scripts/seed_api.ts",
     "test": "jest --runInBand --detectOpenHandles"
   },
   "author": "Aventure studio team",
@@ -61,7 +62,9 @@
     "@types/multer": "^2.0.0",
     "@types/multer-s3": "^3.0.3",
     "@types/node": "^24.10.1",
+    "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.4",
+    "cpx": "^1.5.0",
     "jest": "^29.7.0",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.2",

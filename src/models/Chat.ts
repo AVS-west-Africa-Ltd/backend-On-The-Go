@@ -24,7 +24,7 @@ export class Chat extends Model<
   declare lastMessageAt: CreationOptional<Date | null>;
   declare userId: number;
   declare profileId: number;
-  
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 

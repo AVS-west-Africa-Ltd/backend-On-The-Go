@@ -3,7 +3,7 @@ import { RouterOSClient } from 'sy5-routeros-client';
 import { randomCharacters } from '../utils/helpers';
 import { NetworkRouter } from '../models/NetworkRouter';
 import { TicketProfile } from '../models/TicketProfile';
-import { RouterCredentials } from './interfaces/mikrotik.interface';
+import { RouterCredentials } from '../interfaces/mikrotik.interface';
 
 export const getSystemResource = async (credentials: RouterCredentials) => {
   let client: RouterOSClient | undefined;

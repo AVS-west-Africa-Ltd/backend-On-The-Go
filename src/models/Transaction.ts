@@ -5,34 +5,68 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
-  NonAttribute,
   ModelStatic,
+  NonAttribute,
 } from "sequelize";
+import { Order } from "./Order";
+import { Profile } from "./Profile";
+import { Branch } from "./Branch";
+import { PaymentMethod, PaymentProvider, TPaymentMethod, TPaymentProvider, TransactionStatus, TTransactionStatus } from "./types/transaction.types";
 
 export class Transaction extends Model<
   InferAttributes<Transaction>,
   InferCreationAttributes<Transaction>
 > {
-  declare id: CreationOptional<number>;
-  declare reference: string;
-  declare userId: number;
+  declare id: CreationOptional<string>;
+  declare orderId: string;
+  declare customerId: number;
   declare businessId: number;
   declare branchId: number;
-  declare ticketId: number;
-  declare amount: number;
-  declare status: CreationOptional<"pending" | "completed">;
-  declare hotspotTicket: CreationOptional<Record<string, any>>;
 
+  declare amount: number;
+  declare currency: string;
+  declare paymentMethod: CreationOptional<TPaymentMethod>;
+  declare provider: TPaymentProvider;
+
+  declare reference: string;
+  declare status: TTransactionStatus;
+  declare provider_reference: string;
+
+  declare meta: CreationOptional<Record<string, unknown> | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
-  // Associations
-  declare user?: NonAttribute<any>;
+  declare order?: NonAttribute<Order>;
+  declare customer?: NonAttribute<Profile>;
+  declare business?: NonAttribute<Profile>;
+  declare branch?: NonAttribute<Branch>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
-    if (models.User) {
-      Transaction.belongsTo(models.User, {
-        foreignKey: "userId",
+    if (models.Order) {
+      Transaction.belongsTo(models.Order, {
+        foreignKey: "orderId",
+        as: "order",
+      });
+    }
+
+    if (models.Profile) {
+      Transaction.belongsTo(models.Profile, {
+        foreignKey: "customerId",
+        as: "customer",
+      });
+    }
+
+    if (models.Profile) {
+      Transaction.belongsTo(models.Profile, {
+        foreignKey: "businessId",
+        as: "business",
+      });
+    }
+
+    if (models.Branch) {
+      Transaction.belongsTo(models.Branch, {
+        foreignKey: "branchId",
+        as: "branch",
       });
     }
   }
@@ -41,15 +75,15 @@ export class Transaction extends Model<
     Transaction.init(
       {
         id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
+          type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
           primaryKey: true,
         },
-        reference: {
-          type: DataTypes.STRING,
+        orderId: {
+          type: DataTypes.UUID,
           allowNull: false,
         },
-        userId: {
+        customerId: {
           type: DataTypes.INTEGER,
           allowNull: false,
         },
@@ -61,23 +95,40 @@ export class Transaction extends Model<
           type: DataTypes.INTEGER,
           allowNull: false,
         },
-        ticketId: {
-          type: DataTypes.INTEGER,
+        amount: {
+          type: DataTypes.FLOAT,
           allowNull: false,
         },
-        amount: {
-          type: DataTypes.DOUBLE,
+        currency: {
+          type: DataTypes.STRING,
           allowNull: false,
+          defaultValue: "NGN",
+        },
+        paymentMethod: {
+          type: DataTypes.ENUM(...Object.values(PaymentMethod)),
+          allowNull: true,
+        },
+        reference: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
         },
         status: {
-          type: DataTypes.ENUM("pending", "completed"),
+          type: DataTypes.ENUM(...Object.values(TransactionStatus)),
           allowNull: false,
           defaultValue: "pending",
         },
-        hotspotTicket: {
+        provider_reference: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        provider: {
+          type: DataTypes.ENUM(...Object.values(PaymentProvider)),
+          allowNull: false,
+        },
+        meta: {
           type: DataTypes.JSON,
           allowNull: true,
-          defaultValue: {},
         },
         createdAt: {
           type: DataTypes.DATE,

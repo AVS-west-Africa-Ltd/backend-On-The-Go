@@ -6,8 +6,12 @@ import {
   InferCreationAttributes,
   CreationOptional,
   ModelStatic,
+  NonAttribute,
 } from "sequelize";
 import { BranchStaffAttributes, BranchStaffRole } from "./types/branchStaff.types";
+import { User } from "./User";
+import { Branch } from "./Branch";
+import { Profile } from "./Profile";
 
 export class BranchStaff extends Model<
   InferAttributes<BranchStaff>,
@@ -24,6 +28,10 @@ export class BranchStaff extends Model<
   declare lastLogin: CreationOptional<Date | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+
+  declare branch?: NonAttribute<Branch>;
+  declare business?: NonAttribute<Profile>;
+  declare user?: NonAttribute<User>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.Branch) {

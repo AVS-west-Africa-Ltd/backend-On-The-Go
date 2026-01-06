@@ -1,5 +1,5 @@
-import { Profile } from "../../models/Profile";
-import { TBusinessCategory, TProfileType } from "../../models/types/profile.types";
+import { Profile } from "../models/Profile";
+import { TBusinessCategory, TProfileType } from "../models/types/profile.types";
 
 export interface ICreateProfilePayload {
     userName: string;

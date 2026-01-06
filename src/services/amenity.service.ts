@@ -6,14 +6,15 @@ const { sequelize } = db
 
 export class AmenitiesService {
 
-    static async getBranchAmenities (profileId: number, branchId: number) {
+    static async getBranchAmenities(profileId: number, branchId: number) {
 
         try {
             const amenities = await BranchAmenity.findAll({
                 where: {
                     branchId,
-                    businessId: profileId,
+                    // businessId: profileId,
                 },
+                attributes: { exclude: ["businessId", "branchId", "amenityId"] },
                 include: [
                     {
                         model: Amenity,
@@ -26,7 +27,7 @@ export class AmenitiesService {
             return amenities;
         } catch (error) {
             console.error("Error when fetching branch amenities:--", error);
-            
+
             throw new Error("Failed to fetch branch amenities");
         }
     }
@@ -38,7 +39,7 @@ export class AmenitiesService {
             return amenities;
         } catch (error) {
             console.error("Error when fetching global amenities--", error);
-            
+
             throw new Error("Failed to fetch amenities");
         }
     }
@@ -73,7 +74,7 @@ export class AmenitiesService {
             });
         } catch (error) {
             console.error("Error when updating branch amenities:--", error);
-            
+
             throw new Error("Failed to update branch amenities");
         }
     }

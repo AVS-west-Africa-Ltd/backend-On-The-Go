@@ -5,6 +5,7 @@ import { randomCharacters } from "../utils/helpers";
 import { sendEmail } from "../services/email.service";
 import { verificationCodeEmail } from "../templates/verificationEmail";
 import * as jwtUtil from "../utils/jwtUtil";
+import { BranchStaff } from "../models/BranchStaff";
 
 const { User, Profile, Referral, Branch, sequelize } = db;
 
@@ -108,7 +109,7 @@ export class AuthService {
         });
 
         if (!user) {
-            throw new Error("Sorry email does not exist !");
+            throw new Error("Email does not exist!");
         }
 
         const isPassword = await bcrypt.compare(password, user.password);
@@ -236,5 +237,120 @@ export class AuthService {
         await user.save();
 
         return true;
+    }
+
+    static async completeInvite(data: any) {
+        const t = await sequelize.transaction();
+        try {
+            const { token, password, firstName, lastName } = data;
+
+            const decoded: any = jwtUtil.verifyToken(token);
+            if (!decoded || !decoded.invite) {
+                throw new Error("Invalid or expired invite token");
+            }
+
+            const { branch: branchId, invite: inviteInfo } = decoded;
+            const { email, role, id } = inviteInfo;
+
+            // 1. Check if user already exists
+            let user = await User.findOne({ where: { email }, transaction: t });
+
+            if (user) {
+                // Verify their existing password
+                const isPasswordValid = await bcrypt.compare(password, user.password);
+                if (!isPasswordValid) {
+                    throw new Error("Invalid password. Please use your existing account password.");
+                }
+
+                // Check if they already have a profile
+                let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
+
+                // Update the BranchStaff record
+                const staff = await db.BranchStaff.findOne({
+                    where: { id: inviteInfo.id, email },
+                    transaction: t
+                });
+
+                if (!staff) {
+                    throw new Error("Invite record not found");
+                }
+
+                // Check if already linked
+                if (staff.userId && staff.userId === user.id) {
+                    throw new Error("You have already accepted this invitation");
+                }
+
+                await staff.update({
+                    userId: user.id,
+                    isActive: true
+                }, { transaction: t });
+
+                await t.commit();
+
+                const auth = {
+                    user: user.id,
+                    profile: profile ? { id: profile.id, type: profile.profileType } : null,
+                    branch: branchId
+                };
+                const authToken = jwtUtil.generateToken(auth);
+
+                return { user, profile, token: authToken };
+
+            } else {
+                // New user - create account
+                const hashedPassword = bcrypt.hashSync(password, 10);
+                user = await User.create({
+                    firstName,
+                    lastName,
+                    email,
+                    phone_number: '1234567890',
+                    password: hashedPassword,
+                    isVerified: true, // Email is verified via the invite link
+                    referralCode: `OTG-${randomCharacters(6)}`,
+                }, { transaction: t });
+            }
+
+            // 2. Create Profile if not exists
+            let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
+            if (!profile) {
+                profile = await Profile.create({
+                    userId: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    userName: user.email.split('@')[0] + randomCharacters(4),
+                    profileType: 'personal', // Default to personal, they can change or add business later
+                    isActivated: true
+                }, { transaction: t });
+            }
+
+            const staff = await BranchStaff.findOne({
+                where: { id: inviteInfo.id, email },
+                transaction: t
+            });
+
+            if (!staff) {
+                throw new Error("Invite record not found");
+            }
+
+            await staff.update({
+                userId: user.id,
+                isActive: true
+            }, { transaction: t });
+
+            await t.commit();
+
+            const auth = {
+                user: user.id,
+                profile: { id: profile.id, type: profile.profileType },
+                branch: branchId
+            };
+            const authToken = jwtUtil.generateToken(auth);
+
+            return { user, profile, token: authToken };
+
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
     }
 }

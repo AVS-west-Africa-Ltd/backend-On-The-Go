@@ -16,6 +16,7 @@ import { Amenity } from "./Amenity";
 import { Post } from "./Post";
 import { Social } from "./Social";
 import { Media } from "./Media";
+import { Bookmark } from "./Bookmark";
 import { TBusinessCategory, TProfileType } from "./types/profile.types";
 
 export class Profile extends Model<
@@ -62,6 +63,7 @@ export class Profile extends Model<
   declare reviews?: NonAttribute<Post[]>;
   declare socials?: NonAttribute<Social[]>;
   declare media?: NonAttribute<Media[]>;
+  declare bookmarks?: NonAttribute<Bookmark[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
@@ -118,6 +120,13 @@ export class Profile extends Model<
         as: "media",
         constraints: false,
         // scopes handled at query time or default scope
+      });
+    }
+    if (models.Bookmark) {
+      Profile.hasMany(models.Bookmark, {
+        foreignKey: "profileId",
+        as: "bookmarks",
+        onDelete: "CASCADE",
       });
     }
   }

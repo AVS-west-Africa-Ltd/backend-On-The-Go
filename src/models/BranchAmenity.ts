@@ -6,8 +6,10 @@ import {
     InferCreationAttributes,
     CreationOptional,
     ModelStatic,
+    NonAttribute,
 } from "sequelize";
 import { Status, TStatus } from "./types/amenity.types";
+import { Amenity } from "./Amenity";
 
 
 export class BranchAmenity extends Model<
@@ -24,6 +26,8 @@ export class BranchAmenity extends Model<
     declare meta: CreationOptional<Record<string, unknown> | null>;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
+
+    declare amenity?: NonAttribute<Amenity>;
 
     static associate(models: Record<string, ModelStatic<Model>>) {
         if (models.Profile) {

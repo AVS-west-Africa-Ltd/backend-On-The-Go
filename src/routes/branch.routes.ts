@@ -8,10 +8,22 @@ import { createBranchSchema } from "../validators/branch.validator";
 const router = express.Router();
 router.use(authProfile);
 
+// Branch Management
+router.get("/activity-logs", BranchController.getBranchLogs);
+router.get("/media", BranchController.getBranchMedia);
+router.get("/reviews", BranchController.getBranchReviews);
+
+
 router.post("/create", validateBody(createBranchSchema), authProfile, BranchController.create);
-router.get("/", authProfile, BranchController.getBranches);
-router.get("/:branchId", authProfile, BranchController.getBranch);
-router.delete("/:branchId", authProfile, BranchController.deleteBranch);
-router.patch("/:branchId/status", authProfile, BranchController.updateBranchStatus);
+router.get("/", BranchController.getBranches);
+router.get("/:branchId", BranchController.getBranch);
+router.delete("/:branchId", BranchController.deleteBranch);
+router.patch("/:branchId/status", BranchController.updateBranchStatus);
+router.post("/:branchId/invite", BranchController.inviteStaff);
+router.get("/:branchId/orders", BranchController.getBranchOrders);
+router.get("/:branchId/staff", BranchController.getBranchStaff);
+router.get("/:branchId/wifi-infrastructure", BranchController.getBranchWifi);
+
+
 
 export default router;

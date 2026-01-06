@@ -5,6 +5,7 @@ export interface ICreateProductDTO {
     description: string;
     price: number;
     branchAmenityId: string;
+    branchId?: number; // Optional branchId to override token branch
     meta?: Record<string, unknown>;
 }
 
@@ -20,4 +21,12 @@ export interface IUpdateProductDTO {
         remove?: string[]; // IDs of media to remove
         add?: Express.Multer.File[]; // New media files to add
     };
+}
+
+export interface FilterBranchProductsQuery {
+    branchId: number;
+    amenityId?: string; // UUID
+    limit: number;
+    cursor?: string;
+    featured: boolean;
 }

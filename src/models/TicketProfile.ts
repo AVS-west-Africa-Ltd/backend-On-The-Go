@@ -45,6 +45,13 @@ export class TicketProfile extends Model<
         onDelete: "CASCADE",
       });
     }
+
+    if (models.NetworkRouter) {
+      TicketProfile.belongsTo(models.NetworkRouter, {
+        foreignKey: "routerId",
+        onDelete: "CASCADE",
+      });
+    }
   }
 
   static initModel(sequelize: Sequelize): ModelStatic<TicketProfile> {

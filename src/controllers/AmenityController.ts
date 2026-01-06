@@ -14,9 +14,10 @@ export const getAllAmenities = async (req: Request, res: Response) => {
 export const getBranchAmenities = async (req: Request, res: Response) => {
     try {
         const profileId = req.profile!.id;
-        const branchId = req.branch!;
+        const { branchId } = req.params;
+        // const branchId = req.branch!;
 
-        const amenities = await AmenitiesService.getBranchAmenities(profileId, branchId);
+        const amenities = await AmenitiesService.getBranchAmenities(profileId, Number(branchId));
         successHandler(res, "Branch amenities fetched successfully", 200, amenities);
     } catch (error) {
         errorHandler(res, "Failed to fetch branch amenities", 500);

@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 const {
   EMAIL_HOST,
   EMAIL_PORT,
-  EMAIL_SECURE, 
+  EMAIL_SECURE,
   EMAIL_ADDRESS,
   EMAIL_PASSWORD,
 } = process.env;
@@ -24,6 +24,7 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false,
   },
+  connectionTimeout: 10000,
 });
 
 export default transporter;

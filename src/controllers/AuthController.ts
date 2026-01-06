@@ -13,10 +13,7 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error(error);
-    if (error.message === "Email or phone number exist already!") {
-      return res.status(400).json({ message: error.message });
-    }
-    return res.status(500).json({ log: error, message: "Sorry something went wrong!" });
+    return res.status(500).json({ log: error, message: error.message || "Sorry something went wrong!" });
   }
 }
 
@@ -45,7 +42,7 @@ export const login = async (req: Request, res: Response) => {
     if (error.message === "Internal Server Error: DB Misconfiguration") {
       return res.status(500).json({ message: error.message });
     }
-    return res.status(500).json({ message: "Sorry something went wrong!" });
+    return res.status(500).json({ message: error.message || "Sorry something went wrong!" });
   }
 }
 
@@ -59,10 +56,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    if (error.message === "Sorry email does not exist !" || error.message === "Invalid code" || error.message === "Expired code") {
-      return res.status(400).json({ message: error.message });
-    }
-    return res.status(500).json({ message: "Something went wrong!" });
+    return res.status(500).json({ message: error.message || "Something went wrong!" });
   }
 }
 
@@ -74,10 +68,7 @@ export const sendCode = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Verification code sent successfully" });
 
   } catch (error: any) {
-    if (error.message === "Email does not exist !") {
-      return res.status(400).json({ message: error.message });
-    }
-    return res.status(500).json({ message: "Something went wrong!" });
+    return res.status(500).json({ message: error.message || "Something went wrong!" });
   }
 }
 
@@ -86,14 +77,24 @@ export const resetPassword = async (req: Request, res: Response) => {
     await AuthService.resetPassword(req.body);
 
     return res.status(200).json({
-      message: "User email verified successfully", // Original message was "User email verified successfully", assume intent for password reset success
+      message: "User email verified successfully",
     });
 
   } catch (error: any) {
-    if (error.message === "User not found!" || error.message === "Invalid code" || error.message === "Expired code") {
-      return res.status(400).json({ message: error.message });
-    }
-    return res.status(500).json({ message: "Something went wrong!" });
+    return res.status(500).json({ message: error.message || "Something went wrong!" });
+  }
+}
+
+export const completeInvite = async (req: Request, res: Response) => {
+  try {
+    const result = await AuthService.completeInvite(req.body);
+    return res.status(200).json({
+      message: "Account created and invitation accepted successfully",
+      ...result
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: error.message || "Failed to complete invitation" });
   }
 }
 

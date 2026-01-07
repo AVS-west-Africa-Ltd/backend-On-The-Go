@@ -1,5 +1,5 @@
 import express from "express";
-import { create, addMembers, fetchMembers, update, fetchCommunity, fetchCommunityById } from "../controllers/CommunityController";
+import { create, addMembers, fetchMembers, update, fetchCommunity, fetchCommunityById, deleteCommunity } from "../controllers/CommunityController";
 import { authProfile } from "../middlewares/authProfile";
 import { upload } from "../middlewares/upload";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
@@ -16,5 +16,6 @@ router.get("/fetch-members", validateQuery(fetchMembersSchema), fetchMembers);
 router.get("/", fetchCommunity);
 router.get("/:communityId", fetchCommunityById);
 router.patch("/:communityId", upload.single("photo"), validateBody(updateCommunitySchema), update);
+router.delete("/:communityId", deleteCommunity);
 
 export default router;

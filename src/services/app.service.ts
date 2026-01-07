@@ -11,6 +11,7 @@ import { Comment } from "../models/Comment";
 import { Reaction } from "../models/Reaction";
 import { Friend } from "../models/Friend";
 import { Media } from "../models/Media";
+import { ProfileVisit } from "../models/ProfileVisit";
 import { MemberRole, MemberType } from "../models/types/member.types";
 import { PostTargetType, PostType } from "../models/types/post.types";
 import { BranchAmenity } from "../models/BranchAmenity";
@@ -59,27 +60,17 @@ export class AppService {
                 }
                 finalBranchId = branchIdFromReq;
             } else {
-                // If branchId is in data, we use it? The logic in controller was:
-                /*
-                if (!branchId) {
-                    finalBranchId = req.branch!;
-                     if (!finalBranchId) ...
-                }
-                */
-                // Replicating controller logic:
-                finalBranchId = branchIdFromReq!; // Default assignments might be tricky, let's look closer.
-                // Actually, let's stick to strict replication.
+
+                finalBranchId = branchIdFromReq!;
             }
 
-            // Controller Logic Replication:
             if (!branchId) {
                 finalBranchId = branchIdFromReq!;
                 if (!finalBranchId) {
                     throw new Error("Invalid branch ID.");
                 }
             } else {
-                // If branchId is provided in body, wait, the controller logic overrides or uses logic inside switch.
-                // Let's copy the specific switch case logic assignments.
+
             }
 
 
@@ -88,7 +79,7 @@ export class AppService {
 
             switch (postType) {
                 case PostType.NORMAL:
-                    // might take out in future if business as a whole is posting and not individual branches
+
                     finalBranchId = branchIdFromReq!;
                     if (!finalBranchId) {
                         throw new Error("Invalid branch ID.");
@@ -337,6 +328,13 @@ export class AppService {
 
         if (!branch) {
             throw new Error("Business not found");
+        }
+
+        if (branch && branch.profile) {
+            await ProfileVisit.create({
+                profileId: branch.profile.id,
+                userId: null,
+            });
         }
 
         return branch;

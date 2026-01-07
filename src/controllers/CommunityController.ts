@@ -106,3 +106,25 @@ export const fetchCommunityById = async (req: Request, res: Response) => {
     return errorHandler(res, "Failed to fetch community", 500);
   }
 };
+
+export const deleteCommunity = async (req: Request, res: Response) => {
+  try {
+    const { communityId } = req.params;
+    const profileId = req.profile!.id;
+
+    await CommunityService.delete(communityId, profileId);
+
+    return res.status(200).json({
+      message: "Community deleted successfully!",
+    });
+  } catch (error: any) {
+    console.error("Delete community error:", error);
+    if (error.message === "Community not found") {
+      return errorHandler(res, error.message, 404);
+    }
+    if (error.message.includes("Unauthorized")) {
+      return errorHandler(res, error.message, 403);
+    }
+    return errorHandler(res, "Failed to delete community", 500);
+  }
+};

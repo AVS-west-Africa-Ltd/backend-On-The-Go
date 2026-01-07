@@ -232,4 +232,35 @@ export class CommunityService {
             memberCount,
         };
     }
+
+    static async delete(communityId: string, profileId: number) {
+        const transaction = await sequelize.transaction();
+        try {
+            const community = await Community.findByPk(communityId);
+
+            if (!community) {
+                throw new Error("Community not found");
+            }
+
+            // ONLY the owner (the person who created it) can delete it
+            if (community.profileId !== profileId) {
+                throw new Error("Unauthorized. Only the community owner can delete it.");
+            }
+
+            // Delete associated members
+            await Member.destroy({
+                where: { targetId: communityId, memberType: "community" },
+                transaction,
+            });
+
+            // Delete the community
+            await community.destroy({ transaction });
+
+            await transaction.commit();
+            return true;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
 }

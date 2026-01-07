@@ -19,6 +19,7 @@ import { MediaTargetTypes } from "../models/types/media.types";
 import { TAllowedSocialPlatforms } from "../models/types/socials.types";
 import { User } from "../models/User";
 import { Post } from "../models/Post";
+import { ProfileVisit } from "../models/ProfileVisit";
 
 const { sequelize } = db;
 
@@ -572,6 +573,13 @@ export class ProfileService {
             where: { id: selectedProfile.id, userId },
             include: includes,
         });
+
+        if (profile) {
+            await ProfileVisit.create({
+                profileId: profile.id,
+                userId: userId || null,
+            });
+        }
 
         return profile;
     }

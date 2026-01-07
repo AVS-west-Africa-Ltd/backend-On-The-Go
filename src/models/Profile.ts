@@ -16,6 +16,7 @@ import { Amenity } from "./Amenity";
 import { Post } from "./Post";
 import { Social } from "./Social";
 import { Media } from "./Media";
+import { Insight } from "./Insight";
 import { TBusinessCategory, TProfileType } from "./types/profile.types";
 
 export class Profile extends Model<
@@ -62,6 +63,7 @@ export class Profile extends Model<
   declare reviews?: NonAttribute<Post[]>;
   declare socials?: NonAttribute<Social[]>;
   declare media?: NonAttribute<Media[]>;
+  declare insights?: NonAttribute<Insight[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
@@ -118,6 +120,13 @@ export class Profile extends Model<
         as: "media",
         constraints: false,
         // scopes handled at query time or default scope
+      });
+    }
+    if (models.Insight) {
+      Profile.hasMany(models.Insight, {
+        foreignKey: "profileId",
+        as: "insights",
+        onDelete: "CASCADE",
       });
     }
   }

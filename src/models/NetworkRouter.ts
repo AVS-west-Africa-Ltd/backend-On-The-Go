@@ -21,18 +21,35 @@ export class NetworkRouter extends Model<
   declare ssl: CreationOptional<boolean>;
   declare metadata: CreationOptional<Record<string, any>>;
   declare userId: number;
-  
+  declare branchId: CreationOptional<number | null>;
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
   declare user?: NonAttribute<any>;
+  declare branch?: NonAttribute<any>;
+  declare ticketProfiles?: NonAttribute<any>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
       NetworkRouter.belongsTo(models.User, {
         foreignKey: "userId",
         onDelete: "CASCADE",
+      });
+    }
+    if (models.Branch) {
+      NetworkRouter.belongsTo(models.Branch, {
+        foreignKey: "branchId",
+        as: "branch",
+        onDelete: "CASCADE",
+      });
+    }
+
+    if (models.TicketProfile) {
+      NetworkRouter.hasMany(models.TicketProfile, {
+        foreignKey: "routerId",
+        as: "ticketProfiles",
       });
     }
   }
@@ -76,9 +93,17 @@ export class NetworkRouter extends Model<
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          unique: true,
           references: {
             model: "users",
+            key: "id",
+          },
+          onDelete: "CASCADE",
+        },
+        branchId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          references: {
+            model: "branches",
             key: "id",
           },
           onDelete: "CASCADE",

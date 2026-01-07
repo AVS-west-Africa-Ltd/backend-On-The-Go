@@ -1,0 +1,78 @@
+Endpoint to create
+
+1. Verify available username
+2. Verify available email
+3. List of global amenities
+4. List of all businesses that offer such amenities
+5. List of all businesses that are partnered with OTG
+6. Search by amenity names and business name and locations - same as number 4
+7. List of all business near the user live locations
+8. List of near business with the highest ratings (maybe top 10) -same as above (7)
+9. Add tags to branch table to enhance search
+
+// order and checkout flow
+10. Create endpoint for featured products - packages recommended or popular
+11. List all products - filter by category/amenities - , 
+12. List all wifi amenity products
+13. Payment method will be a separate table
+14. Create table that tracks wireless subscription
+
+17. Revamp Friends table to include business and users followers
+
+// Business profile for user side
+18. Get a business branch profile - include photos, amenities, featured amenities, opening hours, 
+19. Fetch branch reviews - include filter by date, rating, 
+20. Add a review to a branch
+21. Get all review posts, add a comment to a posts
+22. List all communities and search
+23. Create community - 
+24. Join community
+25. Get communtiy by id - info with limited members
+26. Update community 
+27. Fetch community members
+28. Add members to a community 
+28b. suggests profiles that follow you
+29. Add community setting sto community table
+30. Leave community
+31. Settings table...target type- users, communtiy...allow notifications etec
+32. Fetch media files from the community
+33. Delete a communty by admin
+
+
+// chats
+34. Get all chats
+35. Create a new chat - must be with people you follow
+36. Search suggest people you follow to start a chat with
+37. Search by messages and user's name
+15. Chat requests for user --> user
+16. Create a request table
+
+// websockets chat
+38. Get chat by id- fetch messages/chat history
+39. Send media in socket
+40. Fetch other user profile details in chat
+
+
+// Logged in user profile
+41. Get profile
+42. Get reviews
+44. Fetch bookmarks--create flow for bookmar...saving a specific review
+49. Edit profile
+50. Change password
+51. Invite friends link - invite/ referral code
+
+// Another user's profile
+45. Get profile
+46. Get reviews
+47. Follow user
+48. Send a message
+
+
+// insights foor only business owner
+52. Create insights table to store all these for businesses 
+53. Store and get number of profile visits
+54. Store and get number of likes, comments and reviews
+55. new followers, unfollows
+56. Get business rating
+57. wifi connection-- number of wifi ticket bought in the last month, 
+58. total orders, total vouchers

@@ -1,25 +1,38 @@
 import { Request, Response } from "express";
 import { AppService } from "../services/app.service";
-import { errorHandler } from "../handlers/responseHandlers";
+
+import { errorHandler, successHandler } from "../handlers/responseHandlers";
 import { PostType } from "../models/types/post.types";
+import { AppBranchService } from "../services/app/branches.app.service";
 
 export const createPost = async (req: Request, res: Response) => {
   try {
     const userId = req.user;
     const profileId = req.profile!.id;
-    const branchIdFromReq = req.branch;
-
     let media: string[] = [];
     if (req.files && Array.isArray(req.files)) {
       media = req.files.map((file: any) => file.location || file.path);
     }
 
-    const post = await AppService.createPost(req.body, userId, profileId, branchIdFromReq, media);
-    return res.status(201).json({ post, message: "Post created successfully!" });
+    const { body, postType, target, amenities, branchId, targetType } = req.body;
+
+    const payload = {
+      body,
+      postType,
+      target,
+      amenities,
+      branchId: branchId || req.branch,
+      targetType,
+      media
+    };
+
+    const post = await AppService.createPost(payload, userId, profileId);
+    return successHandler(res, "Post created successfully", 201, post);
+    // return res.status(201).json({ post, message: "Post created successfully!" });
   } catch (error: any) {
     console.error("Error creating post:", error);
-    // Use error message if available, otherwise generic
-    return res.status(400).json({ message: error.message || "Sorry, something went wrong!" });
+    // return res.status(400).json({ message: error.message || "Something went wrong!" });
+    return errorHandler(res, error.message || "Something went wrong!", error.status || 500);
   }
 };
 
@@ -168,7 +181,9 @@ export const joinCommunity = async (req: Request, res: Response) => {
     const profileId = req.profile!.id;
     const { communityId } = req.body;
 
-    const result = await AppService.joinCommunity(communityId, profileId);
+    // Check validation in service? Service took communityId.
+
+    const result = await AppService.joinCommunity(parseInt(communityId, 10), profileId);
 
     if (!result.created) {
       return res.status(200).json({ message: "You are already a member" });
@@ -219,6 +234,23 @@ export const fetchCommunities = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("Fetch communities error:", error);
     return res.status(500).json({ message: error.message || "Failed to fetch communities" });
+  }
+};
+
+export const getBranchForUser = async (req: Request, res: Response) => {
+  try {
+    const { branchId } = req.params;
+
+    const branch = await AppBranchService.getBranchById(parseInt(branchId, 10));
+
+    if (!branch) {
+      return errorHandler(res, "Branch not found", 404);
+    }
+
+    return successHandler(res, "Branch fetched successfully!", 200, branch);
+  } catch (error: any) {
+    console.error("Get branch error:", error);
+    return errorHandler(res, error.message || "Failed to get branch", error.status || 500);
   }
 };
 

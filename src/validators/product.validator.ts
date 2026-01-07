@@ -21,6 +21,23 @@ export const createProductSchema = Joi.object({
   status: Joi.string().valid('available', 'not available').optional(),
   price: Joi.number().positive().required(),
   branchAmenityId: Joi.string().uuid().required(),
+  branchId: Joi.number().integer().optional(),
   meta: Joi.any().optional(),
+});
+
+export const filterBranchProductsSchema = Joi.object({
+  // Convert "123" -> 123
+  branchId: Joi.number().integer().required(),
+
+  // Validate UUID format
+  amenityId: Joi.string().uuid().optional(),
+
+  // Convert "20" -> 20. Default to 20 if missing.
+  limit: Joi.number().integer().min(1).max(100).default(20),
+
+  cursor: Joi.string().optional(),
+
+  // Convert "true"/"false" strings to boolean. Default false.
+  featured: Joi.boolean().default(false),
 });
 

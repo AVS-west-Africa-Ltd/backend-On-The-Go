@@ -15,16 +15,18 @@ import { ProfileVisit } from "../models/ProfileVisit";
 import { MemberRole, MemberType } from "../models/types/member.types";
 import { PostTargetType, PostType } from "../models/types/post.types";
 import { BranchAmenity } from "../models/BranchAmenity";
+import { ICreatePostPayload } from "../interfaces/post.interface";
+import { BranchStaff } from "../models/BranchStaff";
+import { BranchStaffRole } from "../models/types/branchStaff.types";
+import { AppError } from "../utils/errors";
 
 const { sequelize } = db;
 
 export class AppService {
     static async createPost(
-        data: any,
+        payload: ICreatePostPayload,
         userId: number,
-        profileId: number,
-        branchIdFromReq: number | undefined,
-        media: string[]
+        profileId: number
     ) {
         const t = await sequelize.transaction();
         try {
@@ -33,108 +35,99 @@ export class AppService {
                 postType = "normal",
                 target,
                 amenities = null,
-                branchId
-            } = data;
+                branchId,
+                targetType: targetTypeFromPayload,
+                media = []
+            } = payload;
 
-            if (!body || body.trim() === "") {
-                throw new Error("Post body cannot be empty.");
+            const finalBranchId = Number(branchId);
+
+            const branch = await Branch.findByPk(finalBranchId, { transaction: t });
+            if (!branch) {
+                throw new Error("Branch not found.");
             }
 
-            if (![PostType.NORMAL, PostType.REVIEW].includes(postType)) {
-                throw new Error(`Invalid post type. Type can only be one of the following: ${Object.values(PostType).join(", ")}`);
-            }
-
-            if (!target || isNaN(Number(target))) {
-                throw new Error("Invalid target for the post.");
-            }
-
-            if (postType === PostType.REVIEW && !branchId) {
-                throw new Error("Branch ID is required when creating a review post.");
-            }
-
-            let finalBranchId: number;
-
-            if (!branchId) {
-                if (!branchIdFromReq) {
-                    throw new Error("Invalid branch ID.");
+            if (postType === PostType.NORMAL) {
+                const isOwner = branch.profileId === profileId;
+                if (!isOwner) {
+                    const isStaff = await BranchStaff.findOne({
+                        where: {
+                            branchId: finalBranchId,
+                            userId: userId,
+                            role: [BranchStaffRole.ADMIN, BranchStaffRole.SUPER_ADMIN],
+                            isActive: true
+                        },
+                        transaction: t
+                    });
+                    if (!isStaff) {
+                        throw new Error("You do not have access to post for this branch.");
+                    }
                 }
-                finalBranchId = branchIdFromReq;
-            } else {
-
-                finalBranchId = branchIdFromReq!;
             }
 
-            if (!branchId) {
-                finalBranchId = branchIdFromReq!;
-                if (!finalBranchId) {
-                    throw new Error("Invalid branch ID.");
-                }
-            } else {
-
-            }
-
-
-            let parsedAmenities: Record<string, number> = {};
             let finalRating: Record<string, number> = {};
 
             switch (postType) {
                 case PostType.NORMAL:
-
-                    finalBranchId = branchIdFromReq!;
-                    if (!finalBranchId) {
-                        throw new Error("Invalid branch ID.");
-                    }
                     break;
 
                 case PostType.REVIEW:
-                    finalBranchId = Number(branchId);
-                    const branch = await Branch.findOne({
-                        where: { id: Number(finalBranchId), profileId: Number(target) },
-                        transaction: t,
-                    });
-
-                    if (!branch) {
-                        throw new Error("Only a business profile can be reviewed.");
+                    if (branch.profileId === profileId) {
+                        throw new AppError("You cannot review your own branch.", 400);
                     }
 
-                    parsedAmenities = typeof amenities === "object" && !Array.isArray(amenities)
-                        ? amenities
-                        : JSON.parse(amenities || "{}");
+                    const ratingsInput = typeof amenities === "object" && !Array.isArray(amenities)
+                        ? amenities as Record<string, number>
+                        : JSON.parse(typeof amenities === "string" ? amenities : "{}");
 
-                    for (const [amenityId, ratingValue] of Object.entries(parsedAmenities)) {
+                    // The UI shows: Overall, Wi-Fi, Co-working, Food
+                    finalRating = ratingsInput;
+
+                    // Update BranchAmenity ratings for specific amenities (excluding 'overall')
+                    for (const [amenityId, ratingValue] of Object.entries(ratingsInput)) {
+                        if (amenityId === 'overall') continue;
+
                         try {
                             const amenityRecord = await BranchAmenity.findOne({
                                 where: {
                                     branchId: finalBranchId,
-                                    businessId: branch.profileId,
-                                    amenityId,
+                                    id: amenityId,
                                 },
                                 transaction: t,
                             });
 
                             if (!amenityRecord) {
-                                console.warn(`⚠️ Rating skipped: Amenity not found (${amenityId})`);
-                                continue;
-                            }
+                                console.error("Not found", amenityRecord);
+                                continue
+                            };
 
-                            amenityRecord.set({
-                                totalRating: (amenityRecord.get("totalRating") as number) || 0,
-                                ratingCount: (amenityRecord.get("ratingCount") as number) || 0,
-                            });
+                            const currentTotal = Number(amenityRecord.totalRating || 0);
+                            const currentCount = Number(amenityRecord.ratingCount || 0);
 
-                            amenityRecord.totalRating += ratingValue;
-                            amenityRecord.ratingCount += 1;
-                            amenityRecord.rating = amenityRecord.totalRating / amenityRecord.ratingCount;
+                            await amenityRecord.update({
+                                totalRating: currentTotal + Number(ratingValue),
+                                ratingCount: currentCount + 1,
+                                rating: (currentTotal + Number(ratingValue)) / (currentCount + 1)
+                            }, { transaction: t });
 
-                            await amenityRecord.save({ transaction: t });
+
 
                         } catch (err) {
                             console.error(`❌ Error processing amenity rating (${amenityId}):`, err);
-                            continue;
                         }
                     }
+                    // Update Branch table rating
+                    const overallRating = Number(ratingsInput.overall || 0);
+                    if (overallRating > 0) {
+                        const currentRatingCount = Number(branch.ratingCount || 0);
+                        const currentReviewCount = Number(branch.reviewCount || 0);
 
-                    finalRating = parsedAmenities;
+                        await branch.update({
+                            ratingCount: currentRatingCount + overallRating,
+                            reviewCount: currentReviewCount + 1,
+                            rating: (currentRatingCount + overallRating) / (currentReviewCount + 1)
+                        }, { transaction: t });
+                    }
                     break;
 
                 default:
@@ -149,7 +142,7 @@ export class AppService {
                     body,
                     postType,
                     targetId: Number(target),
-                    targetType: postType === PostType.REVIEW ? PostTargetType.BUSINESS : PostTargetType.COMMUNITY,
+                    targetType: postType === PostType.REVIEW ? PostTargetType.BUSINESS : (targetTypeFromPayload || PostTargetType.COMMUNITY),
                     media,
                     rating: finalRating,
                 },
@@ -624,9 +617,10 @@ export class AppService {
         return chats;
     }
 
-    static async joinCommunity(communityId: string, profileId: number) {
+    static async joinCommunity(communityId: number, profileId: number) {
         const transaction = await sequelize.transaction();
         try {
+
             const community = await Community.findByPk(communityId);
 
             if (!community) {

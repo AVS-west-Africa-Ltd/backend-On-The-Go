@@ -16,6 +16,10 @@ import { Profile } from "./Profile";
 import { BranchStaff } from "./BranchStaff";
 import { Product } from "./Product";
 import { Status, TStatus } from "./types/amenity.types";
+import { Order } from "./Order";
+import { Post } from "./Post";
+import { Media } from "./Media";
+import { NetworkRouter } from "./NetworkRouter";
 
 
 
@@ -34,6 +38,8 @@ export class Branch extends Model<
   declare city: CreationOptional<string | null>;
   declare ratingCount: CreationOptional<number>;
   declare reviewCount: CreationOptional<number>;
+  declare rating: CreationOptional<number>;
+  declare followers: CreationOptional<number>;
   declare status: TStatus;
   declare geoLocation: CreationOptional<{ type: string; coordinates: [number, number] } | null>;
   declare isHQ: boolean;
@@ -46,6 +52,10 @@ export class Branch extends Model<
   declare profile?: NonAttribute<Profile>;
   declare staff?: NonAttribute<BranchStaff[]>;
   declare products?: NonAttribute<Product[]>;
+  declare orders?: NonAttribute<Order[]>;
+  declare posts?: NonAttribute<Post[]>;
+  declare media?: NonAttribute<Media[]>;
+  declare networkRouter?: NonAttribute<NetworkRouter>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.Profile) {
@@ -64,22 +74,58 @@ export class Branch extends Model<
       });
     }
 
-     Branch.hasMany(models.BranchStaff, {
-      foreignKey: "branchId",
-      as: "staff",
-      onDelete: "CASCADE",
-    });
+    if (models.BranchStaff) {
+      Branch.hasMany(models.BranchStaff, {
+        foreignKey: "branchId",
+        as: "staff",
+        onDelete: "CASCADE",
+      });
+    }
 
-     Branch.hasMany(models.Product, {
-      foreignKey: "branchId",
-      as: "products",
-      onDelete: "CASCADE",
-    });
+    if (models.Product) {
+      Branch.hasMany(models.Product, {
+        foreignKey: "branchId",
+        as: "products",
+        onDelete: "CASCADE",
+      });
+    }
 
     if (models.OpeningHour) {
       Branch.hasMany(models.OpeningHour, {
         foreignKey: "branchId",
         as: "openingHours",
+        onDelete: "CASCADE",
+      });
+    }
+
+    if (models.Order) {
+      Branch.hasMany(models.Order, {
+        foreignKey: "branchId",
+        as: "orders",
+        onDelete: "CASCADE",
+      });
+    }
+
+    if (models.Post) {
+      Branch.hasMany(models.Post, {
+        foreignKey: "branchId",
+        as: "posts",
+        onDelete: "CASCADE",
+      });
+    }
+
+    if (models.Media) {
+      Branch.hasMany(models.Media, {
+        foreignKey: "branchId",
+        as: "media",
+        onDelete: "CASCADE",
+      });
+    }
+
+    if (models.NetworkRouter) {
+      Branch.hasOne(models.NetworkRouter, {
+        foreignKey: "branchId",
+        as: "networkRouter",
         onDelete: "CASCADE",
       });
     }
@@ -144,6 +190,14 @@ export class Branch extends Model<
           type: DataTypes.FLOAT,
           defaultValue: 0,
         },
+        rating: {
+          type: DataTypes.FLOAT,
+          defaultValue: 0,
+        },
+        followers: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0,
+        },
         geoLocation: {
           type: DataTypes.GEOMETRY("POINT"),
           allowNull: true,
@@ -172,8 +226,8 @@ export class Branch extends Model<
         timestamps: true,
         indexes: [
           { fields: ["profileId"] },
-        { unique: true, fields: ["profileId", "name"] }
-      ],
+          { unique: true, fields: ["profileId", "name"] }
+        ],
       }
     );
 

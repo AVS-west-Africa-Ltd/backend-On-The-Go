@@ -18,6 +18,7 @@ export const AmenityCategory = {
   COFFEE: "coffee",
   FOOD: "food",
   EVENT_HALL: "event_hall",
+  GYM: "gym",
 } as const;
 
 export type TAmenityCategory = (typeof AmenityCategory)[keyof typeof AmenityCategory];

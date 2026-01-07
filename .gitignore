@@ -8,6 +8,7 @@ uploads
 .env
 .env
 dist/
+package-lock.json
 serviceAccountKey.json
 
 app.js

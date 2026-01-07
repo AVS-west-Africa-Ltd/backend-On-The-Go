@@ -1,7 +1,7 @@
 import { Transaction } from "sequelize";
 import * as jwtUtil from "../utils/jwtUtil";
 import db from "../models";
-import { ICreateProfilePayload, ICreateProfileResponse } from "./interfaces/profile.interface";
+import { ICreateProfilePayload, ICreateProfileResponse } from "../interfaces/profile.interface";
 import { ProfileData } from "../dtos/profile.dto";
 import { Branch } from "../models/Branch";
 import { ProfileType } from "../models/types/profile.types";
@@ -240,14 +240,14 @@ export class ProfileService {
             }
 
             if (parsedAmenities.length > 0) {
-                const rows = parsedAmenities.map((name: string) => ({
+                const rows = parsedAmenities.map((id: string) => ({
                     userId,
                     businessId: profileId,
                     branchId,
-                    name
+                    amenityId: id
                 }));
 
-                await Amenity.bulkCreate(rows, {
+                await BranchAmenity.bulkCreate(rows, {
                     updateOnDuplicate: ["updatedAt"],
                     transaction: t
                 });

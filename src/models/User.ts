@@ -8,6 +8,7 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
+import { Profile } from "./Profile";
 
 // If you want to separate types, put this in types/user.types.ts
 // otherwise, InferAttributes<User> handles it automatically.
@@ -32,8 +33,7 @@ export class User extends Model<
   InferAttributes<User>,
   InferCreationAttributes<User>
 > implements UserAttributes {
-  // Use CreationOptional for fields that have default values, auto-increment, or are nullable
-  // declare id: CreationOptional<number>;
+  declare id: CreationOptional<number>;
   declare firstName: string;
   declare lastName: string;
   declare email: string;
@@ -45,12 +45,12 @@ export class User extends Model<
   declare verificationCode: CreationOptional<string | null>;
   declare verificationExpires: CreationOptional<Date | null>;
   declare isVerified: CreationOptional<boolean>;
-  
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare profiles?: NonAttribute<any[]>; // Replace 'any[]' with 'Profile[]' once Profile is imported/typed
+  declare profiles?: NonAttribute<Profile[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.Profile) {
@@ -65,11 +65,11 @@ export class User extends Model<
   static initModel(sequelize: Sequelize): ModelStatic<User> {
     User.init(
       {
-        // id: {
-        //   type: DataTypes.INTEGER,
-        //   autoIncrement: true,
-        //   primaryKey: true,
-        // },
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+        },
         firstName: {
           type: DataTypes.STRING,
           allowNull: false,
@@ -135,7 +135,7 @@ export class User extends Model<
         timestamps: true,
         indexes: [
           { unique: true, fields: ["email"] },
-          { unique: true, fields: ["phone_number"] }, 
+          { unique: true, fields: ["phone_number"] },
         ],
       }
     );

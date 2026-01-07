@@ -10,6 +10,7 @@ import orderRoutes from "./order.routes";
 import webhookRoutes from "./webhook.routes";
 import transactionRoutes from "./transaction.routes";
 import bookmarkRoutes from "./bookmark.routes";
+import adminRoutes from "./admin.routes";
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.use("/amenities", amenitiesRoutes);
 router.use("/orders", orderRoutes);
 router.use("/transactions", transactionRoutes);
 router.use("/bookmarks", bookmarkRoutes);
+router.use("/admins", adminRoutes);
 
 
 export default router;

@@ -210,7 +210,7 @@ export const leaveCommunity = async (req: Request, res: Response) => {
     const profileId = req.profile!.id;
     const { communityId } = req.body;
 
-    const result = await AppService.leaveCommunity(communityId, profileId);
+    const result = await AppService.leaveCommunity(parseInt(communityId, 10), profileId);
 
     return res.status(200).json(result);
   } catch (error: any) {

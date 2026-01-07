@@ -17,6 +17,7 @@ import { Post } from "./Post";
 import { Social } from "./Social";
 import { Media } from "./Media";
 import { Insight } from "./Insight";
+import { Admin } from "./Admin";
 import { Bookmark } from "./Bookmark";
 import { TBusinessCategory, TProfileType } from "./types/profile.types";
 
@@ -65,6 +66,7 @@ export class Profile extends Model<
   declare socials?: NonAttribute<Social[]>;
   declare media?: NonAttribute<Media[]>;
   declare insights?: NonAttribute<Insight[]>;
+  declare admins?: NonAttribute<Admin[]>;
   declare bookmarks?: NonAttribute<Bookmark[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
@@ -128,7 +130,14 @@ export class Profile extends Model<
       Profile.hasMany(models.Insight, {
         foreignKey: "profileId",
         as: "insights",
-      })
+      });
+    }
+    if (models.Admin) {
+      Profile.hasMany(models.Admin, {
+        foreignKey: "profileId",
+        as: "admins",
+        onDelete: "CASCADE",
+      });
     }
     if (models.Bookmark) {
       Profile.hasMany(models.Bookmark, {

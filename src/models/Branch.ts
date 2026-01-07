@@ -20,6 +20,7 @@ import { Order } from "./Order";
 import { Post } from "./Post";
 import { Media } from "./Media";
 import { NetworkRouter } from "./NetworkRouter";
+import { Admin } from "./Admin";
 
 
 
@@ -56,6 +57,7 @@ export class Branch extends Model<
   declare posts?: NonAttribute<Post[]>;
   declare media?: NonAttribute<Media[]>;
   declare networkRouter?: NonAttribute<NetworkRouter>;
+  declare admins?: NonAttribute<Admin[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.Profile) {
@@ -126,6 +128,13 @@ export class Branch extends Model<
       Branch.hasOne(models.NetworkRouter, {
         foreignKey: "branchId",
         as: "networkRouter",
+        onDelete: "CASCADE",
+      });
+    }
+    if (models.Admin) {
+      Branch.hasMany(models.Admin, {
+        foreignKey: "branchId",
+        as: "admins",
         onDelete: "CASCADE",
       });
     }

@@ -3,7 +3,7 @@ import Joi from "joi";
 export const createPostSchema = Joi.object({
     body: Joi.string().required(),
     postType: Joi.string().valid("normal", "review").default("normal"),
-    target: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
+    target: Joi.number().required(),
     amenities: Joi.alternatives().try(Joi.string(), Joi.object()).optional(),
     branchId: Joi.number().optional(),
 });
@@ -25,13 +25,13 @@ export const searchBusinessesSchema = Joi.object({
 });
 
 export const makeCommentSchema = Joi.object({
-    postId: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
+    postId: Joi.number().required(),
     body: Joi.string().required(),
-    parentId: Joi.alternatives().try(Joi.string(), Joi.number()).optional().allow(null),
+    parentId: Joi.number().optional().allow(null),
 });
 
 export const toggleReactionSchema = Joi.object({
-    targetId: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
+    targetId: Joi.number().required(),
     targetType: Joi.string().valid("post", "comment").required(),
     type: Joi.string().valid("like", "dislike", "love").required(),
 });
@@ -47,11 +47,11 @@ export const createChatSchema = Joi.object({
 });
 
 export const joinCommunitySchema = Joi.object({
-    communityId: Joi.string().uuid().required(),
+    communityId: Joi.number().required(),
 });
 
 export const leaveCommunitySchema = Joi.object({
-    communityId: Joi.string().uuid().required(),
+    communityId: Joi.number().required(),
 });
 
 export const fetchCommunitiesSchema = Joi.object({

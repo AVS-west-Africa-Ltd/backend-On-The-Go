@@ -1,5 +1,6 @@
 import "express";
 import { TProfileType } from "../models/types/profile.types";
+import { AdminAttributes } from "../models/types/admin.types";
 
 
 declare global {
@@ -8,11 +9,12 @@ declare global {
       user: number;
       profile: { id: number; type: TProfileType } | null; // Replace 'any' with TProfileType
       branch?: number;
+      admin?: AdminAttributes;
     }
 
     namespace Multer {
       interface File {
-        location?: string; 
+        location?: string;
         key?: string;
         bucket?: string;
         etag?: string;
@@ -23,4 +25,4 @@ declare global {
   }
 }
 
-export {};
+export { };

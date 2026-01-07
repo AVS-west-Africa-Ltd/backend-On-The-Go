@@ -342,7 +342,6 @@ export class ProductService {
         }
     }
 
-    // for users
     static async filterBranchProducts(params: IFilterBranchProductsParams): Promise<IFilterBranchProductsResponse> {
 
         const { branchId, amenityId, cursor, limit = 10, featured = false } = params;
@@ -516,6 +515,5 @@ export class ProductService {
             nextCursor,
         };
     }
-
 
 }

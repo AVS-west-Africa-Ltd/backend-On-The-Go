@@ -20,6 +20,8 @@ import { TAllowedSocialPlatforms } from "../models/types/socials.types";
 import { User } from "../models/User";
 import { Post } from "../models/Post";
 import { ProfileVisit } from "../models/ProfileVisit";
+import { Admin } from "../models/Admin";
+import { AdminRole, AdminPermission } from "../models/types/admin.types";
 
 const { sequelize } = db;
 
@@ -99,6 +101,21 @@ export class ProfileService {
                     { transaction: t }
                 );
                 branchId = createdBranch.id;
+
+                const user = await User.findByPk(userId, { transaction: t });
+                if (!user) {
+                    throw new Error("User not found.");
+                }
+
+                await Admin.create({
+                    profileId: profile.id,
+                    branchId: createdBranch.id,
+                    role: AdminRole.SUPER_ADMIN,
+                    name: `${user.firstName} ${user.lastName}`,
+                    email: user.email,
+                    password: user.password,
+                    permissions: Object.values(AdminPermission)
+                }, { transaction: t });
             }
 
             await t.commit();

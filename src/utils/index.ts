@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { TProfileType } from "../models/types/profile.types";
+import { AdminAttributes } from "../models/types/admin.types";
 
 export interface TokenPayload {
   user: number;
@@ -8,6 +9,7 @@ export interface TokenPayload {
     type: TProfileType;
   } | null;
   branch: number | null;
+  admin?: AdminAttributes;
 }
 
 // declare global {

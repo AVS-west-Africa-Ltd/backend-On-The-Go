@@ -23,6 +23,7 @@ import { AppError } from "../utils/errors";
 const { sequelize } = db;
 
 export class AppService {
+
     static async createPost(
         payload: ICreatePostPayload,
         userId: number,
@@ -651,7 +652,7 @@ export class AppService {
         }
     }
 
-    static async leaveCommunity(communityId: string, profileId: number) {
+    static async leaveCommunity(communityId: number, profileId: number) {
         const transaction = await sequelize.transaction();
         try {
             const member = await Member.findOne({

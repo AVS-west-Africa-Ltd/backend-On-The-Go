@@ -4,6 +4,19 @@ const router = express.Router();
 import { authProfile } from "../middlewares/authProfile";
 import { fetchPosts, searchBusinesses, makeComment, toggleReaction, followProfile, createChat, fetchChats, createPost, getBranchForUser } from "../controllers/AppController";
 import { upload } from "../middlewares/upload";
+import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
+import {
+    createPostSchema,
+    fetchPostsSchema,
+    searchBusinessesSchema,
+    makeCommentSchema,
+    toggleReactionSchema,
+    followProfileSchema,
+    createChatSchema,
+    joinCommunitySchema,
+    leaveCommunitySchema,
+    fetchCommunitiesSchema
+} from "../validators/app.validator";
 
 import { validateBody } from "../middlewares/validateMiddleware";
 import { createPostSchema } from "../validators/post.validator";

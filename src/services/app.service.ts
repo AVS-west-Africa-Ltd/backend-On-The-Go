@@ -11,6 +11,7 @@ import { Comment } from "../models/Comment";
 import { Reaction } from "../models/Reaction";
 import { Friend } from "../models/Friend";
 import { Media } from "../models/Media";
+import { ProfileVisit } from "../models/ProfileVisit";
 import { MemberRole, MemberType } from "../models/types/member.types";
 import { PostTargetType, PostType } from "../models/types/post.types";
 import { BranchAmenity } from "../models/BranchAmenity";
@@ -320,6 +321,13 @@ export class AppService {
 
         if (!branch) {
             throw new Error("Business not found");
+        }
+
+        if (branch && branch.profile) {
+            await ProfileVisit.create({
+                profileId: branch.profile.id,
+                userId: null,
+            });
         }
 
         return branch;
@@ -641,5 +649,65 @@ export class AppService {
             await transaction.rollback();
             throw error;
         }
+    }
+
+    static async leaveCommunity(communityId: string, profileId: number) {
+        const transaction = await sequelize.transaction();
+        try {
+            const member = await Member.findOne({
+                where: {
+                    targetId: communityId,
+                    profileId,
+                    memberType: "community"
+                },
+                transaction
+            });
+
+            if (!member) {
+                throw new Error("You are not a member of this community");
+            }
+
+            await member.destroy({ transaction });
+
+            await transaction.commit();
+            return { message: "Successfully left the community" };
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+
+    static async fetchCommunities(query: any) {
+        const { limit = "20", offset = "0", search = "" } = query;
+
+        const whereClause: any = {};
+
+        if (search) {
+            whereClause[Op.or] = [
+                { name: { [Op.like]: `%${search}%` } },
+                { description: { [Op.like]: `%${search}%` } },
+            ];
+        }
+
+        const { rows: communities, count } = await Community.findAndCountAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Profile,
+                    as: "profile",
+                    attributes: ["id", "userName", "picture"],
+                },
+            ],
+            limit: Number(limit),
+            offset: Number(offset),
+            order: [["createdAt", "DESC"]],
+        });
+
+        return {
+            total: count,
+            communities,
+            page: Math.floor(Number(offset) / Number(limit)) + 1,
+            totalPages: Math.ceil(count / Number(limit)),
+        };
     }
 }

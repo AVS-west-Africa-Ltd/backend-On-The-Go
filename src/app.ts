@@ -11,6 +11,7 @@ import admin from "firebase-admin";
 import db from "./models";
 import { connectDB } from "./config/database";
 import router from "./routes";
+import { initInsightCron } from "./cron/insight.cron";
 import webhookRoutes from "./routes/webhook.routes";
 import { seedAmenities } from "./scripts/seedAmenities";
 import { registerWebhookListeners } from "./subscribers/webhook.subscriber";
@@ -115,6 +116,7 @@ async function startServer() {
 
     server.listen(PORT, HOST, () => {
       console.log(`Server running on http://localhost:${PORT}, PID: ${process.pid}`);
+      initInsightCron();
     });
   } catch (err) {
     console.error("Unable to connect to the database:", err);

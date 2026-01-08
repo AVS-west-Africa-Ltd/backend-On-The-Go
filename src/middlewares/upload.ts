@@ -3,6 +3,8 @@ import path from "path";
 import AWS3 from "../config/aws-s3";
 import multerS3 from "multer-s3";
 import { Request } from "express";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
@@ -13,7 +15,6 @@ const ALLOWED_FILE_TYPES: Record<string, string> = {
   "image/gif": "gif",
   "video/mp4": "mp4",
   "video/quicktime": "mov",
-  // "video/quicktime": "qt",
   "application/pdf": "pdf",
 };
 
@@ -35,8 +36,27 @@ const fileFilter = (
   cb(null, true);
 };
 
-export const upload = multer({
-  storage: multerS3({
+
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const getStorage = () => {
+  if (process.env.UPLOAD_PROVIDER === 'cloudinary') {
+    return new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: 'uploads',
+        public_id: (req: Request, file: Express.Multer.File) => `${Date.now()}-${file.originalname.split('.')[0]}`,
+      } as any, // Type assertion as needed depending on multer-storage-cloudinary version
+    });
+  }
+
+  return multerS3({
     s3: AWS3,
     bucket: process.env.AWS_BUCKET_NAME as string,
     contentType: multerS3.AUTO_CONTENT_TYPE,
@@ -46,7 +66,12 @@ export const upload = multer({
     key: (req, file, cb) => {
       cb(null, `${Date.now()}-${file.originalname}`);
     },
-  }),
+  });
+};
+
+
+export const upload = multer({
+  storage: getStorage(),
   limits: {
     fileSize: MAX_FILE_SIZE,
     files: 5,

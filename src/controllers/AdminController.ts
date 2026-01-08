@@ -2,6 +2,15 @@ import { Request, Response } from "express";
 import { AdminService } from "../services/admin.service";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";
 
+export const login = async (req: Request, res: Response) => {
+    try {
+        const { admin, token } = await AdminService.login(req.body);
+        return successHandler(res, "Admin logged in successfully", 200, { admin, token });
+    } catch (error: any) {
+        return errorHandler(res, error.message || "Login failed", 401);
+    }
+};
+
 export const createAdmin = async (req: Request, res: Response) => {
     try {
         const profileId = req.profile!.id;

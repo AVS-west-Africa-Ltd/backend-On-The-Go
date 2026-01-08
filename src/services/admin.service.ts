@@ -1,8 +1,40 @@
 import { Admin } from "../models/Admin";
 import { AdminAttributes, AdminRole, AdminPermission } from "../models/types/admin.types";
 import bcrypt from "bcryptjs";
+import { generateToken } from "../utils/jwtUtil";
 
 export class AdminService {
+    static async login(payload: any) {
+        const { email, password } = payload;
+
+        const admin = await Admin.findOne({ where: { email } });
+        if (!admin) {
+            throw new Error("Invalid email or password");
+        }
+
+        const isPasswordValid = bcrypt.compareSync(password, admin.password);
+        if (!isPasswordValid) {
+            throw new Error("Invalid email or password");
+        }
+
+        const token = generateToken({
+            admin: {
+                id: admin.id,
+                profileId: admin.profileId,
+                branchId: admin.branchId,
+                role: admin.role,
+                permissions: admin.permissions || [],
+                name: admin.name,
+                email: admin.email
+            }
+        } as any);
+
+        const adminPlain = admin.get({ plain: true }) as any;
+        delete adminPlain.password;
+
+        return { admin: adminPlain, token };
+    }
+
     static async createAdmin(payload: any, profileId: number) {
         const { name, email, password, role, branchId, permissions } = payload;
 

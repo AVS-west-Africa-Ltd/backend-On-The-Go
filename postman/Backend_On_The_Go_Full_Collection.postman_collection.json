@@ -1,7 +1,8 @@
 {
     "info": {
-        "name": "Backend On-The-Go API",
-        "description": "Complete API collection for the Backend On-The-Go project, including Auth, Profile, App, Community, Branch, Product, Order, and Admin modules.",
+        "_postman_id": "b8b39507-4248-4d8e-a9b9-f79bb02a0f6b",
+        "name": "Backend On-The-Go Full Collection",
+        "description": "Comprehensive API collection for the Backend On-The-Go project, updated with correct payloads and all endpoints.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -29,15 +30,15 @@
                     "name": "Register",
                     "request": {
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"1234567890\"\n}"
+                            "raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"Password123!\",\n    \"phoneNumber\": \"08012345678\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/auth/register"
                     }
@@ -46,15 +47,15 @@
                     "name": "Login",
                     "request": {
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                            "raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"Password123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/auth/login"
                     }
@@ -63,15 +64,15 @@
                     "name": "Verify Email",
                     "request": {
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"token\": \"123456\"\n}"
+                            "raw": "{\n    \"token\": \"123456\",\n    \"email\": \"john.doe@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/auth/verify-email"
                     }
@@ -80,15 +81,15 @@
                     "name": "Send Verification Code",
                     "request": {
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"email\": \"john@example.com\"\n}"
+                            "raw": "{\n    \"email\": \"john.doe@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/auth/send-code"
                     }
@@ -97,15 +98,15 @@
                     "name": "Reset Password",
                     "request": {
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\",\n  \"password\": \"newPassword123\"\n}"
+                            "raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"code\": \"123456\",\n    \"password\": \"NewPassword123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/auth/reset-password"
                     }
@@ -114,15 +115,15 @@
                     "name": "Complete Invite",
                     "request": {
                         "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
+                        "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"token\": \"inviteToken\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"password\": \"password123\"\n}"
+                            "raw": "{\n    \"token\": \"invite_token_here\",\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Staff\",\n    \"password\": \"StaffPassword123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/auth/complete-invite"
                     }
@@ -146,7 +147,7 @@
                     }
                 },
                 {
-                    "name": "Create Profile",
+                    "name": "Create Profile (Personal)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -160,17 +161,103 @@
                             "formdata": [
                                 {
                                     "key": "picture",
-                                    "type": "file",
-                                    "src": []
+                                    "type": "file"
                                 },
                                 {
-                                    "key": "username",
+                                    "key": "userName",
                                     "value": "johndoe",
                                     "type": "text"
                                 },
                                 {
+                                    "key": "profileType",
+                                    "value": "personal",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "profession",
+                                    "value": "Software Engineer",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "skills",
+                                    "value": "Node.js",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "skills",
+                                    "value": "React",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "gender",
+                                    "value": "male",
+                                    "type": "text"
+                                },
+                                {
                                     "key": "bio",
-                                    "value": "Hello world",
+                                    "value": "Tech enthusiast",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/profile/create"
+                    }
+                },
+                {
+                    "name": "Create Profile (Business)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "picture",
+                                    "type": "file"
+                                },
+                                {
+                                    "key": "userName",
+                                    "value": "TechCorp",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "profileType",
+                                    "value": "business",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "streetAddress",
+                                    "value": "123 Tech Street",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "city",
+                                    "value": "Lagos",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "state",
+                                    "value": "Lagos",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "country",
+                                    "value": "Nigeria",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "cacNo",
+                                    "value": "RC123456",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "businessCategory",
+                                    "value": "sme",
                                     "type": "text"
                                 }
                             ]
@@ -186,15 +273,16 @@
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"additionalInfo\": \"Data\"\n}"
+                            "raw": "{\n    \"additionalInfo\": \"Some extra data\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/profile/add-more-information"
                     }
@@ -214,18 +302,11 @@
                             "formdata": [
                                 {
                                     "key": "photos",
-                                    "type": "file",
-                                    "src": []
+                                    "type": "file"
                                 },
                                 {
-                                    "key": "targetType",
-                                    "value": "profile",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "targetId",
-                                    "value": "1",
-                                    "type": "text"
+                                    "key": "photos",
+                                    "type": "file"
                                 }
                             ]
                         },
@@ -246,18 +327,84 @@
                             "mode": "formdata",
                             "formdata": [
                                 {
-                                    "key": "picture",
-                                    "type": "file",
-                                    "src": []
+                                    "key": "bio",
+                                    "value": "Updated bio information",
+                                    "type": "text"
                                 },
                                 {
-                                    "key": "bio",
-                                    "value": "Updated bio",
+                                    "key": "website",
+                                    "value": "https://example.com",
                                     "type": "text"
                                 }
                             ]
                         },
                         "url": "{{baseUrl}}/profile/update"
+                    }
+                },
+                {
+                    "name": "Add Interests & Places",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"interests\": [\"coding\", \"travel\"],\n    \"placesVisited\": [\"Paris\", \"Dubai\"]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/profile/interests-places"
+                    }
+                },
+                {
+                    "name": "Upload Document",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "document",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/profile/upload-document"
+                    }
+                },
+                {
+                    "name": "Add Opening Hours",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"working_hours\": {\n        \"monday\": { \"open\": \"09:00\", \"close\": \"17:00\" },\n        \"tuesday\": { \"open\": \"09:00\", \"close\": \"17:00\" }\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/profile/opening-hours"
                     }
                 },
                 {
@@ -268,17 +415,40 @@
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"socials\": {\n    \"instagram\": \"@john\",\n    \"twitter\": \"@john\"\n  }\n}"
+                            "raw": "{\n    \"instagram\": \"@handle\",\n    \"twitter\": \"@handle\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/profile/socials"
+                    }
+                },
+                {
+                    "name": "Add Wifi Details",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"ssid\": \"GuestWifi\",\n    \"password\": \"promo123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/profile/wifi"
                     }
                 }
             ]
@@ -287,7 +457,7 @@
             "name": "App",
             "item": [
                 {
-                    "name": "Create Post",
+                    "name": "Create Post (Normal)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -301,12 +471,11 @@
                             "formdata": [
                                 {
                                     "key": "media",
-                                    "type": "file",
-                                    "src": []
+                                    "type": "file"
                                 },
                                 {
                                     "key": "body",
-                                    "value": "This is a post",
+                                    "value": "This is a new post!",
                                     "type": "text"
                                 },
                                 {
@@ -335,11 +504,11 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/app/fetch-posts?limit=20&offset=0Type",
+                            "raw": "{{baseUrl}}/app/fetch-posts?limit=10&offset=0",
                             "query": [
                                 {
                                     "key": "limit",
-                                    "value": "20"
+                                    "value": "10"
                                 },
                                 {
                                     "key": "offset",
@@ -371,6 +540,94 @@
                     }
                 },
                 {
+                    "name": "Make Comment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"postId\": 1,\n    \"body\": \"Great post!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/app/make-comment"
+                    }
+                },
+                {
+                    "name": "Toggle Reaction",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"targetId\": 1,\n    \"targetType\": \"post\",\n    \"type\": \"like\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/app/toggle-reaction"
+                    }
+                },
+                {
+                    "name": "Follow Profile",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"friendId\": 2\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/app/follow-profile"
+                    }
+                },
+                {
+                    "name": "Create Chat",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"type\": \"private\",\n    \"profileIds\": [2]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/app/create-chat"
+                    }
+                },
+                {
                     "name": "Fetch Chats",
                     "request": {
                         "method": "GET",
@@ -382,14 +639,9 @@
                         ],
                         "url": "{{baseUrl}}/app/fetch-chats"
                     }
-                }
-            ]
-        },
-        {
-            "name": "Community",
-            "item": [
+                },
                 {
-                    "name": "Create Community",
+                    "name": "Join Community",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -399,31 +651,37 @@
                             }
                         ],
                         "body": {
-                            "mode": "formdata",
-                            "formdata": [
-                                {
-                                    "key": "photo",
-                                    "type": "file",
-                                    "src": []
-                                },
-                                {
-                                    "key": "name",
-                                    "value": "Tech Enthusiasts",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "description",
-                                    "value": "A community for tech lovers",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "type",
-                                    "value": "public",
-                                    "type": "text"
+                            "mode": "raw",
+                            "raw": "{\n    \"communityId\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
                                 }
-                            ]
+                            }
                         },
-                        "url": "{{baseUrl}}/community/create"
+                        "url": "{{baseUrl}}/app/join-community"
+                    }
+                },
+                {
+                    "name": "Leave Community",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"communityId\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/app/leave-community"
                     }
                 },
                 {
@@ -436,7 +694,7 @@
                                 "value": "Bearer {{token}}"
                             }
                         ],
-                        "url": "{{baseUrl}}/community"
+                        "url": "{{baseUrl}}/app/fetch-communities"
                     }
                 }
             ]
@@ -452,15 +710,16 @@
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"Main Branch\",\n  \"description\": \"Headquarters\",\n  \"streetAddress\": \"123 Main St\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"city\": \"Ikeja\",\n  \"working_hours\": {\n    \"monday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"tuesday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"wednesday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"thursday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"friday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"saturday\": {\"open\": \"10:00\", \"close\": \"14:00\"},\n    \"sunday\": {\"open\": null, \"close\": null}\n  }\n}"
+                            "raw": "{\n    \"name\": \"Main Branch\",\n    \"description\": \"Headquarters\",\n    \"streetAddress\": \"123 Main St\",\n    \"state\": \"Lagos\",\n    \"city\": \"Ikeja\",\n    \"country\": \"Nigeria\",\n    \"isHQ\": true,\n    \"working_hours\": {\n        \"monday\": { \"open\": \"09:00\", \"close\": \"17:00\" },\n        \"tuesday\": { \"open\": \"09:00\", \"close\": \"17:00\" },\n        \"wednesday\": { \"open\": \"09:00\", \"close\": \"17:00\" },\n        \"thursday\": { \"open\": \"09:00\", \"close\": \"17:00\" },\n        \"friday\": { \"open\": \"09:00\", \"close\": \"17:00\" },\n        \"saturday\": { \"open\": \"10:00\", \"close\": \"14:00\" },\n        \"sunday\": { \"open\": null, \"close\": null }\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/branches/create"
                     }
@@ -476,6 +735,41 @@
                             }
                         ],
                         "url": "{{baseUrl}}/branches"
+                    }
+                },
+                {
+                    "name": "Get Branch By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/branches/1"
+                    }
+                },
+                {
+                    "name": "Invite Staff",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"Staff Member\",\n    \"email\": \"staff@example.com\",\n    \"role\": \"admin\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/branches/1/invite"
                     }
                 }
             ]
@@ -498,27 +792,31 @@
                             "formdata": [
                                 {
                                     "key": "media",
-                                    "type": "file",
-                                    "src": []
+                                    "type": "file"
                                 },
                                 {
                                     "key": "name",
-                                    "value": "Cappuccino",
+                                    "value": "Latte",
                                     "type": "text"
                                 },
                                 {
                                     "key": "description",
-                                    "value": "Hot coffee",
+                                    "value": "Creamy coffee",
                                     "type": "text"
                                 },
                                 {
                                     "key": "price",
-                                    "value": "1500",
+                                    "value": "1200",
                                     "type": "text"
                                 },
                                 {
                                     "key": "branchAmenityId",
                                     "value": "uuid-here",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "available",
                                     "type": "text"
                                 }
                             ]
@@ -527,22 +825,32 @@
                     }
                 },
                 {
-                    "name": "Get Branch Products",
+                    "name": "Update Product",
                     "request": {
-                        "method": "GET",
+                        "method": "PATCH",
                         "header": [
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
                             }
                         ],
-                        "url": "{{baseUrl}}/products"
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "price",
+                                    "value": "1300",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/products/1"
                     }
                 }
             ]
         },
         {
-            "name": "Orders",
+            "name": "Order",
             "item": [
                 {
                     "name": "Create Order",
@@ -552,21 +860,65 @@
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"businessId\": 1,\n  \"branchId\": 1,\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 2 }\n  ]\n}"
+                            "raw": "{\n    \"businessId\": 1,\n    \"branchId\": 1,\n    \"items\": [\n        { \"productId\": 1, \"quantity\": 2 }\n    ]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/orders"
                     }
                 },
                 {
-                    "name": "Get My Orders",
+                    "name": "Checkout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": \"uuid-string\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/orders/checkout"
+                    }
+                },
+                {
+                    "name": "Verify Payment",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/orders/verify?reference=paystack_ref",
+                            "query": [
+                                {
+                                    "key": "reference",
+                                    "value": "paystack_ref"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Orders",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -576,6 +928,70 @@
                             }
                         ],
                         "url": "{{baseUrl}}/orders/user"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Community (Management)",
+            "item": [
+                {
+                    "name": "Create Community",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "photo",
+                                    "type": "file"
+                                },
+                                {
+                                    "key": "name",
+                                    "value": "Developers",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Code talk",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "public",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/community/create"
+                    }
+                },
+                {
+                    "name": "Add Members",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"communityId\": \"uuid\",\n    \"members\": [2, 3]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/community/add-members"
                     }
                 }
             ]
@@ -591,15 +1007,16 @@
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"postId\": 1\n}"
+                            "raw": "{\n    \"postId\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/bookmarks"
                     }
@@ -620,6 +1037,45 @@
             ]
         },
         {
+            "name": "Transactions",
+            "item": [
+                {
+                    "name": "Get Transactions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/transactions?limit=10",
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Transaction By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/transactions/uuid-here"
+                    }
+                }
+            ]
+        },
+        {
             "name": "Amenities",
             "item": [
                 {
@@ -634,6 +1090,28 @@
                         ],
                         "url": "{{baseUrl}}/amenities/global"
                     }
+                },
+                {
+                    "name": "Update Branch Amenities",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"branchId\": 1,\n    \"amenities\": [\"uuid1\", \"uuid2\"]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/amenities/branch"
+                    }
                 }
             ]
         },
@@ -641,17 +1119,20 @@
             "name": "Admin",
             "item": [
                 {
-                    "name": "Get All Permissions",
+                    "name": "Admin Login",
                     "request": {
-                        "method": "GET",
-                        "url": "{{baseUrl}}/admins/permissions"
-                    }
-                },
-                {
-                    "name": "Get All Roles",
-                    "request": {
-                        "method": "GET",
-                        "url": "{{baseUrl}}/admins/roles"
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"adminPass\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/admins/login"
                     }
                 },
                 {
@@ -662,17 +1143,31 @@
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{adminToken}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
                             }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@test.com\",\n  \"password\": \"password\",\n  \"role\": \"admin\",\n  \"branchId\": 1\n}"
+                            "raw": "{\n    \"name\": \"New Admin\",\n    \"email\": \"new.admin@example.com\",\n    \"password\": \"password123\",\n    \"role\": \"admin\",\n    \"branchId\": 1\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
                         },
                         "url": "{{baseUrl}}/admins/create"
+                    }
+                },
+                {
+                    "name": "Get Admins",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admins"
                     }
                 }
             ]

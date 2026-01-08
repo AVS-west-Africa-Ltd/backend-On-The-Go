@@ -1,6 +1,11 @@
 import Joi from "joi";
 import { AdminRole, AdminPermission } from "../models/types/admin.types";
 
+export const loginAdminSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+});
+
 export const createAdminSchema = Joi.object({
     name: Joi.string().required(),
     email: Joi.string().email().required(),

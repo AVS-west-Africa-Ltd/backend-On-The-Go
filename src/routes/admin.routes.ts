@@ -8,7 +8,8 @@ import {
     updateRole,
     updatePermissions,
     getAllPermissions,
-    getAllRoles
+    getAllRoles,
+    login
 } from "../controllers/AdminController";
 import { authAdmin, authorizeAdmin } from "../middlewares/authAdmin";
 import { authProfile } from "../middlewares/authProfile";
@@ -17,7 +18,8 @@ import {
     createAdminSchema,
     updateAdminSchema,
     updateRoleSchema,
-    updatePermissionsSchema
+    updatePermissionsSchema,
+    loginAdminSchema
 } from "../validators/admin.validator";
 import { AdminPermission } from "../models/types/admin.types";
 
@@ -26,10 +28,10 @@ const router = express.Router();
 // Public route to get all available permissions (for UI dropdowns, etc.)
 router.get("/permissions", getAllPermissions);
 router.get("/roles", getAllRoles);
+router.post("/login", validateBody(loginAdminSchema), login);
 
 // All admin management routes require standard profile auth first, 
 // then specific admin auth, and then granular permission checks.
-router.use(authProfile);
 router.use(authAdmin);
 
 router.post(

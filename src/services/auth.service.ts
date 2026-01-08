@@ -6,8 +6,12 @@ import { sendEmail } from "../services/email.service";
 import { verificationCodeEmail } from "../templates/verificationEmail";
 import * as jwtUtil from "../utils/jwtUtil";
 import { BranchStaff } from "../models/BranchStaff";
+import { ProfileType } from "../models/types/profile.types";
+import { User } from "../models/User";
+import { Branch } from "../models/Branch";
+import { Profile } from "../models/Profile";
 
-const { User, Profile, Referral, Branch, sequelize } = db;
+const { sequelize } = db;
 
 export class AuthService {
     static async register(data: any) {
@@ -64,10 +68,10 @@ export class AuthService {
                         },
                         { transaction: t }
                     );
-                    await Referral.create(
-                        { referrerId: referrerUser.id, refereeId: user.id },
-                        { transaction: t }
-                    );
+                    // await Referral.create(
+                    //     { referrerId: referrerUser.id, refereeId: user.id },
+                    //     { transaction: t }
+                    // );
                 }
             }
 
@@ -85,10 +89,7 @@ export class AuthService {
             await sendEmail(options);
             await t.commit();
 
-            const userPlain = user.toJSON();
-            delete userPlain.password;
-            delete userPlain.verificationCode;
-
+            const { password: _password, verificationCode: _verificationCode, ...userPlain } = user.toJSON();
             return userPlain;
 
         } catch (error) {
@@ -242,21 +243,30 @@ export class AuthService {
     static async completeInvite(data: any) {
         const t = await sequelize.transaction();
         try {
-            const { token, password, firstName, lastName } = data;
+            const { token, password, firstName, lastName, phoneNumber } = data;
 
             const decoded: any = jwtUtil.verifyToken(token);
             if (!decoded || !decoded.invite) {
-                throw new Error("Invalid or expired invite token");
+                throw new Error("Invalid invite");
             }
 
             const { branch: branchId, invite: inviteInfo } = decoded;
             const { email, role, id } = inviteInfo;
 
-            // 1. Check if user already exists
+            const staff = await BranchStaff.findOne({
+                where: { id: inviteInfo.id, email },
+                transaction: t
+            });
+
+            if (!staff) {
+                throw new Error("Invite record not found");
+            }
+            if (staff.userId) throw new Error("Invite already used");
+            if (staff.branchId !== branchId) throw new Error("Invite mismatch");
+
             let user = await User.findOne({ where: { email }, transaction: t });
 
             if (user) {
-                // Verify their existing password
                 const isPasswordValid = await bcrypt.compare(password, user.password);
                 if (!isPasswordValid) {
                     throw new Error("Invalid password. Please use your existing account password.");
@@ -265,14 +275,12 @@ export class AuthService {
                 // Check if they already have a profile
                 let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
 
-                // Update the BranchStaff record
-                const staff = await db.BranchStaff.findOne({
-                    where: { id: inviteInfo.id, email },
-                    transaction: t
-                });
-
-                if (!staff) {
-                    throw new Error("Invite record not found");
+                if (!profile) {
+                    profile = await Profile.create({
+                        userId: user.id,
+                        userName: user.email.split('@')[0] + randomCharacters(4),
+                        profileType: ProfileType.PERSONAL,
+                    }, { transaction: t });
                 }
 
                 // Check if already linked
@@ -298,12 +306,12 @@ export class AuthService {
 
             } else {
                 // New user - create account
-                const hashedPassword = bcrypt.hashSync(password, 10);
+                const hashedPassword = await bcrypt.hash(password, 10);
                 user = await User.create({
                     firstName,
                     lastName,
                     email,
-                    phone_number: '1234567890',
+                    phone_number: phoneNumber,
                     password: hashedPassword,
                     isVerified: true, // Email is verified via the invite link
                     referralCode: `OTG-${randomCharacters(6)}`,
@@ -315,22 +323,11 @@ export class AuthService {
             if (!profile) {
                 profile = await Profile.create({
                     userId: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
                     userName: user.email.split('@')[0] + randomCharacters(4),
-                    profileType: 'personal', // Default to personal, they can change or add business later
-                    isActivated: true
+                    profileType: ProfileType.PERSONAL,
                 }, { transaction: t });
             }
 
-            const staff = await BranchStaff.findOne({
-                where: { id: inviteInfo.id, email },
-                transaction: t
-            });
-
-            if (!staff) {
-                throw new Error("Invite record not found");
-            }
 
             await staff.update({
                 userId: user.id,

@@ -8,5 +8,6 @@ router.use(authProfile);
 
 router.get("/global", AmenitiesController.getAllAmenities);
 router.get("/branch/:branchId", AmenitiesController.getBranchAmenities);
-router.put("/branch", AmenitiesController.updateBranchAmenities);
+router.post("/branch", AmenitiesController.addBranchAmenities);
+router.delete("/branch", AmenitiesController.removeBranchAmenities);
 export default router;

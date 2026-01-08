@@ -44,19 +44,11 @@ export class AmenitiesService {
         }
     }
 
-    static async updateBranchAmenities(amenityIds: string[], profileId: number, branchId: number): Promise<BranchAmenity[]> {
+    static async addBranchAmenities(amenityIds: string[], profileId: number, branchId: number): Promise<BranchAmenity[]> {
         try {
             await sequelize.transaction(async (t) => {
-                // First, delete existing amenities for the branch
-                await BranchAmenity.destroy({
-                    where: {
-                        branchId,
-                        businessId: profileId,
-                    },
-                    transaction: t,
-                });
-
-                // Then, add the new amenities
+                // Fetch existing amenities to avoid duplicates if necessary, 
+                // but since we have a unique index, we can also use ignoreDuplicates
                 const branchAmenities = amenityIds.map((amenityId) => ({
                     businessId: profileId,
                     branchId,
@@ -64,7 +56,10 @@ export class AmenitiesService {
                     status: "active" as const,
                 }));
 
-                await BranchAmenity.bulkCreate(branchAmenities, { transaction: t });
+                await BranchAmenity.bulkCreate(branchAmenities, {
+                    transaction: t,
+                    ignoreDuplicates: true
+                });
             });
             return await BranchAmenity.findAll({
                 where: {
@@ -73,9 +68,23 @@ export class AmenitiesService {
                 }
             });
         } catch (error) {
-            console.error("Error when updating branch amenities:--", error);
+            console.error("Error when adding branch amenities:--", error);
+            throw new Error("Failed to add branch amenities");
+        }
+    }
 
-            throw new Error("Failed to update branch amenities");
+    static async removeBranchAmenities(amenityIds: string[], profileId: number, branchId: number): Promise<void> {
+        try {
+            await BranchAmenity.destroy({
+                where: {
+                    branchId,
+                    businessId: profileId,
+                    amenityId: amenityIds
+                }
+            });
+        } catch (error) {
+            console.error("Error when removing branch amenities:--", error);
+            throw new Error("Failed to remove branch amenities");
         }
     }
 }

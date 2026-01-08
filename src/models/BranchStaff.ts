@@ -90,7 +90,6 @@ export class BranchStaff extends Model<
           type: DataTypes.STRING,
           allowNull: false,
           validate: { isEmail: true },
-          unique: true,
         },
 
         role: {
@@ -124,7 +123,7 @@ export class BranchStaff extends Model<
         tableName: "branch_staff",
         timestamps: true,
         indexes: [
-          { fields: ["email"], unique: true },
+          { unique: true, fields: ["email", "branchId"] },
           { fields: ["branchId"] },
           { fields: ["businessId"] },
         ],

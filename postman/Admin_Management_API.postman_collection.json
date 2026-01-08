@@ -1,0 +1,465 @@
+{
+    "info": {
+        "name": "Admin Management API",
+        "description": "Complete API collection for Admin user management system. Includes endpoints for CRUD operations, role management, and permission management.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000/api",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Public Endpoints",
+            "item": [
+                {
+                    "name": "Get All Permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/permissions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                "permissions"
+                            ]
+                        },
+                        "description": "Retrieve all available admin permissions. This is a public endpoint that doesn't require authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/admins/permissions"
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"message\": \"Permissions fetched successfully\",\n  \"data\": [\n    \"manage_staff\",\n    \"manage_products\",\n    \"manage_orders\",\n    \"manage_branch\",\n    \"view_insights\",\n    \"manage_amenities\",\n    \"manage_community\"\n  ]\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get All Roles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/roles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                "roles"
+                            ]
+                        },
+                        "description": "Retrieve all available admin roles. This is a public endpoint that doesn't require authentication."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "url": {
+                                    "raw": "{{baseUrl}}/admins/roles"
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n  \"message\": \"Roles fetched successfully\",\n  \"data\": [\n    \"super_admin\",\n    \"admin\"\n  ]\n}"
+                        }
+                    ]
+                }
+            ],
+            "description": "Public endpoints that don't require authentication"
+        },
+        {
+            "name": "Admin CRUD",
+            "item": [
+                {
+                    "name": "Create Admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"role\": \"admin\",\n  \"branchId\": 1,\n  \"permissions\": [\n    \"manage_products\",\n    \"manage_orders\"\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/create",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                "create"
+                            ]
+                        },
+                        "description": "Create a new admin user. Requires SUPER_ADMIN role or MANAGE_STAFF permission."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "originalRequest": {
+                                "method": "POST",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"role\": \"admin\",\n  \"branchId\": 1,\n  \"permissions\": [\"manage_products\", \"manage_orders\"]\n}"
+                                }
+                            },
+                            "status": "Created",
+                            "code": 201,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin created successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"role\": \"admin\",\n    \"profileId\": 1,\n    \"branchId\": 1,\n    \"permissions\": [\"manage_products\", \"manage_orders\"],\n    \"createdAt\": \"2026-01-07T13:00:00.000Z\",\n    \"updatedAt\": \"2026-01-07T13:00:00.000Z\"\n  }\n}"
+                        },
+                        {
+                            "name": "Email Already Exists",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin email already exists!\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get All Admins",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admins?branchId=1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins"
+                            ],
+                            "query": [
+                                {
+                                    "key": "branchId",
+                                    "value": "1",
+                                    "description": "Optional: Filter by branch ID"
+                                }
+                            ]
+                        },
+                        "description": "Retrieve all admins for the current profile. Optionally filter by branchId."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admins fetched successfully\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Super Admin\",\n      \"email\": \"admin@example.com\",\n      \"role\": \"super_admin\",\n      \"profileId\": 1,\n      \"branchId\": 1,\n      \"permissions\": [\"manage_staff\", \"manage_products\", \"manage_orders\", \"manage_branch\", \"view_insights\", \"manage_amenities\", \"manage_community\"],\n      \"createdAt\": \"2026-01-07T12:00:00.000Z\",\n      \"updatedAt\": \"2026-01-07T12:00:00.000Z\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"John Doe\",\n      \"email\": \"john.doe@example.com\",\n      \"role\": \"admin\",\n      \"profileId\": 1,\n      \"branchId\": 1,\n      \"permissions\": [\"manage_products\", \"manage_orders\"],\n      \"createdAt\": \"2026-01-07T13:00:00.000Z\",\n      \"updatedAt\": \"2026-01-07T13:00:00.000Z\"\n    }\n  ]\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Admin By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "2",
+                                    "description": "Admin ID"
+                                }
+                            ]
+                        },
+                        "description": "Retrieve a specific admin by their ID."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin fetched successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"role\": \"admin\",\n    \"profileId\": 1,\n    \"branchId\": 1,\n    \"permissions\": [\"manage_products\", \"manage_orders\"],\n    \"createdAt\": \"2026-01-07T13:00:00.000Z\",\n    \"updatedAt\": \"2026-01-07T13:00:00.000Z\"\n  }\n}"
+                        },
+                        {
+                            "name": "Admin Not Found",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin not found!\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Admin",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"John Smith\",\n  \"email\": \"john.smith@example.com\",\n  \"password\": \"newPassword123\",\n  \"branchId\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "2",
+                                    "description": "Admin ID"
+                                }
+                            ]
+                        },
+                        "description": "Update admin details. All fields are optional."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin updated successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"John Smith\",\n    \"email\": \"john.smith@example.com\",\n    \"role\": \"admin\",\n    \"profileId\": 1,\n    \"branchId\": 2,\n    \"permissions\": [\"manage_products\", \"manage_orders\"],\n    \"createdAt\": \"2026-01-07T13:00:00.000Z\",\n    \"updatedAt\": \"2026-01-07T13:30:00.000Z\"\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Admin",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/:id",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                ":id"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "2",
+                                    "description": "Admin ID"
+                                }
+                            ]
+                        },
+                        "description": "Delete an admin user. Cannot delete SUPER_ADMIN users."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin deleted successfully\"\n}"
+                        },
+                        {
+                            "name": "Cannot Delete Super Admin",
+                            "status": "Bad Request",
+                            "code": 400,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Cannot delete a Super Admin!\"\n}"
+                        }
+                    ]
+                }
+            ],
+            "description": "CRUD operations for admin users"
+        },
+        {
+            "name": "Role & Permission Management",
+            "item": [
+                {
+                    "name": "Update Admin Role",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"super_admin\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/:id/role",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                ":id",
+                                "role"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "2",
+                                    "description": "Admin ID"
+                                }
+                            ]
+                        },
+                        "description": "Update an admin's role. Valid values: 'super_admin', 'admin'"
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin role updated successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"role\": \"super_admin\",\n    \"profileId\": 1,\n    \"branchId\": 1,\n    \"permissions\": [\"manage_products\", \"manage_orders\"],\n    \"createdAt\": \"2026-01-07T13:00:00.000Z\",\n    \"updatedAt\": \"2026-01-07T13:45:00.000Z\"\n  }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Admin Permissions",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"permissions\": [\n    \"manage_staff\",\n    \"manage_products\",\n    \"manage_orders\",\n    \"view_insights\"\n  ]\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admins/:id/permissions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admins",
+                                ":id",
+                                "permissions"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "2",
+                                    "description": "Admin ID"
+                                }
+                            ]
+                        },
+                        "description": "Update an admin's permissions. This replaces the entire permissions array."
+                    },
+                    "response": [
+                        {
+                            "name": "Success Response",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "body": "{\n  \"message\": \"Admin permissions updated successfully\",\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"role\": \"admin\",\n    \"profileId\": 1,\n    \"branchId\": 1,\n    \"permissions\": [\"manage_staff\", \"manage_products\", \"manage_orders\", \"view_insights\"],\n    \"createdAt\": \"2026-01-07T13:00:00.000Z\",\n    \"updatedAt\": \"2026-01-07T14:00:00.000Z\"\n  }\n}"
+                        }
+                    ]
+                }
+            ],
+            "description": "Endpoints for managing admin roles and permissions"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{adminToken}}",
+                "type": "string"
+            }
+        ]
+    }
+}

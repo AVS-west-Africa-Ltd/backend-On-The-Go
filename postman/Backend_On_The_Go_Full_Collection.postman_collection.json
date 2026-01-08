@@ -1,0 +1,681 @@
+{
+    "info": {
+        "name": "Backend On-The-Go API",
+        "description": "Complete API collection for the Backend On-The-Go project, including Auth, Profile, App, Community, Branch, Product, Order, and Admin modules.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000/api",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminToken",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"phoneNumber\": \"1234567890\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/register"
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/login"
+                    }
+                },
+                {
+                    "name": "Verify Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"123456\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/verify-email"
+                    }
+                },
+                {
+                    "name": "Send Verification Code",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"john@example.com\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/send-code"
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"john@example.com\",\n  \"code\": \"123456\",\n  \"password\": \"newPassword123\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/reset-password"
+                    }
+                },
+                {
+                    "name": "Complete Invite",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"inviteToken\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"password\": \"password123\"\n}"
+                        },
+                        "url": "{{baseUrl}}/auth/complete-invite"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "item": [
+                {
+                    "name": "Fetch Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/profile/fetch"
+                    }
+                },
+                {
+                    "name": "Create Profile",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "picture",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "username",
+                                    "value": "johndoe",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "bio",
+                                    "value": "Hello world",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/profile/create"
+                    }
+                },
+                {
+                    "name": "Add More Information",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"additionalInfo\": \"Data\"\n}"
+                        },
+                        "url": "{{baseUrl}}/profile/add-more-information"
+                    }
+                },
+                {
+                    "name": "Add Photos",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "photos",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "targetType",
+                                    "value": "profile",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "targetId",
+                                    "value": "1",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/profile/add-photos"
+                    }
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "picture",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "bio",
+                                    "value": "Updated bio",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/profile/update"
+                    }
+                },
+                {
+                    "name": "Add Socials",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"socials\": {\n    \"instagram\": \"@john\",\n    \"twitter\": \"@john\"\n  }\n}"
+                        },
+                        "url": "{{baseUrl}}/profile/socials"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "App",
+            "item": [
+                {
+                    "name": "Create Post",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "media",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "body",
+                                    "value": "This is a post",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "postType",
+                                    "value": "normal",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "target",
+                                    "value": "1",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/app/create-post"
+                    }
+                },
+                {
+                    "name": "Fetch Posts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/app/fetch-posts?limit=20&offset=0Type",
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                },
+                                {
+                                    "key": "offset",
+                                    "value": "0"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Businesses",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/app/fetch-businesses?search=cafe",
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "cafe"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Fetch Chats",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/app/fetch-chats"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Community",
+            "item": [
+                {
+                    "name": "Create Community",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "photo",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "name",
+                                    "value": "Tech Enthusiasts",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "A community for tech lovers",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "public",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/community/create"
+                    }
+                },
+                {
+                    "name": "Fetch Communities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/community"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Branch",
+            "item": [
+                {
+                    "name": "Create Branch",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Main Branch\",\n  \"description\": \"Headquarters\",\n  \"streetAddress\": \"123 Main St\",\n  \"state\": \"Lagos\",\n  \"country\": \"Nigeria\",\n  \"city\": \"Ikeja\",\n  \"working_hours\": {\n    \"monday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"tuesday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"wednesday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"thursday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"friday\": {\"open\": \"09:00\", \"close\": \"17:00\"},\n    \"saturday\": {\"open\": \"10:00\", \"close\": \"14:00\"},\n    \"sunday\": {\"open\": null, \"close\": null}\n  }\n}"
+                        },
+                        "url": "{{baseUrl}}/branches/create"
+                    }
+                },
+                {
+                    "name": "Get All Branches",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/branches"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Product",
+            "item": [
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "media",
+                                    "type": "file",
+                                    "src": []
+                                },
+                                {
+                                    "key": "name",
+                                    "value": "Cappuccino",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Hot coffee",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "price",
+                                    "value": "1500",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "branchAmenityId",
+                                    "value": "uuid-here",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/products"
+                    }
+                },
+                {
+                    "name": "Get Branch Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/products"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"businessId\": 1,\n  \"branchId\": 1,\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 2 }\n  ]\n}"
+                        },
+                        "url": "{{baseUrl}}/orders"
+                    }
+                },
+                {
+                    "name": "Get My Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/orders/user"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Bookmarks",
+            "item": [
+                {
+                    "name": "Toggle Bookmark",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"postId\": 1\n}"
+                        },
+                        "url": "{{baseUrl}}/bookmarks"
+                    }
+                },
+                {
+                    "name": "Get Bookmarks",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/bookmarks"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Amenities",
+            "item": [
+                {
+                    "name": "Get Global Amenities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/amenities/global"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Get All Permissions",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/admins/permissions"
+                    }
+                },
+                {
+                    "name": "Get All Roles",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/admins/roles"
+                    }
+                },
+                {
+                    "name": "Create Admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@test.com\",\n  \"password\": \"password\",\n  \"role\": \"admin\",\n  \"branchId\": 1\n}"
+                        },
+                        "url": "{{baseUrl}}/admins/create"
+                    }
+                }
+            ]
+        }
+    ]
+}

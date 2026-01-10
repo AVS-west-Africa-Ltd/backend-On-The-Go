@@ -142,7 +142,7 @@ class Seeder {
                     description: "Seeded branch",
                     working_hours: defaultWorkingHours,
                     amenities: amenityIds,
-                    staff: [{ fullName: `Staff ${b}`, email: `staff_api_${i}_${b}_${Date.now()}@test.com`, role: 'admin' }]
+                    staff: [{ firstName: `Staff ${b}`, lastName: `Api ${b}`, email: `staff_dev_${i}_${b}_${Date.now()}@test.com`, role: 'admin' }]
                 });
                 branches.push({ id: branchRes.data.id });
             }
@@ -202,7 +202,7 @@ class Seeder {
         // 2. Seed Normal Users
         console.log("Seeding Normal Users...");
         for (let i = 0; i < 20; i++) {
-            const email = `user_api_${i}@example.com`;
+            const email = `user_dev_${i}@example.com`;
             const phone = generateRandomPhone();
             const password = 'password123';
 

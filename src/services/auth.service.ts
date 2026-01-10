@@ -10,6 +10,8 @@ import { ProfileType } from "../models/types/profile.types";
 import { User } from "../models/User";
 import { Branch } from "../models/Branch";
 import { Profile } from "../models/Profile";
+import { AdminPermission, AdminRole } from "../models/types/admin.types";
+import { Admin } from "../models/Admin";
 
 const { sequelize } = db;
 
@@ -273,15 +275,15 @@ export class AuthService {
                 }
 
                 // Check if they already have a profile
-                let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
+                // let profile = await Profile.findOne({ where: { userId: user.id }, transaction: t });
 
-                if (!profile) {
-                    profile = await Profile.create({
-                        userId: user.id,
-                        userName: user.email.split('@')[0] + randomCharacters(4),
-                        profileType: ProfileType.PERSONAL,
-                    }, { transaction: t });
-                }
+                // if (!profile) {
+                //     profile = await Profile.create({
+                //         userId: user.id,
+                //         userName: user.email.split('@')[0] + randomCharacters(4),
+                //         profileType: ProfileType.PERSONAL,
+                //     }, { transaction: t });
+                // }
 
                 // Check if already linked
                 if (staff.userId && staff.userId === user.id) {
@@ -293,16 +295,7 @@ export class AuthService {
                     isActive: true
                 }, { transaction: t });
 
-                await t.commit();
-
-                const auth = {
-                    user: user.id,
-                    profile: profile ? { id: profile.id, type: profile.profileType } : null,
-                    branch: branchId
-                };
-                const authToken = jwtUtil.generateToken(auth);
-
-                return { user, profile, token: authToken };
+                // await t.commit();
 
             } else {
                 // New user - create account
@@ -327,11 +320,22 @@ export class AuthService {
                     profileType: ProfileType.PERSONAL,
                 }, { transaction: t });
             }
-
+            // }
 
             await staff.update({
                 userId: user.id,
                 isActive: true
+            }, { transaction: t });
+
+            await Admin.create({
+                branchId: branchId,
+                role: AdminRole.ADMIN,
+                userId: user.id,
+                profileId: profile.id,
+                name: `${firstName} ${lastName}`,
+                email: email,
+                branchStaffId: staff.id,
+                permissions: [AdminPermission.MANAGE_PRODUCTS, AdminPermission.MANAGE_ORDERS, AdminPermission.MANAGE_BRANCH, AdminPermission.MANAGE_AMENITIES, AdminPermission.MANAGE_COMMUNITY],
             }, { transaction: t });
 
             await t.commit();

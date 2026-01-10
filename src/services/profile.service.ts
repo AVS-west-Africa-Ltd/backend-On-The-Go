@@ -111,6 +111,7 @@ export class ProfileService {
                     profileId: profile.id,
                     branchId: createdBranch.id,
                     role: AdminRole.SUPER_ADMIN,
+                    userId: user.id,
                     name: `${user.firstName} ${user.lastName}`,
                     email: user.email,
                     password: user.password,

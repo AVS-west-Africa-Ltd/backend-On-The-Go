@@ -20,15 +20,18 @@ async function registerUser(email: string) {
             lastName: "User",
             email: email,
             password: "password123",
-            phoneNumber: `080${Math.floor(Math.random() * 100000000)}`
+            phone_number: `080${Math.floor(Math.random() * 100000000)}`
         });
     } catch (error: any) {
         if (error.response?.data?.message?.includes('already exists')) return;
-        // console.error(`Register failed for ${email}:`, error.response?.data?.message || error.message);
+        console.error(`      ❌ Register failed for ${email}:`, error.response?.data?.message || error.message);
     }
 }
 
-async function getAuthToken(email: string): Promise<string> {
+async function getAuthToken(email: string, retryCount = 0): Promise<string> {
+    if (retryCount > 3) {
+        throw new Error(`Exceeded retries for ${email}`);
+    }
     try {
         const loginRes = await axios.post(`${BASE_URL}/auth/login`, {
             email: email,
@@ -38,7 +41,7 @@ async function getAuthToken(email: string): Promise<string> {
     } catch (error: any) {
         if (error.response?.status === 400 || error.response?.data?.message?.includes('does not exist')) {
             await registerUser(email);
-            return getAuthToken(email);
+            return getAuthToken(email, retryCount + 1);
         }
         throw error;
     }
@@ -151,8 +154,10 @@ async function main() {
         }
 
         console.log(`\n🎉 Simulation Complete!`);
+        process.exit(0);
     } catch (error: any) {
         console.error("\n💥 Simulation Crashed:", error.message);
+        process.exit(1);
     }
 }
 

@@ -28,6 +28,19 @@ export const sendEmail = async (options: EmailOptions): Promise<EmailResult> => 
       attachments: options.attachments,
     };
 
+    // should take out later- just for dev seeding data
+    const checkIsDevEmail = (to: string | string[] | any): boolean => {
+      const addresses = Array.isArray(to) ? to : [to];
+      return addresses.some(addr =>
+        typeof addr === 'string' && (addr.includes("example.com") || addr.includes("test.com"))
+      );
+    };
+
+    if (checkIsDevEmail(mailOptions.to)) {
+      console.log("📨 [DRY RUN] Email suppressed:", mailOptions.to);
+      return { success: true, messageId: 'development' };
+    }
+
     const info: SentMessageInfo = await transporter.sendMail(mailOptions);
 
     console.log("📨 Email sent:", info.messageId);

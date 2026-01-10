@@ -24,7 +24,9 @@ export interface ICreateBranchPayload {
 }
 
 export interface IBranchStaff {
-  fullName: string;
+  // fullName: string;
+  firstName: string;
+  lastName: string
   role: BranchStaffRole;
   email: string;
 }
@@ -36,7 +38,7 @@ export interface IGetBranchesResponse extends IPaginatedResponse {
 export interface IGetBranchesData {
   id: number;
   name: string;
-  admin: { fullname: string; email: string } | null;
+  admin: { firstname: string; lastname: string; email: string } | null;
   state: string;
   city: string;
   created_at: Date;

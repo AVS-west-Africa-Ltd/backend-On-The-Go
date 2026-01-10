@@ -21,6 +21,9 @@ export const authAdmin = (req: Request, res: Response, next: NextFunction) => {
     }
 
     req.admin = decoded.admin;
+    req.user = decoded.user;
+    req.profile = decoded.profile;
+    req.branch = decoded.branch!;
     next();
 };
 

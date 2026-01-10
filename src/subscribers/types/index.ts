@@ -8,6 +8,8 @@ export enum PAYMENT_EVENT {
 
 export enum STAFF_EVENT {
     STAFF_INVITED = 'staff.invited',
+    STAFF_ADMIN_CREATED = 'staff.admin.created',
+    STAFF_AUTO_ACCEPT = 'staff.auto_accept',
 }
 
 

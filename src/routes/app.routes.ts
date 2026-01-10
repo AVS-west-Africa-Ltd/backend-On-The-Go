@@ -28,6 +28,8 @@ import {
     fetchCommunitiesSchema
 } from "../validators/app.validator";
 import { createPostSchema } from "../validators/post.validator";
+import { BookmarkController } from "../controllers/BookmarkController";
+import { toggleBookmarkSchema, getBookmarksSchema } from "../validators/bookmark.validator";
 
 const router = express.Router();
 
@@ -47,5 +49,10 @@ router.get("/:branchId/branch", getBranchForUser);
 router.post("/join-community", validateBody(joinCommunitySchema), joinCommunity);
 router.post("/leave-community", validateBody(leaveCommunitySchema), leaveCommunity);
 router.get("/fetch-communities", validateQuery(fetchCommunitiesSchema), fetchCommunities);
+
+// Bookmarks routes
+
+router.post("/bookmarks", validateBody(toggleBookmarkSchema), BookmarkController.toggleBookmark);
+router.get("/bookmarks", validateQuery(getBookmarksSchema), BookmarkController.getUserBookmarks);
 
 export default router;

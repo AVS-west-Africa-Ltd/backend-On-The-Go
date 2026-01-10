@@ -17,12 +17,14 @@ export class Admin extends Model<
     InferCreationAttributes<Admin>
 > implements AdminAttributes {
     declare id: CreationOptional<number>;
-    declare profileId: number;
+    declare profileId: CreationOptional<number>;
+    declare userId: CreationOptional<number>;
     declare branchId: number;
     declare role: AdminRole;
     declare name: string;
     declare email: string;
-    declare password: string;
+    declare branchStaffId: CreationOptional<string>;
+    declare password: CreationOptional<string>;
     declare permissions: CreationOptional<AdminPermission[]>;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -46,6 +48,15 @@ export class Admin extends Model<
                 onDelete: "CASCADE",
             });
         }
+
+        if (models.BranchStaff) {
+            Admin.belongsTo(models.BranchStaff, {
+                foreignKey: "branchStaffId",
+                as: "branchStaff",
+                onDelete: "CASCADE",
+                constraints: false,
+            });
+        }
     }
 
     static initModel(sequelize: Sequelize): ModelStatic<Admin> {
@@ -56,15 +67,25 @@ export class Admin extends Model<
                     autoIncrement: true,
                     primaryKey: true,
                 },
+                userId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                    references: { model: "users", key: "id" },
+                },
                 profileId: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                     references: { model: "profiles", key: "id" },
                 },
                 branchId: {
                     type: DataTypes.INTEGER,
                     allowNull: false,
                     references: { model: "branches", key: "id" },
+                },
+                branchStaffId: {
+                    type: DataTypes.UUID,
+                    allowNull: true,
+                    references: { model: "branch_staff", key: "id" },
                 },
                 role: {
                     type: DataTypes.ENUM(...Object.values(AdminRole)),
@@ -82,7 +103,7 @@ export class Admin extends Model<
                 },
                 password: {
                     type: DataTypes.STRING,
-                    allowNull: false,
+                    allowNull: true,
                 },
                 permissions: {
                     type: DataTypes.JSON,

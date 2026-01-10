@@ -21,7 +21,9 @@ export class BranchStaff extends Model<
   declare userId: number | null;
   declare businessId: number;
   declare branchId: number;
-  declare fullName: string;
+  declare firstName: string;
+  declare lastName: string;
+  // declare fullName: string;
   declare email: string;
   declare role: BranchStaffRole;
   declare isActive: CreationOptional<boolean>;
@@ -81,7 +83,11 @@ export class BranchStaff extends Model<
           allowNull: false,
         },
 
-        fullName: {
+        firstName: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        lastName: {
           type: DataTypes.STRING,
           allowNull: false,
         },

@@ -1,12 +1,6 @@
 import { Request, Response } from "express";
 import { BranchService } from "../services/branches.service";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";
-import { createBranchSchema } from "../validators/branch.validator";
-import { Post } from "../models/Post";
-import { Transaction as TransactionModel } from "../models/Transaction";
-import { Order } from "../models/Order";
-import * as jwtUtil from "../utils/jwtUtil";
-import { sendEmail } from "../services/email.service";
 
 export const create = async (req: Request, res: Response) => {
     try {
@@ -14,7 +8,7 @@ export const create = async (req: Request, res: Response) => {
         const value = req.body;
 
         const input = value;
-        const profileId = req.profile!.id;
+        const profileId = req.admin?.profileId!;
         const userId = req.user;
 
         const branchData = await BranchService.createBranch(input, {
@@ -34,8 +28,10 @@ export const create = async (req: Request, res: Response) => {
 export const getBranches = async (req: Request, res: Response) => {
     try {
         const { cursor, limit = "10", search = "" } = req.query;
-        const profileId = req.profile!.id;
+        const profileId = req.admin?.profileId!;
         const userId = req.user;
+        console.log(profileId, userId);
+
 
         const { branches, total, nextCursor } = await BranchService.getBranches(
             {
@@ -150,13 +146,13 @@ export const inviteStaff = async (req: Request, res: Response) => {
         const { branchId } = req.params;
         const profileId = req.profile!.id;
         const userId = req.user;
-        const { fullName, email, role } = req.body;
+        const { firstName, lastName, email, role } = req.body;
 
         if (!branchId) return errorHandler(res, "branchId is required", 400);
 
         const result = await BranchService.inviteStaff(
             parseInt(branchId, 10),
-            { fullName, email, role },
+            { firstName, lastName, email, role },
             { profileId, userId }
         );
 

@@ -1,9 +1,9 @@
 export enum BranchStaffRole {
-    SUPER_ADMIN = "super_admin",
-    ADMIN = "admin",
-    RECEPTIONIST = "receptionist",
-    WAITER = "waiter",
-    CASHIER = "cashier",
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  RECEPTIONIST = "receptionist",
+  WAITER = "waiter",
+  CASHIER = "cashier",
 }
 
 export interface BranchStaffAttributes {
@@ -11,7 +11,8 @@ export interface BranchStaffAttributes {
   userId?: number | null;
   businessId: number;
   branchId: number;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role: BranchStaffRole;
   isActive?: boolean;

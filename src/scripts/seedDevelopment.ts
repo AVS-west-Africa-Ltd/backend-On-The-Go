@@ -10,6 +10,11 @@ import { Status } from '../models/types/amenity.types';
 import { ICreateProfilePayload } from '../interfaces/profile.interface';
 import { ICreateBranchPayload, IBranchStaff } from '../interfaces/branches.interface';
 import { ICreateProductPayload } from '../interfaces/product.interface';
+import { registerStaffListeners } from '../subscribers/staff.subscriber';
+
+// Set environment to development if not specified
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+registerStaffListeners();
 
 const generateRandomString = (length: number) => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -172,7 +177,7 @@ const seedDevelopment = async () => {
 
             for (let b = 0; b < 4; b++) { // 4 more to make 5
                 const staff: IBranchStaff[] = [
-                    { fullName: `Staff_${b}_${i}`, email: `staff_${b}_${i}_${Date.now()}@test.com`, role: BranchStaffRole.ADMIN }
+                    { firstName: `Staff_${b}_${i}`, lastName: `Dev_${b}_${i}`, email: `staff_${b}_${i}_${Date.now()}@test.com`, role: BranchStaffRole.ADMIN }
                 ];
 
                 const branchPayload: ICreateBranchPayload = {
@@ -247,7 +252,7 @@ const seedDevelopment = async () => {
 
         // 5. Seed Normal Users
         console.log("Seeding Normal Users...");
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 40; i++) {
             const email = `user_dev_${i}@example.com`;
             const phone = generateRandomPhone();
 

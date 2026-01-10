@@ -2,6 +2,7 @@ import { Admin } from "../models/Admin";
 import { AdminAttributes, AdminRole, AdminPermission } from "../models/types/admin.types";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwtUtil";
+import { Profile } from "../models/Profile";
 
 export class AdminService {
     static async login(payload: any) {
@@ -26,7 +27,10 @@ export class AdminService {
                 permissions: admin.permissions || [],
                 name: admin.name,
                 email: admin.email
-            }
+            },
+            profile: admin.profileId,
+            branch: admin.branchId,
+            user: admin.userId
         } as any);
 
         const adminPlain = admin.get({ plain: true }) as any;
@@ -43,6 +47,11 @@ export class AdminService {
             throw new Error("Admin email already exists!");
         }
 
+        const profileExists = await Profile.findOne({ where: { id: profileId } });
+        if (!profileExists) {
+            throw new Error("Profile not found!");
+        }
+
         const hashedPassword = bcrypt.hashSync(password, 10);
 
         const admin = await Admin.create({
@@ -50,6 +59,7 @@ export class AdminService {
             email,
             password: hashedPassword,
             role,
+            userId: profileExists.userId,
             profileId,
             branchId,
             permissions: permissions || []

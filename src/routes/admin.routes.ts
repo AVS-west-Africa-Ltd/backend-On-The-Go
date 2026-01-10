@@ -26,9 +26,9 @@ import { AdminPermission } from "../models/types/admin.types";
 const router = express.Router();
 
 // Public route to get all available permissions (for UI dropdowns, etc.)
+router.post("/login", validateBody(loginAdminSchema), login);
 router.get("/permissions", getAllPermissions);
 router.get("/roles", getAllRoles);
-router.post("/login", validateBody(loginAdminSchema), login);
 
 // All admin management routes require standard profile auth first, 
 // then specific admin auth, and then granular permission checks.

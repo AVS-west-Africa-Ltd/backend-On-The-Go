@@ -1,5 +1,6 @@
 import { Op, Transaction, WhereOptions, fn, col, literal } from "sequelize";
 import db from "../models";
+import bcrypt from "bcryptjs";
 import { normalizeWorkingHours } from "../utils/working-hours";
 import { ICreateBranchPayload, IGetBranchesQuery, IGetBranchesData, IGetBranchesResponse, IBranchDashboardResponse } from "../interfaces/branches.interface";
 import { Branch } from "../models/Branch";
@@ -32,6 +33,9 @@ import { appEvents } from "../utils/events";
 import { STAFF_EVENT } from "../subscribers/types";
 import { IGetBranchProductsResponse, IGetProductsQuery } from "../interfaces/product.interface";
 import { ProductService } from "./product.service";
+import { AdminPermission, AdminRole } from "../models/types/admin.types";
+import { Admin } from "../models/Admin";
+import { randomCharacters, randomNumber } from "../utils/helpers";
 
 const { sequelize } = db;
 
@@ -101,17 +105,17 @@ export class BranchService {
             await BranchAmenity.bulkCreate(amenityEntries, { transaction });
 
             if (staff && staff.length > 0) {
-                const staffEntries = staff.map(({ fullName, email, role }) => ({
+                const staffEntries = staff.map(({ firstName, lastName, email, role }) => ({
                     businessId: profileId,
                     branchId,
-                    fullName,
+                    firstName,
+                    lastName,
                     email,
                     role,
                     isActive: false,
                 }));
 
                 const createdStaff = await BranchStaff.bulkCreate(staffEntries, { transaction });
-                console.log('created staff');
 
 
                 // Commit transaction first
@@ -119,6 +123,18 @@ export class BranchService {
 
                 // Emit events for background email sending (after commit)
                 for (let i = 0; i < createdStaff.length; i++) {
+
+                    // Temporary auto-acceptance for development
+                    if (process.env.NODE_ENV === 'development') {
+                        appEvents.emit(STAFF_EVENT.STAFF_AUTO_ACCEPT, {
+                            firstName: createdStaff[i].firstName,
+                            lastName: createdStaff[i].lastName,
+                            email: createdStaff[i].email,
+                            branchId: branchId,
+                            branchStaffId: createdStaff[i].id,
+                        });
+                    }
+
                     const staffMember = createdStaff[i];
                     const inviteToken = jwtUtil.generateToken({
                         user: -1,
@@ -136,7 +152,8 @@ export class BranchService {
 
                     // Emit event for background processing
                     appEvents.emit(STAFF_EVENT.STAFF_INVITED, {
-                        fullName: staffMember.fullName,
+                        firstName: staffMember.firstName,
+                        lastName: staffMember.lastName,
                         email: staffMember.email,
                         branchName: branch.name,
                         role: staffMember.role,
@@ -251,7 +268,7 @@ export class BranchService {
             return {
                 id: branch.id,
                 name: branch.name,
-                admin: admin ? { fullname: admin.fullName, email: admin.email } : null,
+                admin: admin ? { firstname: admin.firstName, lastname: admin.lastName, email: admin.email } : null,
                 state: branch.state || "",
                 city: branch.city || "",
                 created_at: branch.createdAt,
@@ -508,7 +525,7 @@ export class BranchService {
             throw new Error(error.message || "Failed to update branch status");
         }
     }
-    static async inviteStaff(branchId: number, data: { fullName: string, email: string, role: BranchStaffRole }, userData: IBasicUser) {
+    static async inviteStaff(branchId: number, data: { firstName: string, lastName: string, email: string, role: BranchStaffRole }, userData: IBasicUser) {
         const { profileId, userId } = userData;
 
         const branch = await Branch.findByPk(branchId);
@@ -523,7 +540,8 @@ export class BranchService {
         const staffEntry = await BranchStaff.create({
             businessId: branch.profileId,
             branchId,
-            fullName: data.fullName,
+            firstName: data.firstName,
+            lastName: data.lastName,
             email: data.email,
             role: data.role,
             isActive: false,
@@ -546,12 +564,25 @@ export class BranchService {
 
         // Emit event for background email sending
         appEvents.emit(STAFF_EVENT.STAFF_INVITED, {
-            fullName: data.fullName,
+            // fullName: data.fullName,
+            firstName: data.firstName,
+            lastName: data.lastName,
             email: data.email,
             branchName: branch.name,
             role: data.role,
             inviteLink
         });
+
+        // Temporary auto-acceptance for development
+        if (process.env.NODE_ENV === 'development') {
+            appEvents.emit(STAFF_EVENT.STAFF_AUTO_ACCEPT, {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                branchId: branchId,
+                branchStaffId: staffEntry.id,
+            });
+        }
 
         return { message: "Invitation sent successfully", staff: staffEntry };
     }

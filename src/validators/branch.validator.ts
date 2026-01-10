@@ -31,17 +31,19 @@ export const createBranchSchema = Joi.object({
   amenities: Joi.array().items(Joi.string()).default([]),
   staff: Joi.array().items(
     Joi.object({
-      fullName: Joi.string().required(),
+      // fullName: Joi.string().required(),
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
       email: Joi.string().email().required(),
       role: Joi.string().required(),
     })
   )
-  .optional()
-  .default([]),
+    .optional()
+    .default([]),
 });
 
 export const addWorkingHoursSchema = Joi.object({
-    working_hours: Joi.object({
+  working_hours: Joi.object({
     monday: daySchema,
     tuesday: daySchema,
     wednesday: daySchema,
@@ -52,3 +54,9 @@ export const addWorkingHoursSchema = Joi.object({
   }).required(),
 })
 
+export const inviteStaffSchema = Joi.object({
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  role: Joi.string().required(),
+})

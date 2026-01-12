@@ -354,4 +354,27 @@ export class AuthService {
             throw error;
         }
     }
+    static async checkUsername(username: string) {
+        const user = await Profile.findOne({ where: { userName: username } });
+        return !user;
+    }
+
+    static async checkEmail(email: string) {
+        const user = await User.findOne({ where: { email } });
+        return !user;
+    }
+
+    static async changePassword(userId: number, oldPass: string, newPass: string) {
+        if (!userId) throw new Error("User ID is required");
+
+        const user = await User.findByPk(userId);
+        if (!user) throw new Error("User not found");
+
+        const isValid = await bcrypt.compare(oldPass, user.password);
+        if (!isValid) throw new Error("Old password is incorrect");
+
+        user.password = await bcrypt.hash(newPass, 10);
+        await user.save();
+        return true;
+    }
 }

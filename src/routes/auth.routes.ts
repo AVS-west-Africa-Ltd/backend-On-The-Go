@@ -1,6 +1,7 @@
 import express from "express";
-
 import * as authController from "../controllers/AuthController";
+import { authUser } from "../middlewares/authUser";
+
 const router = express.Router();
 
 // Error handling wrapper
@@ -18,6 +19,8 @@ router.post("/send-code", authController.sendCode);
 router.post("/reset-password", authController.resetPassword);
 router.post("/complete-invite", authController.completeInvite);
 
-
+router.post("/check-username", authController.checkUsername);
+router.post("/check-email", authController.checkEmail);
+router.post("/change-password", authUser, authController.changePassword);
 
 export default router;

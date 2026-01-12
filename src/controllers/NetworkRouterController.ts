@@ -1,13 +1,11 @@
-
 import { Request, Response } from "express";
 import { NetworkRouter } from "../models/NetworkRouter";
 import * as Mikrotik from "../services/MikrotikService";
 import { TicketProfile } from "../models/TicketProfile";
 import { RouterOSClient } from "sy5-routeros-client";
-
+import { successHandler, errorHandler } from "../handlers/responseHandlers";
 
 export const addRouter = async (req: Request, res: Response) => {
-
     try {
         const { host, user, password } = req.body;
         const userID = req.user;
@@ -16,7 +14,7 @@ export const addRouter = async (req: Request, res: Response) => {
         });
 
         if (router) {
-            res.status(200).json({ messsage: "You have added router already" });
+            return successHandler(res, "You have added router already", 200);
         }
 
         const systemInfo = await Mikrotik.getSystemResource({
@@ -33,10 +31,10 @@ export const addRouter = async (req: Request, res: Response) => {
             metadata: systemInfo,
         });
 
-        return res.status(200).json({ router, message: "Network router added" });
+        return successHandler(res, "Network router added", 200, router);
     } catch (error: any) {
         console.log("Error adding router----", error);
-        return res.status(400).json({ messsage: "Failed to add router." });
+        return errorHandler(res, "Failed to add router.", 400);
     }
 };
 
@@ -46,10 +44,10 @@ export const fetchRouter = async (req: Request, res: Response) => {
         const router = await NetworkRouter.findAll({
             where: { userId: userID }
         });
-        return res.status(200).json({ router, message: "Router info fetched." });
+        return successHandler(res, "Router info fetched.", 200, router);
     } catch (error: any) {
         console.log("Error fetching router info----", error)
-        return res.status(400).json({ messsage: "Failed to fetch router info." });
+        return errorHandler(res, "Failed to fetch router info.", 400);
     }
 }
 
@@ -59,49 +57,47 @@ export const editRouter = async (req: Request, res: Response) => {
         const { routerId, host, user, password } = req.body;
         const networkRouter = await NetworkRouter.findOne({ where: { id: routerId, userId: userID } });
         if (!networkRouter) {
-            return res.status(200).json({ messsage: "Network router not found" });
+            return errorHandler(res, "Network router not found", 404);
         }
         await networkRouter.update({
             username: user,
             host,
             password
         });
-        return res.status(200).json({ message: "Network router Info updated." });
+        return successHandler(res, "Network router Info updated.", 200);
     } catch (error: any) {
         console.log("Error updating network router info----", error);
-        return res.status(400).json({ messsage: "Failed to update network router info." });
+        return errorHandler(res, "Failed to update network router info.", 400);
     }
 }
 
 export const checkRouterConnection = async (req: Request, res: Response) => {
-
     try {
         const userID = req.user;
         const router = await NetworkRouter.findOne({
             where: { userId: userID }
         });
         if (!router) {
-            return res.status(400).json({ messsage: "Failed to check connection, router not found." });
+            return errorHandler(res, "Failed to check connection, router not found.", 404);
         }
 
         const systemInfo = await Mikrotik.getSystemResource({ host: router.host, user: router.username, password: router.password });
 
-        return res.status(200).json({ systemInfo, message: "Connection was established to router." });
+        return successHandler(res, "Connection was established to router.", 200, systemInfo);
     } catch (error: any) {
         console.log("Error checking router connection----", error);
-        return res.status(400).json({ messsage: "Failed to update network router info." });
+        return errorHandler(res, "Failed to update network router info.", 400);
     }
 }
 
 export const syncProfiles = async (req: Request, res: Response) => {
-
     try {
         const userID = req.user;
         const router = await NetworkRouter.findOne({
             where: { userId: userID },
         });
         if (!router) {
-            return res.status(400).json({ messsage: "Failed to sync ticket profiles, router not found." });
+            return errorHandler(res, "Failed to sync ticket profiles, router not found.", 404);
         }
 
         const profiles = await Mikrotik.fetchRouterProfile({
@@ -110,7 +106,7 @@ export const syncProfiles = async (req: Request, res: Response) => {
             password: router.password,
         });
         if (!profiles) {
-            return res.status(400).json({ messsage: "Failed to sync ticket profiles." });
+            return errorHandler(res, "Failed to sync ticket profiles.", 400);
         }
         const profilePromises = profiles.map(async (profile: any) => {
             const ticketProfile = await TicketProfile.findOne({
@@ -130,25 +126,23 @@ export const syncProfiles = async (req: Request, res: Response) => {
             return ticketProfile;
         });
 
-        // Wait for all operations to finish
         await Promise.all(profilePromises);
 
-        return res.status(200).json({ profiles, message: "Ticket profile have been sync" });
+        return successHandler(res, "Ticket profile have been sync", 200, profiles);
     } catch (error) {
         console.log("Error syncing ticket profiles----", error);
-        return res.status(400).json({ messsage: "Failed to sync ticket profiles." });
+        return errorHandler(res, "Failed to sync ticket profiles.", 400);
     }
 };
 
 export const editTicketProfile = async (req: Request, res: Response) => {
-
     try {
         const userID = req.user;
         const { profileId, title, description, bandwidth, status, amount } = req.body;
         const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
 
         if (!profile) {
-            return res.status(400).json({ message: "Profile not found" });
+            return errorHandler(res, "Profile not found", 404);
         }
 
         await profile.update({
@@ -158,10 +152,10 @@ export const editTicketProfile = async (req: Request, res: Response) => {
             price: amount,
             isActive: status
         });
-        return res.status(200).json({ message: "Profile Info updated" });
+        return successHandler(res, "Profile Info updated", 200);
     } catch (error) {
         console.log("Error updating profile info----", error);
-        return res.status(400).json({ messsage: "Failed to update profile info." });
+        return errorHandler(res, "Failed to update profile info.", 400);
     }
 }
 
@@ -171,13 +165,13 @@ export const addTicketPrice = async (req: Request, res: Response) => {
         const { profileId, amount } = req.body;
         const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
         if (!profile) {
-            return res.status(400).json({ messsage: "Profile not found" });
+            return errorHandler(res, "Profile not found", 404);
         }
         await profile.update({ price: amount });
-        return res.status(200).json({ message: "Profile price changed" });
+        return successHandler(res, "Profile price changed", 200);
     } catch (error) {
         console.log("Error changing profile price----", error);
-        return res.status(400).json({ messsage: "Failed to change profile price." });
+        return errorHandler(res, "Failed to change profile price.", 400);
     }
 }
 
@@ -187,13 +181,13 @@ export const changeTicketStatus = async (req: Request, res: Response) => {
     try {
         const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
         if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
+            return errorHandler(res, "Profile not found", 404);
         }
-       await profile.update({ isActive: status });
-        return res.status(200).json({ message: "Profile status changed" });
+        await profile.update({ isActive: status });
+        return successHandler(res, "Profile status changed", 200);
     } catch (error) {
         console.log("Error changing profile status----", error);
-        return res.status(500).json({ messsage: "Failed to change profile status." });
+        return errorHandler(res, "Failed to change profile status.", 500);
     }
 }
 
@@ -203,10 +197,10 @@ export const fetchTicketProfile = async (req: Request, res: Response) => {
         const profiles = await TicketProfile.findAll({
             where: { userId: userID }
         });
-        res.status(200).json({ profiles, message: "Profile fetched." });
+        return successHandler(res, "Profile fetched.", 200, profiles);
     } catch (error) {
         console.log(error)
-        res.status(400).json({ messsage: "Failed to fetch ticket profile." });
+        return errorHandler(res, "Failed to fetch ticket profile.", 400);
     }
 }
 
@@ -215,20 +209,21 @@ export const routerCommand = async (req: Request, res: Response) => {
     let client: RouterOSClient | undefined;
     try {
 
-        let { router, client } = await Mikrotik.connector({
-          host: "192.168.88.1",
-          user: "remote",
-          password: "12345678",
+        let { router, client: mikrotikClient } = await Mikrotik.connector({
+            host: "192.168.88.1",
+            user: "remote",
+            password: "12345678",
         });
+        client = mikrotikClient;
         const userManagerMenu = router.menu(
-          "/tool user-manager user"
+            "/tool user-manager user"
         );
         const user = await userManagerMenu.exec(`add`, {
-          username,
-          password: "12345678",
-          customer: "operator",
+            username,
+            password: "12345678",
+            customer: "operator",
         });
-        const num = parseInt(user[0].ret.replace(/\D/g, ''), 10); // extract number only
+        const num = parseInt(user[0].ret.replace(/\D/g, ''), 10);
         const result = num - 1;
         const profile = await userManagerMenu.exec("create-and-activate-profile", {
             customer: "operator",
@@ -236,10 +231,10 @@ export const routerCommand = async (req: Request, res: Response) => {
             numbers: result
         })
         await client.close();
-        res.status(200).json({ user, message: "Connection was establisshed to router." });
+        return successHandler(res, "Connection was established to router.", 200, user);
     } catch (error: any) {
         console.log("Error in [routerCommand]---", error);
-        res.status(400).json({ messsage: error.message });
+        return errorHandler(res, error.message, 400);
     } finally {
         if (client) await client.close();
     }

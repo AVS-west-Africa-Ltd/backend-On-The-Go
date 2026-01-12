@@ -28,7 +28,7 @@ export class AdminService {
                 name: admin.name,
                 email: admin.email
             },
-            profile: admin.profileId,
+            profile: { id: admin.profileId, type: null },
             branch: admin.branchId,
             user: admin.userId
         } as any);

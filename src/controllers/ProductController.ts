@@ -106,10 +106,7 @@ export const update = async (req: Request, res: Response) => {
                 profileId,
             });
 
-        return res.status(200).json({
-            message: "Product updated successfully",
-            data: updatedProduct,
-        });
+        return successHandler(res, "Product updated successfully", 200, updatedProduct);
 
     } catch (error: any) {
         console.error(error);

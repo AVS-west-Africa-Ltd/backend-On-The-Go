@@ -2,6 +2,7 @@
 import transporter from "../config/mailer";
 import nodemailer, { SendMailOptions, SentMessageInfo } from "nodemailer";
 import { EmailOptions, EmailResult } from "../interfaces/email.interface";
+import { dashboardActivationEmail } from "../templates/dashboardActivationEmail";
 
 /**
  * Send an email
@@ -49,4 +50,23 @@ export const sendEmail = async (options: EmailOptions): Promise<EmailResult> => 
     console.error("❌ Error sending email:", error);
     return { success: false, error: error.message };
   }
+};
+
+export const sendDashboardActivationEmail = async (data: {
+  to: string;
+  fullName: string;
+  businessName: string;
+  dashboardUrl: string;
+}): Promise<EmailResult> => {
+  const html = dashboardActivationEmail({
+    fullName: data.fullName,
+    businessName: data.businessName,
+    dashboardUrl: data.dashboardUrl,
+  });
+
+  return sendEmail({
+    to: data.to,
+    subject: `Your OnTheGo Dashboard is Activated - ${data.businessName}`,
+    html,
+  });
 };

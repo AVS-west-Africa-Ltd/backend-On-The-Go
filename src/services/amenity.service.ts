@@ -1,6 +1,7 @@
 import db from "../models"
 import { Amenity } from "../models/Amenity";
 import { BranchAmenity } from "../models/BranchAmenity";
+import { BranchService } from "./branches.service";
 
 const { sequelize } = db
 
@@ -44,47 +45,70 @@ export class AmenitiesService {
         }
     }
 
-    static async addBranchAmenities(amenityIds: string[], profileId: number, branchId: number): Promise<BranchAmenity[]> {
+    static async addBranchAmenity(amenityId: string, profileId: number, branchId: number, userId: number): Promise<BranchAmenity> {
         try {
-            await sequelize.transaction(async (t) => {
-                // Fetch existing amenities to avoid duplicates if necessary, 
-                // but since we have a unique index, we can also use ignoreDuplicates
-                const branchAmenities = amenityIds.map((amenityId) => ({
-                    businessId: profileId,
-                    branchId,
-                    amenityId,
-                    status: "active" as const,
-                }));
+            // Check access
+            const canAccess = await BranchService.checkAccess(profileId, userId, undefined, branchId);
+            if (!canAccess) {
+                throw new Error("You don't have access to this branch");
+            }
 
-                await BranchAmenity.bulkCreate(branchAmenities, {
-                    transaction: t,
-                    ignoreDuplicates: true
-                });
-            });
-            return await BranchAmenity.findAll({
+            const amenityExists = await BranchAmenity.findOne({
                 where: {
                     branchId,
-                    businessId: profileId,
+                    amenityId,
                 }
             });
-        } catch (error) {
-            console.error("Error when adding branch amenities:--", error);
-            throw new Error("Failed to add branch amenities");
+
+            if (amenityExists) {
+                throw new Error("Amenity already exists for this branch");
+            }
+
+            const branchAmenity = await BranchAmenity.create({
+                businessId: profileId,
+                branchId,
+                amenityId,
+                status: "active",
+            });
+
+            return branchAmenity;
+        } catch (error: any) {
+            console.error("Error when adding branch amenity:--", error);
+            throw new Error(error.message || "Failed to add branch amenity");
         }
     }
 
-    static async removeBranchAmenities(amenityIds: string[], profileId: number, branchId: number): Promise<void> {
+    static async removeBranchAmenity(branch_amenityId: string, profileId: number, branchId: number, userId: number): Promise<boolean> {
         try {
-            await BranchAmenity.destroy({
+            // Check access
+            const canAccess = await BranchService.checkAccess(profileId, userId, undefined, branchId);
+            if (!canAccess) {
+                throw new Error("You don't have access to this branch");
+            }
+
+            const amenityExists = await BranchAmenity.findOne({
                 where: {
                     branchId,
-                    businessId: profileId,
-                    amenityId: amenityIds
+                    id: branch_amenityId
                 }
             });
-        } catch (error) {
-            console.error("Error when removing branch amenities:--", error);
-            throw new Error("Failed to remove branch amenities");
+            console.log('amenityExists', amenityExists);
+
+            if (!amenityExists) {
+                throw new Error("Amenity not found");
+            }
+            const del = await BranchAmenity.destroy({
+                where: {
+                    branchId,
+                    id: branch_amenityId
+                }
+            });
+            console.log('deleted', del);
+
+            return true;
+        } catch (error: any) {
+            console.error("Error when removing branch amenity:--", error);
+            throw new Error(error.message || "Failed to remove branch amenity");
         }
     }
 }

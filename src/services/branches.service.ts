@@ -36,6 +36,8 @@ import { ProductService } from "./product.service";
 import { AdminPermission, AdminRole } from "../models/types/admin.types";
 import { Admin } from "../models/Admin";
 import { randomCharacters, randomNumber } from "../utils/helpers";
+import { Insight } from "../models/Insight";
+import { InsightService } from "./insight.service";
 
 const { sequelize } = db;
 
@@ -51,10 +53,12 @@ export class BranchService {
             // Normalize working hours
             const branchWorkingHours = normalizeWorkingHours(working_hours);
 
+            const branchName = `${name} ${isHQ ? "(HQ)" : ""} ${city} ${state}`;
+
             const isExist = await Branch.findOne({
                 where: {
                     profileId,
-                    name,
+                    name: branchName,
                 },
                 transaction,
             });
@@ -66,7 +70,7 @@ export class BranchService {
             const branch = await Branch.create(
                 {
                     profileId,
-                    name: `${name} ${isHQ ? "(HQ)" : ""} ${city} ${state}`,
+                    name: branchName,
                     fullAddress,
                     description,
                     streetAddress,
@@ -92,6 +96,19 @@ export class BranchService {
             );
 
             await OpeningHour.bulkCreate(workingHourEntries, { transaction });
+
+            const existingAmenities = await Amenity.findAll({
+                where: {
+                    id: {
+                        [Op.in]: amenities
+                    }
+                },
+                transaction
+            });
+
+            if (existingAmenities.length !== amenities.length) {
+                throw new AppError("One or more invalid amenities provided", 400);
+            }
 
             const amenityEntries = amenities.map((amenity: string) => ({
                 businessId: profileId,
@@ -172,14 +189,23 @@ export class BranchService {
         } catch (error: any) {
             await transaction.rollback();
             console.error("Failed to create branch:", error);
-            if (error instanceof AppError) {
-                throw error;
-            }
-            throw new AppError("Something went wrong while creating branch.", 500);
+            throw new AppError(error.message || "Something went wrong while creating branch.", error.statusCode || 500);
         }
     }
 
-    static async checkAccess(branch: Branch, profileId: number, userId: number): Promise<boolean> {
+    // create better error message for duplicate name and wrong amenities
+
+    static async checkAccess(profileId: number, userId: number, branchData?: Branch, branchId?: number): Promise<boolean> {
+
+        let branch = branchData;
+
+        if (!branch) {
+            const branchExist = await Branch.findOne({ where: { id: branchId } });
+            if (!branchExist) {
+                throw new AppError("Branch not found", 404);
+            }
+            branch = branchExist;
+        }
         // 1. Business Owner check
         if (branch.profileId === profileId) {
             return true;
@@ -357,7 +383,7 @@ export class BranchService {
                         model: BranchStaff,
                         as: "staff",
                         required: false,
-                        attributes: ["id", "fullName", "email", "role"],
+                        attributes: ["id", "firstName", "lastName", "email", "role"],
                     },
                     {
                         model: Order,
@@ -385,18 +411,43 @@ export class BranchService {
 
             if (!branch) return null;
 
-
-            const hasAccess = await this.checkAccess(branch, profileId, userId);
+            const hasAccess = await this.checkAccess(profileId, userId, branch);
             if (!hasAccess) {
                 throw new AppError("You don't have access to this branch", 403);
             }
 
-            // 1. Calculate Stats
-            const paidOrders: Order[] = (branch.orders || []).filter((o: Order) => o.paymentStatus === OrderPaymentStatus.PAID);
-            const totalRevenue = paidOrders.reduce((sum: number, o: Order) => sum + o.totalAmount, 0);
-            const activeCustomers = new Set((branch.orders || []).map((o: Order) => o.customerId)).size;
+            InsightService.syncBranchInsights(branchId, profileId).catch(err => console.error("Background sync failed:", err));
 
-            // 2. Format Response
+            const insights = await Insight.findAll({
+                where: { branchId, profileId }
+            });
+
+            const statsMap = insights.reduce((acc, curr) => {
+                if (curr.period === "TOTAL") {
+                    acc[curr.type] = curr.value;
+                }
+                return acc;
+            }, {} as Record<string, number>);
+
+            const now = new Date();
+            const last12Months: any[] = [];
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const period = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const monthName = d.toLocaleString('default', { month: 'short' });
+
+                const rev = insights.find(ins => ins.type === "revenue" && ins.period === period)?.value || 0;
+                const wifi = insights.find(ins => ins.type === "wifi_session" && ins.period === period)?.value || 0;
+
+                last12Months.push({
+                    name: monthName,
+                    revenue: rev,
+                    wifi: wifi,
+                    period // for frontend sorting if needed
+                });
+            }
+
+            // 3. Format Response
             return {
                 branchInfo: {
                     id: branch.id,
@@ -412,16 +463,16 @@ export class BranchService {
                     lastLogin: null, // Placeholder
                 },
                 stats: {
-                    totalRevenue,
-                    activeCustomers,
-                    activeWifiSessions: 0, // Placeholder
-                    revenueGrowth: 0, // Placeholder
-                    customerGrowth: 0, // Placeholder
-                    wifiGrowth: 0, // Placeholder
+                    totalRevenue: statsMap["revenue"] || 0,
+                    activeCustomers: statsMap["customer_count"] || 0,
+                    activeWifiSessions: statsMap["wifi_session"] || 0,
+                    revenueGrowth: statsMap["revenue_growth"] || 0,
+                    customerGrowth: statsMap["customer_growth"] || 0,
+                    wifiGrowth: statsMap["wifi_growth"] || 0,
                 },
                 chartData: {
-                    revenue: [], // Placeholder
-                    wifi: [], // Placeholder
+                    revenue: last12Months.map(m => ({ month: m.name, amount: m.revenue })),
+                    wifi: last12Months.map(m => ({ month: m.name, sessions: m.wifi })),
                 },
                 tabs: {
                     orders: (branch.orders || []).slice(0, 10),
@@ -436,7 +487,7 @@ export class BranchService {
                         createdAt: p.createdAt
                     })).slice(0, 10),
                     adminAndStaff: (branch.staff || []),
-                    activityLog: [], // Placeholder
+                    activityLog: [],
                     picturesAndVideos: (branch.media || []).map(m => ({
                         id: m.id,
                         url: m.filePath,
@@ -464,7 +515,7 @@ export class BranchService {
                 return false;
             }
 
-            const hasAccess = await this.checkAccess(branch, profileId, userId);
+            const hasAccess = await this.checkAccess(profileId, userId, branch);
             if (!hasAccess) {
                 throw new AppError("You don't have access to delete this branch", 403);
             }
@@ -513,7 +564,7 @@ export class BranchService {
                 return false;
             }
 
-            const hasAccess = await this.checkAccess(branch, profileId, userId);
+            const hasAccess = await this.checkAccess(profileId, userId, branch);
             if (!hasAccess) {
                 throw new AppError("You don't have access to update this branch status", 403);
             }
@@ -531,7 +582,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Unauthorized to invite staff to this branch", 403);
 
         const existingStaff = await BranchStaff.findOne({ where: { email: data.email, branchId } });
@@ -564,7 +615,6 @@ export class BranchService {
 
         // Emit event for background email sending
         appEvents.emit(STAFF_EVENT.STAFF_INVITED, {
-            // fullName: data.fullName,
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
@@ -592,7 +642,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Branch not found", 404);
 
         const where: any = { branchId };
@@ -647,7 +697,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Branch not found", 404);
 
         const where: any = { branchId };
@@ -715,7 +765,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
         const router = await NetworkRouter.findOne({
@@ -738,7 +788,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
         // Reuse ProductService but ensured with access first
@@ -750,7 +800,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
         const where: any = { branchId };
@@ -790,7 +840,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(branch, profileId, userId);
+        const hasAccess = await this.checkAccess(profileId, userId, branch);
         if (!hasAccess) throw new AppError("Branch not found", 404);
 
         const where: any = { targetId: branchId, targetType: 'business' };

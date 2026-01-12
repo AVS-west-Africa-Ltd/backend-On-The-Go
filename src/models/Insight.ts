@@ -17,8 +17,10 @@ export class Insight extends Model<
 > {
     declare id: CreationOptional<number>;
     declare profileId: number;
+    declare branchId: CreationOptional<number | null>;
     declare type: TInsightType;
     declare value: CreationOptional<number>;
+    declare period: CreationOptional<string | null>;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -31,6 +33,13 @@ export class Insight extends Model<
             Insight.belongsTo(models.Profile, {
                 foreignKey: "profileId",
                 as: "profile",
+                onDelete: "CASCADE",
+            });
+        }
+        if (models.Branch) {
+            Insight.belongsTo(models.Branch, {
+                foreignKey: "branchId",
+                as: "branch",
                 onDelete: "CASCADE",
             });
         }
@@ -49,14 +58,24 @@ export class Insight extends Model<
                     allowNull: false,
                     references: { model: "profiles", key: "id" },
                 },
+                branchId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                    references: { model: "branches", key: "id" },
+                },
                 type: {
                     type: DataTypes.STRING(50),
                     allowNull: false,
                 },
                 value: {
-                    type: DataTypes.INTEGER,
+                    type: DataTypes.FLOAT,
                     allowNull: false,
                     defaultValue: 0,
+                },
+                period: {
+                    type: DataTypes.STRING(20),
+                    allowNull: true,
+                    defaultValue: "TOTAL"
                 },
                 createdAt: {
                     type: DataTypes.DATE,
@@ -73,8 +92,9 @@ export class Insight extends Model<
                 timestamps: true,
                 indexes: [
                     { fields: ["profileId"] },
+                    { fields: ["branchId"] },
                     { fields: ["type"] },
-                    { unique: true, fields: ["profileId", "type"] },
+                    { unique: true, fields: ["profileId", "branchId", "type", "period"] },
                 ],
             }
         );

@@ -16,7 +16,7 @@ router.get("/media", BranchController.getBranchMedia);
 router.get("/reviews", BranchController.getBranchReviews);
 
 
-router.post("/create", validateBody(createBranchSchema), authProfile, BranchController.create);
+router.post("/create", validateBody(createBranchSchema), BranchController.create);
 router.get("/", authorizeAdmin(AdminPermission.MANAGE_ALL_BRANCHES), BranchController.getBranches);
 router.get("/:branchId", BranchController.getBranch);
 router.delete("/:branchId", authorizeAdmin(AdminPermission.MANAGE_ALL_BRANCHES), BranchController.deleteBranch);

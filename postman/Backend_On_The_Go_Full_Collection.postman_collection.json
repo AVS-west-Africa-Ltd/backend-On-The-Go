@@ -127,6 +127,62 @@
                         },
                         "url": "{{baseUrl}}/auth/complete-invite"
                     }
+                },
+                {
+                    "name": "Check Username",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"johndoe\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/auth/check-username"
+                    }
+                },
+                {
+                    "name": "Check Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"john.doe@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/auth/check-email"
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"oldPassword\": \"Password123!\",\n    \"newPassword\": \"NewPassword123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/auth/change-password"
+                    }
                 }
             ]
         },
@@ -450,6 +506,28 @@
                         },
                         "url": "{{baseUrl}}/profile/wifi"
                     }
+                },
+                {
+                    "name": "Add Reward Redeem Hours",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"reward_redeem_hours\": {\n        \"monday\": { \"open\": \"10:00\", \"close\": \"16:00\" }\n    }\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/profile/reward-redeem-hours"
+                    }
                 }
             ]
         },
@@ -721,7 +799,7 @@
                                 }
                             }
                         },
-                        "url": "{{baseUrl}}/branches/create"
+                        "url": "{{baseUrl}}/admin/branches/create"
                     }
                 },
                 {
@@ -734,7 +812,7 @@
                                 "value": "Bearer {{token}}"
                             }
                         ],
-                        "url": "{{baseUrl}}/branches"
+                        "url": "{{baseUrl}}/admin/branches"
                     }
                 },
                 {
@@ -747,7 +825,7 @@
                                 "value": "Bearer {{token}}"
                             }
                         ],
-                        "url": "{{baseUrl}}/branches/1"
+                        "url": "{{baseUrl}}/admin/branches/1"
                     }
                 },
                 {
@@ -769,7 +847,7 @@
                                 }
                             }
                         },
-                        "url": "{{baseUrl}}/branches/1/invite"
+                        "url": "{{baseUrl}}/admin/branches/1/invite"
                     }
                 }
             ]
@@ -821,7 +899,7 @@
                                 }
                             ]
                         },
-                        "url": "{{baseUrl}}/products"
+                        "url": "{{baseUrl}}/admin/products"
                     }
                 },
                 {
@@ -844,7 +922,7 @@
                                 }
                             ]
                         },
-                        "url": "{{baseUrl}}/products/1"
+                        "url": "{{baseUrl}}/admin/products/1"
                     }
                 }
             ]
@@ -864,7 +942,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"businessId\": 1,\n    \"branchId\": 1,\n    \"items\": [\n        { \"productId\": 1, \"quantity\": 2 }\n    ]\n}",
+                            "raw": "{\n    \"businessId\": 1,\n    \"branchId\": 1,\n    \"items\": [\n        { \"productId\": 1, \"quantity\": 2 }\n    ],\n    \"voucherId\": 1\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -872,6 +950,19 @@
                             }
                         },
                         "url": "{{baseUrl}}/orders"
+                    }
+                },
+                {
+                    "name": "Get Order By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/orders/user/uuid-here"
                     }
                 },
                 {
@@ -993,6 +1084,53 @@
                         },
                         "url": "{{baseUrl}}/community/add-members"
                     }
+                },
+                {
+                    "name": "Fetch Members",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/community/fetch-members?communityId=uuid",
+                            "query": [
+                                {
+                                    "key": "communityId",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "List Communities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/community"
+                    }
+                },
+                {
+                    "name": "Get Community By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/community/1"
+                    }
                 }
             ]
         },
@@ -1092,9 +1230,22 @@
                     }
                 },
                 {
-                    "name": "Update Branch Amenities",
+                    "name": "Get Branch Amenities",
                     "request": {
-                        "method": "PUT",
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/amenities/branch/1"
+                    }
+                },
+                {
+                    "name": "Add Branch Amenities",
+                    "request": {
+                        "method": "POST",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -1111,6 +1262,199 @@
                             }
                         },
                         "url": "{{baseUrl}}/amenities/branch"
+                    }
+                },
+                {
+                    "name": "Remove Branch Amenities",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"branchId\": 1,\n    \"amenities\": [\"uuid1\"]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/amenities/branch"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Social Graph",
+            "item": [
+                {
+                    "name": "Follow User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/social/follow/:userId",
+                        "variable": [
+                            {
+                                "key": "userId",
+                                "value": "2"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Unfollow User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/social/unfollow/:userId",
+                        "variable": [
+                            {
+                                "key": "userId",
+                                "value": "2"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Get Followers",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/social/followers"
+                    }
+                },
+                {
+                    "name": "Get Following",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/social/following"
+                    }
+                },
+                {
+                    "name": "Get Follow Suggestions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/social/suggestions/following"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Search & Discovery",
+            "item": [
+                {
+                    "name": "Discover (Unified)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/search/discover?type=business&nearMe=true"
+                    }
+                },
+                {
+                    "name": "Global Search",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/search/global?q=cafe"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Chat (New)",
+            "item": [
+                {
+                    "name": "List Chats",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/chats"
+                    }
+                },
+                {
+                    "name": "Create Chat",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"profileId\": 2\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/chats"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Analytics (Admin)",
+            "item": [
+                {
+                    "name": "Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/analytics/summary"
                     }
                 }
             ]
@@ -1132,7 +1476,7 @@
                                 }
                             }
                         },
-                        "url": "{{baseUrl}}/admins/login"
+                        "url": "{{baseUrl}}/admin/login"
                     }
                 },
                 {
@@ -1154,7 +1498,7 @@
                                 }
                             }
                         },
-                        "url": "{{baseUrl}}/admins/create"
+                        "url": "{{baseUrl}}/admin/staff/create"
                     }
                 },
                 {
@@ -1167,7 +1511,41 @@
                                 "value": "Bearer {{adminToken}}"
                             }
                         ],
-                        "url": "{{baseUrl}}/admins"
+                        "url": "{{baseUrl}}/admin/staff"
+                    }
+                },
+                {
+                    "name": "Get All Permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/permissions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "permissions"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Roles",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/roles",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "roles"
+                            ]
+                        }
                     }
                 }
             ]

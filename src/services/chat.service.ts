@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { Message } from "../models/Message";
 import { Member } from "../models/Member";
+import { Op } from "sequelize";
 
 // Extend socket type to include authenticated user info
 interface AuthenticatedSocket extends Socket {
@@ -127,6 +128,84 @@ const chat = (io: Server, socket: AuthenticatedSocket) => {
       sender: "System",
       content: `${username} left the chat.`,
     });
+  });
+
+  // NEW: Fetch all active chats for the user
+  socket.on("fetchChats", async () => {
+    if (!socket.profile?.id) return;
+    try {
+      const { Chat } = require("../models/Chat");
+      const { Profile } = require("../models/Profile");
+      const { Message } = require("../models/Message");
+
+      // Find all chats where user is a member
+      const memberships = await Member.findAll({
+        where: { profileId: socket.profile.id, memberType: "chat" },
+        include: [{
+          model: Chat,
+          as: "chat", // Ensure alias matches model definition
+          include: [
+            {
+              model: Message,
+              as: "messages",
+              limit: 1,
+              order: [['createdAt', 'DESC']]
+            }
+          ]
+        }]
+      });
+
+      // Format response
+      const chats = await Promise.all(memberships.map(async (m: any) => {
+        const chat = m.chat;
+        // Find peer member for context (assuming 1-on-1 for now, or just list members)
+        const otherMembers = await Member.findAll({
+          where: { targetId: chat.id, memberType: "chat", profileId: { [Op.ne]: socket.profile!.id } },
+          include: [{ model: Profile, as: "profile", attributes: ['id', 'userName', 'picture'] }]
+        });
+
+        return {
+          id: chat.id,
+          name: chat.name, // or derive from peers
+          lastMessage: chat.messages?.[0] || null,
+          peers: otherMembers.map((om: any) => om.profile)
+        };
+      }));
+
+      socket.emit("chatList", chats);
+    } catch (error) {
+      console.error("Error fetching chats:", error);
+      socket.emit("error", { message: "Failed to fetch chats." });
+    }
+  });
+
+  // NEW: Fetch chat history
+  socket.on("fetchHistory", async ({ chatId, page = 1, limit = 20 }: { chatId: string, page?: number, limit?: number }) => {
+    if (!chatId || !socket.profile?.id) return;
+    try {
+      const isMember = await verifyMembership(chatId, socket.profile.id);
+      if (!isMember) {
+        socket.emit("error", { message: "Access denied." });
+        return;
+      }
+
+      const offset = (page - 1) * limit;
+      const messages = await Message.findAll({
+        where: { chatId },
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset,
+      });
+
+      socket.emit("chatHistory", {
+        chatId,
+        messages: messages.reverse(), // Send oldest first suitable for UI
+        page
+      });
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      socket.emit("error", { message: "Failed to fetch history." });
+    }
   });
 };
 

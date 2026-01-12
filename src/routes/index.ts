@@ -11,22 +11,39 @@ import webhookRoutes from "./webhook.routes";
 import transactionRoutes from "./transaction.routes";
 import bookmarkRoutes from "./bookmark.routes";
 import adminRoutes from "./admin.routes";
+import socialRoutes from "./social.routes";
+import analyticsRoutes from "./analytics.routes";
+import chatRoutes from "./chat.routes";
+import searchRoutes from "./search.routes";
+import adminRootRouter from "./admin/index";
+import { SystemController } from "../controllers/SystemController";
 
 const router = express.Router();
+
+// Health Check
+router.get("/health", SystemController.getHealth);
 
 // Mount routes with versioning
 router.use("/auth", authRoutes);
 router.use("/profile", profileRoutes);
 router.use("/app", appRoutes);
 router.use("/community", communityRoutes);
-router.use("/branches", branchRoutes);
+// router.use("/branches", branchRoutes);
 
-router.use("/products", productRoutes);
+// router.use("/products", productRoutes);
 router.use("/amenities", amenitiesRoutes);
 router.use("/orders", orderRoutes);
 router.use("/transactions", transactionRoutes);
 router.use("/bookmarks", bookmarkRoutes);
-router.use("/admins", adminRoutes);
+// router.use("/admins", adminRoutes);
+
+router.use("/social", socialRoutes);
+// router.use("/analytics", analyticsRoutes);
+router.use("/chats", chatRoutes);
+router.use("/search", searchRoutes);
+
+// Grouped Admin Dashboard Routes
+router.use("/admin", adminRootRouter);
 
 
 export default router;

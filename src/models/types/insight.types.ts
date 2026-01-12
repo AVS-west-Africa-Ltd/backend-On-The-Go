@@ -5,4 +5,10 @@ export type TInsightType =
     | "review"
     | "rating"
     | "like"
-    | "order";
+    | "order"
+    | "revenue"
+    | "wifi_session"
+    | "customer_count"
+    | "revenue_growth"
+    | "customer_growth"
+    | "wifi_growth";

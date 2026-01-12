@@ -21,17 +21,45 @@
             "name": "Public Endpoints",
             "item": [
                 {
+                    "name": "Admin Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"adminPass\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "admin",
+                                "login"
+                            ]
+                        },
+                        "description": "Authenticate an admin user and receive a JWT token."
+                    }
+                },
+                {
                     "name": "Get All Permissions",
                     "request": {
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/admins/permissions",
+                            "raw": "{{baseUrl}}/admin/permissions",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "admin",
                                 "permissions"
                             ]
                         },
@@ -43,7 +71,7 @@
                             "originalRequest": {
                                 "method": "GET",
                                 "url": {
-                                    "raw": "{{baseUrl}}/admins/permissions"
+                                    "raw": "{{baseUrl}}/admin/permissions"
                                 }
                             },
                             "status": "OK",
@@ -65,12 +93,12 @@
                         "method": "GET",
                         "header": [],
                         "url": {
-                            "raw": "{{baseUrl}}/admins/roles",
+                            "raw": "{{baseUrl}}/admin/roles",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "admin",
                                 "roles"
                             ]
                         },
@@ -82,7 +110,7 @@
                             "originalRequest": {
                                 "method": "GET",
                                 "url": {
-                                    "raw": "{{baseUrl}}/admins/roles"
+                                    "raw": "{{baseUrl}}/admin/roles"
                                 }
                             },
                             "status": "OK",
@@ -125,12 +153,13 @@
                             "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"securePassword123\",\n  \"role\": \"admin\",\n  \"branchId\": 1,\n  \"permissions\": [\n    \"manage_products\",\n    \"manage_orders\"\n  ]\n}"
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/admins/create",
+                            "raw": "{{baseUrl}}/admin/staff/create",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "admin",
+                                "staff",
                                 "create"
                             ]
                         },
@@ -172,7 +201,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/admins?branchId=1",
+                            "raw": "{{baseUrl}}/admin/staff?branchId=1",
                             "host": [
                                 "{{baseUrl}}"
                             ],
@@ -211,12 +240,12 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/admins/:id",
+                            "raw": "{{baseUrl}}/admin/staff/:id",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "/admin/staff",
                                 ":id"
                             ],
                             "variable": [
@@ -267,12 +296,12 @@
                             "raw": "{\n  \"name\": \"John Smith\",\n  \"email\": \"john.smith@example.com\",\n  \"password\": \"newPassword123\",\n  \"branchId\": 2\n}"
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/admins/:id",
+                            "raw": "{{baseUrl}}/admin/staff/:id",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "/admin/staff",
                                 ":id"
                             ],
                             "variable": [
@@ -307,12 +336,12 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/admins/:id",
+                            "raw": "{{baseUrl}}/admin/staff/:id",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "/admin/staff",
                                 ":id"
                             ],
                             "variable": [
@@ -369,12 +398,12 @@
                             "raw": "{\n  \"role\": \"super_admin\"\n}"
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/admins/:id/role",
+                            "raw": "{{baseUrl}}/admin/staff/:id/role",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "/admin/staff",
                                 ":id",
                                 "role"
                             ],
@@ -419,12 +448,12 @@
                             "raw": "{\n  \"permissions\": [\n    \"manage_staff\",\n    \"manage_products\",\n    \"manage_orders\",\n    \"view_insights\"\n  ]\n}"
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/admins/:id/permissions",
+                            "raw": "{{baseUrl}}/admin/staff/:id/permissions",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
-                                "admins",
+                                "/admin/staff",
                                 ":id",
                                 "permissions"
                             ],
@@ -450,6 +479,253 @@
                 }
             ],
             "description": "Endpoints for managing admin roles and permissions"
+        },
+        {
+            "name": "Analytics",
+            "item": [
+                {
+                    "name": "Get Analytics Summary",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/analytics/summary"
+                    }
+                },
+                {
+                    "name": "Get Profile Visits",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/analytics/profile-visits"
+                    }
+                },
+                {
+                    "name": "Get Engagement",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/analytics/engagement"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Product Management",
+            "item": [
+                {
+                    "name": "List All Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/products"
+                    }
+                },
+                {
+                    "name": "Create Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "name",
+                                    "value": "New Item",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "media",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/admin/products"
+                    }
+                },
+                {
+                    "name": "Get Product By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/products/1"
+                    }
+                },
+                {
+                    "name": "Update Product",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "price",
+                                    "value": "1500",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/admin/products/1"
+                    }
+                },
+                {
+                    "name": "Delete Product",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/products/1"
+                    }
+                },
+                {
+                    "name": "Filter Branch Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/admin/products/branch/filter?branchAmenityId=uuid",
+                            "query": [
+                                {
+                                    "key": "branchAmenityId",
+                                    "value": "uuid"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Branch Management",
+            "item": [
+                {
+                    "name": "List Branches",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/branches"
+                    }
+                },
+                {
+                    "name": "Create Branch",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Downtown Branch\",\n    \"isHQ\": false,\n    \"streetAddress\": \"456 Urban Rd\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/admin/branches/create"
+                    }
+                },
+                {
+                    "name": "Get Branch Details",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/branches/1"
+                    }
+                },
+                {
+                    "name": "Invite Staff to Branch",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"fullName\": \"Jane Smith\",\n    \"email\": \"jane@example.com\",\n    \"role\": \"admin\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/admin/branches/1/invite"
+                    }
+                },
+                {
+                    "name": "Get Branch Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/admin/branches/1/orders"
+                    }
+                }
+            ]
         }
     ],
     "auth": {

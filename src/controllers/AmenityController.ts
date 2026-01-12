@@ -24,36 +24,38 @@ export const getBranchAmenities = async (req: Request, res: Response) => {
     }
 };
 
-export const addBranchAmenities = async (req: Request, res: Response) => {
+export const addBranchAmenity = async (req: Request, res: Response) => {
     try {
+        const { amenityId, branchId } = req.params;
         const profileId = req.profile!.id;
-        const branchId = req.branch!;
-        const { amenityIds }: { amenityIds: string[] } = req.body;
+        const userId = req.user!;
+        const effectiveBranchId = parseInt(branchId, 10) || req.branch!;
 
-        if (!Array.isArray(amenityIds) || amenityIds.length === 0) {
-            return errorHandler(res, "amenityIds must be a non-empty array", 400);
+        if (!amenityId) {
+            return errorHandler(res, "amenityId is required", 400);
         }
 
-        const updatedAmenities = await AmenitiesService.addBranchAmenities(amenityIds, profileId, branchId);
-        successHandler(res, "Branch amenities added successfully", 200, updatedAmenities);
-    } catch (error) {
-        errorHandler(res, "Failed to add branch amenities", 500);
+        const updatedAmenity = await AmenitiesService.addBranchAmenity(amenityId, profileId, effectiveBranchId, userId);
+        successHandler(res, "Branch amenity added successfully", 200, updatedAmenity);
+    } catch (error: any) {
+        errorHandler(res, error.message || "Failed to add branch amenity", 500);
     }
 }
 
-export const removeBranchAmenities = async (req: Request, res: Response) => {
+export const removeBranchAmenity = async (req: Request, res: Response) => {
     try {
+        const { amenityId, branchId } = req.params;
         const profileId = req.profile!.id;
-        const branchId = req.branch!;
-        const { amenityIds }: { amenityIds: string[] } = req.body;
+        const userId = req.user!;
+        const effectiveBranchId = parseInt(branchId, 10) || req.branch!;
 
-        if (!Array.isArray(amenityIds) || amenityIds.length === 0) {
-            return errorHandler(res, "amenityIds must be a non-empty array", 400);
+        if (!amenityId) {
+            return errorHandler(res, "amenityId is required", 400);
         }
 
-        await AmenitiesService.removeBranchAmenities(amenityIds, profileId, branchId);
-        successHandler(res, "Branch amenities removed successfully", 200);
-    } catch (error) {
-        errorHandler(res, "Failed to remove branch amenities", 500);
+        await AmenitiesService.removeBranchAmenity(amenityId, profileId, effectiveBranchId, userId);
+        successHandler(res, "Branch amenity removed successfully", 200);
+    } catch (error: any) {
+        errorHandler(res, error.message || "Failed to remove branch amenity", 500);
     }
 }

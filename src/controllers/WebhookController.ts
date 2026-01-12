@@ -3,7 +3,7 @@ import { PaymentService } from '../services/payment.service';
 import { OrderService } from '../services/order.service';
 import { AppError } from '../utils/errors';
 import { appEvents } from '../utils/events';
-import { errorHandler } from '../handlers/responseHandlers';
+import { errorHandler, successHandler } from '../handlers/responseHandlers';
 import { PAYMENT_EVENT } from '../subscribers/types';
 
 export class WebhookController {
@@ -30,7 +30,7 @@ export class WebhookController {
             appEvents.emit(PAYMENT_EVENT.PAYSTACK_WEBHOOK, eventData);
 
             // Always return 200 OK to Paystack immediately
-            res.status(200).send({ status: 'success' });
+            return successHandler(res, "Webhook received", 200);
         } catch (error: any) {
             console.error("Webhook Error:", error);
             return errorHandler(res, error.message || 'Webhook Error', error.status || 500)

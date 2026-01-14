@@ -9,6 +9,22 @@ export interface ICreateOrderPayload {
     voucherId?: number;
 }
 
+export interface IUpdateOrderPayload {
+    items: IOrderItemPayload[];
+    branchId: number;
+    userId: number;
+    profileId: number;
+    orderId: string;
+}
+
+export interface IGetBranchOrdersPayload extends IBaseQueryDTO {
+    branchId: number;
+    userId: number;
+    profileId: number;
+    orderStatus?: TOrderStatus;
+    search?: string;
+}
+
 export interface IOrderItemPayload {
     productId: number;
     quantity: number;

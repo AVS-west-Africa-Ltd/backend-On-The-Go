@@ -217,23 +217,17 @@ export const getBranchLogs = async (req: Request, res: Response) => {
         const profileId = req.profile!.id;
         const userId = req.user;
         const loggedInUserBranchId = req.branch!;
-        let branchIdd: number;
+        let branchIdd: number | undefined;
 
-        console.log('branch logs----',);
-
-
-        if (branchId) {
-            branchIdd = parseInt(branchId as string, 10);
+        if (branchId && !isNaN(Number(branchId))) {
+            branchIdd = Number(branchId);
         } else {
             branchIdd = loggedInUserBranchId;
         }
 
-        if (!branchIdd || isNaN(branchIdd)) {
+        if (!branchIdd) {
             return errorHandler(res, "Invalid branch ID", 400);
         }
-
-        console.log('branch logs----', branchIdd);
-
 
         const result = await BranchService.getBranchLogs(branchIdd, profileId, userId, { cursor, limit, search });
         return successHandler(res, "Branch activity logs fetched successfully", 200, result || {});
@@ -250,13 +244,13 @@ export const getBranchMedia = async (req: Request, res: Response) => {
 
         let branchIdd: number;
 
-        if (branchId) {
-            branchIdd = parseInt(branchId as string, 10);
+        if (branchId && !isNaN(Number(branchId))) {
+            branchIdd = Number(branchId);
         } else {
             branchIdd = req.branch!;
         }
 
-        if (!branchIdd || isNaN(branchIdd)) {
+        if (!branchIdd) {
             return errorHandler(res, "Invalid branch ID", 400);
         }
 
@@ -275,13 +269,13 @@ export const getBranchReviews = async (req: Request, res: Response) => {
 
         let branchIdd: number;
 
-        if (branchId) {
-            branchIdd = parseInt(branchId as string, 10);
+        if (branchId && !isNaN(Number(branchId))) {
+            branchIdd = Number(branchId);
         } else {
             branchIdd = req.branch!;
         }
 
-        if (!branchIdd || isNaN(branchIdd)) {
+        if (!branchIdd) {
             return errorHandler(res, "Invalid branch ID", 400);
         }
 

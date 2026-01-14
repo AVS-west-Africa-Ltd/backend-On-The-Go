@@ -39,15 +39,15 @@ export const getBranchProducts = async (req: Request, res: Response) => {
         const userId = req.user;
         const loggedInUserBranchId = req.branch!;
 
-        let branchIdd;
+        let branchIdd: number | undefined;
 
-        if (branchId) {
-            branchIdd = parseInt(branchId as string, 10);
+        if (branchId && !isNaN(Number(branchId))) {
+            branchIdd = Number(branchId);
         } else {
             branchIdd = loggedInUserBranchId;
         }
 
-        if (!branchIdd || isNaN(branchIdd)) {
+        if (!branchIdd) {
             return errorHandler(res, "Invalid branch ID", 400);
         }
 

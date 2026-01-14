@@ -37,7 +37,8 @@ async function getAuthToken(email: string, retryCount = 0): Promise<string> {
             email: email,
             password: "password123"
         });
-        return loginRes.data.token;
+
+        return loginRes.data.data.token;
     } catch (error: any) {
         if (error.response?.status === 400 || error.response?.data?.message?.includes('does not exist')) {
             await registerUser(email);
@@ -50,7 +51,7 @@ async function getAuthToken(email: string, retryCount = 0): Promise<string> {
 async function getProductsForBranch(token: string, branchId: number) {
     const authHeaders = { Authorization: `Bearer ${token}` };
     try {
-        const res = await axios.get(`${BASE_URL}/products/branch/filter`, {
+        const res = await axios.get(`${BASE_URL}/app/branch/filter`, {
             params: { branchId },
             headers: authHeaders
         });

@@ -627,7 +627,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{baseUrl}}/admin/products/branch/filter?branchAmenityId=uuid",
+                            "raw": "{{baseUrl}}/app/branch/filter?branchAmenityId=uuid",
                             "query": [
                                 {
                                     "key": "branchAmenityId",

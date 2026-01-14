@@ -1,3 +1,23 @@
+import { Op } from 'sequelize';
+
+export const applyDateFilter = (from?: string, to?: string) => {
+    const dateFilter: any = {};
+
+    if (from) {
+        const fromDate = new Date(from);
+        fromDate.setHours(0, 0, 0, 0); // Start of the day
+        dateFilter[Op.gte] = fromDate;
+    }
+
+    if (to) {
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999); // End of the day
+        dateFilter[Op.lte] = toDate;
+    }
+
+    return Reflect.ownKeys(dateFilter).length > 0 ? dateFilter : undefined;
+}
+
 export const randomCharacters = (length: number) => {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";

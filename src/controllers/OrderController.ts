@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { OrderService } from '../services/order.service';
 import { AppError } from '../utils/errors';
 import { errorHandler, successHandler } from '../handlers/responseHandlers';
+import { TOrderStatus } from '../models/types/order.types';
+import { IGetUserOrdersPayload } from '../interfaces/order.interface';
 
 export class OrderController {
 
@@ -89,34 +91,103 @@ export class OrderController {
         }
     }
 
-    static async getBusinessOrders(req: Request, res: Response) {
+    static async getBranchOrders(req: Request, res: Response) {
         try {
-            // Check if user is business owner or staff (middleware should handle, or we check profile)
-            // For now assuming the businessId is passed or inferred. 
-            // Better: User has a profile associated with business
+            const { cursor, limit = "10", search, orderStatus, from, to } = req.query;
 
-            // Simplified: Expecting businessId in query or params? 
-            // In a real app, we check if req.user owns the business.
-            // Let's assume we pass businessId in Query for now, or infer from user's business profile.
+            const userId = req.user;
+            const profileId = req.profile!.id;
+            let branchIdd: number | undefined;
 
-            // For this task, let's assume the user IS the business.
-            // We need to fetch the business profileId for this user.
-
-            const userId = (req as any).user.id;
-
-            // We might need to find the Business Profile ID for this user first.
-            // But let's keep it simple: Pass businessId in query, validation inside Service?
-            // Service method expects businessId.
-
-            const { businessId, branchId, ...filters } = req.query;
-
-            if (!businessId) {
-                // throw new AppError("Business ID is required", 400);
-                // Or fetch from User's profile
+            if (req.query.branchId && !isNaN(Number(req.query.branchId))) {
+                branchIdd = Number(req.query.branchId);
+            } else {
+                branchIdd = req.branch;
             }
 
-            const data = await OrderService.getBusinessOrders(Number(businessId), branchId ? Number(branchId) : undefined, filters);
+            if (!branchIdd) {
+                return errorHandler(res, "Access Denied", 403);
+            }
+
+            const data = await OrderService.getBranchOrders({
+                cursor: cursor as string,
+                limit: Number(limit),
+                search: search as string,
+                userId,
+                profileId,
+                branchId: branchIdd,
+                orderStatus: orderStatus as TOrderStatus,
+                from: from as string,
+                to: to as string
+            });
             return successHandler(res, "Orders fetched successfully", 200, data);
+        } catch (error: any) {
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+        }
+    }
+
+    static async getOrderDetails(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const profileId = req.profile!.id;
+            const userId = req.user;
+            const branchId = req.branch!;
+
+            const order = await OrderService.getOrderDetails(id, profileId, userId, branchId);
+
+            return successHandler(res, "Order details fetched successfully", 200, order);
+        } catch (error: any) {
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+        }
+    }
+
+
+    static async updateOrderItems(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const profileId = req.profile!.id;
+            const { items } = req.body;
+
+            const order = await OrderService.updateOrderItems({
+                orderId: id,
+                items,
+                profileId,
+                userId: req.user,
+                branchId: req.branch!
+            });
+
+            return successHandler(res, "Order items updated successfully", 200, order);
+        } catch (error: any) {
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+        }
+    }
+
+    static async updateOrderStatus(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const profileId = req.profile!.id;
+            const userId = req.user;
+            const { status } = req.query;
+            const branchId = req.branch!;
+
+            const order = await OrderService.updateOrderStatus(id, status as TOrderStatus, profileId, userId, branchId);
+
+            return successHandler(res, "Order status updated successfully", 200, order);
+        } catch (error: any) {
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+        }
+    }
+
+    static async deleteOrder(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const profileId = req.profile!.id;
+            const userId = req.user;
+            const branchId = req.branch!;
+
+            await OrderService.deleteOrder(id, profileId, userId, branchId);
+
+            return successHandler(res, "Order deleted successfully", 200);
         } catch (error: any) {
             return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
         }

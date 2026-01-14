@@ -195,7 +195,9 @@ export class BranchService {
 
     // create better error message for duplicate name and wrong amenities
 
-    static async checkAccess(profileId: number, userId: number, branchData?: Branch, branchId?: number): Promise<boolean> {
+    static async checkAccess(payload: { profileId: number, userId: number, branchData?: Branch, branchId?: number }): Promise<boolean> {
+
+        const { profileId, userId, branchData, branchId } = payload;
 
         let branch = branchData;
 
@@ -411,7 +413,7 @@ export class BranchService {
 
             if (!branch) return null;
 
-            const hasAccess = await this.checkAccess(profileId, userId, branch);
+            const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
             if (!hasAccess) {
                 throw new AppError("You don't have access to this branch", 403);
             }
@@ -515,7 +517,7 @@ export class BranchService {
                 return false;
             }
 
-            const hasAccess = await this.checkAccess(profileId, userId, branch);
+            const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
             if (!hasAccess) {
                 throw new AppError("You don't have access to delete this branch", 403);
             }
@@ -564,7 +566,7 @@ export class BranchService {
                 return false;
             }
 
-            const hasAccess = await this.checkAccess(profileId, userId, branch);
+            const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
             if (!hasAccess) {
                 throw new AppError("You don't have access to update this branch status", 403);
             }
@@ -582,7 +584,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
         if (!hasAccess) throw new AppError("Unauthorized to invite staff to this branch", 403);
 
         const existingStaff = await BranchStaff.findOne({ where: { email: data.email, branchId } });
@@ -642,7 +644,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
         if (!hasAccess) throw new AppError("Branch not found", 404);
 
         const where: any = { branchId };
@@ -697,7 +699,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
         if (!hasAccess) throw new AppError("Branch not found", 404);
 
         const where: any = { branchId };
@@ -765,7 +767,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
         const router = await NetworkRouter.findOne({
@@ -788,7 +790,7 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
         // Reuse ProductService but ensured with access first
@@ -800,7 +802,8 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
+
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
         const where: any = { branchId };
@@ -840,7 +843,8 @@ export class BranchService {
         const branch = await Branch.findByPk(branchId);
         if (!branch) throw new AppError("Branch not found", 404);
 
-        const hasAccess = await this.checkAccess(profileId, userId, branch);
+        const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
+
         if (!hasAccess) throw new AppError("Branch not found", 404);
 
         const where: any = { targetId: branchId, targetType: 'business' };

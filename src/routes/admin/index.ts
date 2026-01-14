@@ -4,8 +4,11 @@ import branchRoutes from "../branch.routes";
 import adminManagementRoutes from "../admin.routes";
 import productRoutes from "../product.routes";
 import { login, getAllPermissions, getAllRoles } from "../../controllers/AdminController";
-import { validateBody } from "../../middlewares/validateMiddleware";
+import { validateBody, validateParams, validateQuery } from "../../middlewares/validateMiddleware";
 import { loginAdminSchema } from "../../validators/admin.validator";
+import { OrderController } from "../../controllers/OrderController";
+import { authAdmin } from "../../middlewares/authAdmin";
+import { getBranchOrdersSchema, getOrderByIdSchema, updateOrderItemsSchema, updateOrderStatusSchema } from "../../validators/order.validator";
 
 const adminRouter = express.Router();
 
@@ -20,5 +23,12 @@ adminRouter.get("/roles", getAllRoles);
 
 // Management Routes (With prefix)
 adminRouter.use("/staff", adminManagementRoutes);
+
+// admin orders
+adminRouter.get("/orders", authAdmin, validateQuery(getBranchOrdersSchema), OrderController.getBranchOrders);
+adminRouter.put("/orders/:id/items", authAdmin, validateParams(getOrderByIdSchema), validateBody(updateOrderItemsSchema), OrderController.updateOrderItems);
+adminRouter.put("/orders/:id/status", authAdmin, validateParams(getOrderByIdSchema), validateQuery(updateOrderStatusSchema), OrderController.updateOrderStatus);
+adminRouter.delete("/orders/:id", authAdmin, validateParams(getOrderByIdSchema), OrderController.deleteOrder);
+adminRouter.get("/orders/:id", authAdmin, validateParams(getOrderByIdSchema), OrderController.getOrderDetails);
 
 export default adminRouter;

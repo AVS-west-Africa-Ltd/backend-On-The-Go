@@ -14,6 +14,5 @@ router.get("/", ProductController.getBranchProducts);
 router.get("/:productId", ProductController.getProduct);
 router.patch("/:productId", upload.array("media"), validateBody(updateProductSchema), ProductController.update);
 router.delete("/:productId", ProductController.deleteProduct);
-router.get("/branch/filter", validateQuery(filterBranchProductsSchema), ProductController.filterBranchProducts);
 
 export default router;

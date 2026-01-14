@@ -8,6 +8,7 @@ import { IGetTransactions } from '../interfaces/transaction.interface';
 import { Product } from '../models/Product';
 import { BranchAmenity } from '../models/BranchAmenity';
 import { Amenity } from '../models/Amenity';
+import { applyDateFilter } from '../utils/helpers';
 
 export class TransactionService {
 
@@ -32,13 +33,9 @@ export class TransactionService {
         if (businessId) whereClause.businessId = businessId;
         if (branchId) whereClause.branchId = branchId;
 
-        if (from && to) {
-            const startDate = new Date(from);
-            const endDate = new Date(to);
-            endDate.setHours(23, 59, 59, 999);
-            whereClause.createdAt = {
-                [Op.between]: [startDate, endDate]
-            };
+        const dateFilter = applyDateFilter(from, to);
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
         }
 
         if (cursor) {

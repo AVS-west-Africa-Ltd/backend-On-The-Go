@@ -25,6 +25,16 @@ export class ProductService {
         try {
             const { name, description, price, businessId, userId, branchId, branchAmenityId, meta } = payload;
 
+            const checkAmenity = await BranchAmenity.findOne({
+                where: {
+                    id: branchAmenityId,
+                    branchId,
+                    status: Status.ACTIVE
+                }
+            });
+
+            if (!checkAmenity) throw new AppError("Branch amenity not found", 404);
+
             const product = await Product.create({
                 name,
                 description,
@@ -236,6 +246,16 @@ export class ProductService {
         const t: Transaction = await sequelize.transaction();
 
         try {
+            const checkAmenity = await BranchAmenity.findOne({
+                where: {
+                    id: branchAmenityId,
+                    branchId,
+                    status: Status.ACTIVE
+                }
+            });
+
+            if (!checkAmenity) throw new AppError("Branch amenity not found", 404);
+
             const product = await Product.findOne({ where: { id, branchId }, transaction: t });
 
             if (!product) throw new AppError("Product not found");

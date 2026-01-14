@@ -46,6 +46,7 @@ export class Transaction extends Model<
       Transaction.belongsTo(models.Order, {
         foreignKey: "orderId",
         as: "order",
+        onDelete: "RESTRICT",
       });
     }
 

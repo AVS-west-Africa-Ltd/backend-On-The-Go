@@ -30,6 +30,9 @@ import {
 import { createPostSchema } from "../validators/post.validator";
 import { BookmarkController } from "../controllers/BookmarkController";
 import { toggleBookmarkSchema, getBookmarksSchema } from "../validators/bookmark.validator";
+import * as ProductController from "../controllers/ProductController";
+import { filterBranchProductsSchema } from "../validators/product.validator";
+
 
 const router = express.Router();
 
@@ -44,6 +47,8 @@ router.post("/follow-profile", validateBody(followProfileSchema), followProfile)
 router.post("/create-chat", validateBody(createChatSchema), createChat);
 router.get("/fetch-chats", fetchChats);
 router.get("/:branchId/branch", getBranchForUser);
+
+router.get("/branch/filter", validateQuery(filterBranchProductsSchema), ProductController.filterBranchProducts);
 
 // Community interaction routes
 router.post("/join-community", validateBody(joinCommunitySchema), joinCommunity);

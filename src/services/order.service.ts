@@ -1,8 +1,8 @@
 import db from '../models';
 import { Op, WhereOptions } from 'sequelize';
 import { PaymentService } from './payment.service';
-import { ICreateOrderPayload, ICheckoutResponse, IGetUserOrdersPayload, IOrderSummary } from '../interfaces/order.interface';
-import { randomCharacters } from '../utils/helpers';
+import { ICreateOrderPayload, ICheckoutResponse, IGetUserOrdersPayload, IOrderSummary, IGetBranchOrdersPayload, IOrderItemPayload, IUpdateOrderPayload } from '../interfaces/order.interface';
+import { randomCharacters, applyDateFilter } from '../utils/helpers';
 import { AppError } from '../utils/errors';
 import { OrderItem } from '../models/OrderItem';
 import { Product } from '../models/Product';
@@ -12,11 +12,12 @@ import { Transaction } from '../models/Transaction';
 import { Branch } from '../models/Branch';
 import { Profile } from '../models/Profile';
 import { User } from '../models/User';
-import { OrderPaymentStatus, OrderStatus } from '../models/types/order.types';
+import { OrderPaymentStatus, OrderStatus, TOrderStatus } from '../models/types/order.types';
 import { PaymentMethod, PaymentProvider, TransactionStatus, TPaymentMethod } from '../models/types/transaction.types';
 import { PAYSTACK_EVENT, TPaystackEventData } from '../subscribers/types';
 import { BranchAmenity } from '../models/BranchAmenity';
 import { Amenity } from '../models/Amenity';
+import { BranchService } from './branches.service';
 
 const { sequelize } = db;
 
@@ -158,6 +159,123 @@ export class OrderService {
         }
     }
 
+    static async updateOrderItems(payload: IUpdateOrderPayload) {
+        const { profileId, userId, branchId, orderId, items } = payload;
+        const t = await sequelize.transaction();
+        try {
+            const order = await Order.findOne({
+                where: { id: orderId, branchId: branchId },
+                transaction: t
+            });
+
+            if (!order) {
+                throw new AppError("Order not found", 404);
+            }
+
+            const checkAccess = await BranchService.checkAccess({ profileId, userId, branchId: order.branchId });
+
+            if (!checkAccess) {
+                throw new AppError("You do not have access to this branch", 403);
+            }
+
+            if (order.status !== OrderStatus.NEW) {
+                throw new AppError("Cannot update items for an ongoing or completed order", 400);
+            }
+
+            if (order.paymentStatus !== OrderPaymentStatus.PENDING) {
+                throw new AppError("Cannot update items for a paid order", 400);
+            }
+
+            let subTotal = 0;
+            const orderItemsData = [];
+            const orderAmenitiesCategorySet = new Set<string>();
+
+            for (const item of items) {
+                const product = await Product.findByPk(item.productId,
+                    {
+                        include: [
+                            {
+                                model: BranchAmenity,
+                                as: "branch_amenity",
+                                include: [
+                                    {
+                                        model: Amenity,
+                                        as: "amenity",
+                                        attributes: ["id", "name"]
+                                    }
+                                ]
+                            }
+                        ],
+                        transaction: t
+                    }
+                );
+                if (!product) {
+                    throw new AppError(`Product with ID ${item.productId} not found`, 404);
+                }
+
+                if (product.branchId !== order.branchId) {
+                    throw new AppError(`Product ${product.name} does not belong to the order's branch`, 400);
+                }
+
+                const itemTotal = product.price * item.quantity;
+                subTotal += itemTotal;
+
+                orderItemsData.push({
+                    productId: product.id,
+                    quantity: item.quantity,
+                    amount: product.price,
+                    totalAmount: itemTotal,
+                    orderId: order.id
+                });
+
+                if (product.branch_amenity?.amenity?.name) {
+                    orderAmenitiesCategorySet.add(product.branch_amenity.amenity.name);
+                }
+            }
+
+            let discountAmount = 0;
+            if (order.voucherId) {
+                const voucher = await Voucher.findByPk(order.voucherId, { transaction: t });
+
+                if (voucher) {
+                    if (voucher.discountType === 'PERCENTAGE') {
+                        discountAmount = (subTotal * voucher.value) / 100;
+                    } else {
+                        discountAmount = voucher.value;
+                    }
+                }
+            }
+
+            if (discountAmount > subTotal) {
+                discountAmount = subTotal;
+            }
+
+            const totalAmount = subTotal - discountAmount;
+
+            // Delete old items
+            await OrderItem.destroy({ where: { orderId: order.id }, transaction: t });
+
+            // Create new items
+            await OrderItem.bulkCreate(orderItemsData, { transaction: t });
+
+            // Update Order
+            await order.update({
+                subTotal,
+                discountAmount,
+                totalAmount: totalAmount > 0 ? totalAmount : 0,
+                amenitiesCategory: Array.from(orderAmenitiesCategorySet)
+            }, { transaction: t });
+
+            await t.commit();
+            return order;
+
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
+
+
     static async getUserOrders(profileId: number, filters: IGetUserOrdersPayload) {
         const { status, cursor, from, to, branchId, businessId, limit = 10, search } = filters;
 
@@ -168,11 +286,9 @@ export class OrderService {
             whereClause.status = status;
         }
 
-        if (from && to) {
-            whereClause.createdAt = {
-                [Op.gte]: from,
-                [Op.lte]: to,
-            };
+        const dateFilter = applyDateFilter(from, to);
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
         }
 
         if (branchId) {
@@ -317,8 +433,208 @@ export class OrderService {
         }
     }
 
+    static async getBranchOrders(filters: IGetBranchOrdersPayload) {
+        const { orderStatus, cursor, limit = 10, from, to, search, branchId, userId, profileId } = filters;
+
+        const whereClause: any = { branchId };
+
+        const checkAccess = await BranchService.checkAccess({ profileId, userId, branchId });
+
+        if (!checkAccess) {
+            throw new AppError("You do not have access to this branch", 403);
+        }
+
+        if (orderStatus) {
+            whereClause.status = orderStatus;
+        }
+
+        if (search) {
+            whereClause.orderId = {
+                [Op.iLike]: `%${search}%`,
+            };
+        }
+
+        const dateFilter = applyDateFilter(from, to);
+
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
+        }
+
+        if (cursor) {
+            const [lastCreatedAt, lastId] = cursor.split("_");
+            whereClause[Op.or] = [
+                { createdAt: { [Op.lt]: lastCreatedAt } },
+                {
+                    createdAt: lastCreatedAt,
+                    id: { [Op.lt]: lastId },
+                },
+            ];
+        }
+
+        const orders = await Order.findAll({
+            where: whereClause,
+            include: [
+                { model: OrderItem, as: "items" },
+                {
+                    model: Profile,
+                    as: "customer",
+                    attributes: ["id", "picture", "userName"],
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: ["id", "firstName", "lastName"],
+                        },
+                    ],
+                },
+            ],
+            limit: Number(limit) + 1,
+            order: [
+                ["createdAt", "DESC"],
+                ["id", "DESC"],
+            ],
+        });
+
+        let nextCursor: string | null = null;
+        const hasNextPage = orders.length > Number(limit);
+
+        if (hasNextPage) {
+            orders.pop();
+            const lastOrder = orders[orders.length - 1];
+            if (lastOrder) {
+                nextCursor = `${lastOrder.createdAt.toISOString()}_${lastOrder.id}`;
+            }
+        }
+
+        return {
+            orders,
+            total: orders.length,
+            nextCursor,
+            hasNextPage
+        };
+    }
+
+    static async getOrderDetails(orderId: string, profileId: number, userId: number, branchId: number) {
+        const order = await Order.findOne({
+            where: { id: orderId, branchId },
+            include: [
+                {
+                    model: OrderItem, as: "items",
+                    attributes: { exclude: ["createdAt", "updatedAt", "orderId", "productId"] },
+                    include: [
+                        {
+                            model: Product, as: "product",
+                            attributes: ["id", "name", "description", "price", "currency", "isFeatured"],
+                            include: [
+                                {
+                                    model: BranchAmenity, as: "branch_amenity",
+                                    attributes: ["id"],
+                                    include: [
+                                        {
+                                            model: Amenity, as: "amenity",
+                                            attributes: ["id", "name"],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ]
+                },
+                {
+                    model: Profile,
+                    as: "customer",
+                    attributes: ["id", "picture", "userName"],
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            attributes: ["id", "firstName", "lastName"],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!order) {
+            throw new AppError("Order not found", 404);
+        }
+
+        const checkAccess = await BranchService.checkAccess({ profileId, userId, branchId: order.branchId });
+
+        if (!checkAccess) {
+            throw new AppError("You do not have access to this branch", 403);
+        }
+
+        return order;
+    }
+
+
+    static async updateOrderStatus(orderId: string, status: TOrderStatus, profileId: number, userId: number, branchId: number) {
+
+        const order = await Order.findByPk(orderId);
+
+        if (!order) {
+            throw new AppError("Order not found", 404);
+        }
+
+        const checkAccess = await BranchService.checkAccess({ profileId, userId, branchId: order.branchId });
+
+        if (!checkAccess) {
+            throw new AppError("You do not have access to this branch", 403);
+        }
+
+
+        if (order.status === status) {
+            return order;
+        }
+
+        if (order.status === OrderStatus.ONGOING || order.status === OrderStatus.COMPLETED) {
+            if (status === OrderStatus.NEW) {
+                throw new AppError("Order status not allowed", 400);
+            }
+        }
+
+        order.status = status;
+        await order.save();
+
+        return order;
+    }
+
+    static async deleteOrder(orderId: string, profileId: number, userId: number, branchId: number): Promise<boolean> {
+        try {
+            const order = await Order.findOne({ where: { id: orderId, branchId } });
+
+            if (!order) {
+                throw new AppError("Order not found", 404);
+            }
+
+            const checkAccess = await BranchService.checkAccess({ profileId, userId, branchId: order.branchId });
+
+            if (!checkAccess) {
+                throw new AppError("You do not have access to this branch", 403);
+            }
+
+            if (order.status !== OrderStatus.NEW) {
+                throw new AppError("Cannot delete an ongoing or completed order", 400);
+            }
+
+            const transactionCount = await Transaction.count({ where: { orderId: order.id } });
+
+            if (transactionCount > 0) {
+                throw new AppError("Cannot delete order with associated payment transactions", 400);
+            }
+
+            await order.destroy();
+
+            return true;
+        } catch (error: any) {
+            throw new AppError(error.message || "Failed to delete order", error.statusCode || 500);
+        }
+    }
+
+
     static async getBusinessOrders(businessId: number, branchId: number | undefined, filters: any = {}) {
-        const { status, cursor, limit = 10, startDate, endDate } = filters;
+        const { status, cursor, limit = 10, startDate, endDate, search } = filters;
 
         const whereClause: any = { businessId };
 
@@ -330,10 +646,15 @@ export class OrderService {
             whereClause.status = status;
         }
 
-        if (startDate && endDate) {
-            whereClause.createdAt = {
-                [Op.between]: [new Date(startDate), new Date(endDate)]
+        if (search) {
+            whereClause.orderId = {
+                [Op.iLike]: `%${search}%`,
             };
+        }
+
+        const dateFilter = applyDateFilter(startDate, endDate);
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
         }
 
         if (cursor) {

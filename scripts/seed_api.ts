@@ -85,7 +85,7 @@ class Seeder {
 
             // Login
             const loginRes = await this.apiPost('/auth/login', { email, password }, false);
-            this.token = loginRes.token;
+            this.token = loginRes.data.data.token;
 
             // Create Business Profile (Generates HQ)
             const profRes = await this.apiPost('/profile/create', {
@@ -103,7 +103,7 @@ class Seeder {
             });
 
             // The createProfile returns a NEW token that includes the HQ branchId
-            this.token = profRes.token;
+            this.token = profRes.data.data.token;
 
             // Get Global Amenities (only once) - Now we have a profile in the token
             if (amenityIds.length === 0) {
@@ -173,7 +173,7 @@ class Seeder {
                 // Let's seed products for ALL branchAmenities found.
                 if (wifiBA) {
                     for (let p = 0; p < 5; p++) {
-                        await this.apiPost('/products/', {
+                        await this.apiPost('/admin/products/', {
                             name: `WiFi Plan ${p + 1}`,
                             description: "Fast internet",
                             price: 500 + (p * 500),
@@ -187,7 +187,7 @@ class Seeder {
                 for (let p = 0; p < 5; p++) {
                     const ba = otherBAs[p % otherBAs.length] || wifiBA;
                     if (!ba) continue;
-                    await this.apiPost('/products/', {
+                    await this.apiPost('/admin/products/', {
                         name: `Product ${p + 1}`,
                         description: "Standard item",
                         price: 200 + (p * 100),
@@ -215,7 +215,7 @@ class Seeder {
             }, false);
 
             const loginRes = await this.apiPost('/auth/login', { email, password }, false);
-            this.token = loginRes.token;
+            this.token = loginRes.data.data.token;
 
             await this.apiPost('/profile/create', {
                 userName: `UserProf_${this.seedId}_${i}_${generateRandomString(4)}`,

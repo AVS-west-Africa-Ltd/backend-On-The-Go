@@ -2,7 +2,7 @@ import db from '../../models';
 import { Op, WhereOptions } from 'sequelize';
 import { PaymentService } from './../payment.service';
 import { ICreateOrderPayload, ICheckoutResponse, IGetUserOrdersPayload, IOrderSummary } from '../../interfaces/order.interface';
-import { randomCharacters } from '../../utils/helpers';
+import { randomCharacters, applyDateFilter } from '../../utils/helpers';
 import { AppError } from '../../utils/errors';
 import { OrderItem } from '../../models/OrderItem';
 import { Product } from '../../models/Product';
@@ -168,11 +168,9 @@ export class OrderService {
             whereClause.status = status;
         }
 
-        if (from && to) {
-            whereClause.createdAt = {
-                [Op.gte]: from,
-                [Op.lte]: to,
-            };
+        const dateFilter = applyDateFilter(from, to);
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
         }
 
         if (branchId) {
@@ -330,10 +328,9 @@ export class OrderService {
             whereClause.status = status;
         }
 
-        if (startDate && endDate) {
-            whereClause.createdAt = {
-                [Op.between]: [new Date(startDate), new Date(endDate)]
-            };
+        const dateFilter = applyDateFilter(startDate, endDate);
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
         }
 
         if (cursor) {

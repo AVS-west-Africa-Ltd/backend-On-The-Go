@@ -15,9 +15,19 @@ export const getBranchAmenities = async (req: Request, res: Response) => {
     try {
         const profileId = req.profile!.id;
         const { branchId } = req.params;
-        // const branchId = req.branch!;
 
-        const amenities = await AmenitiesService.getBranchAmenities(profileId, Number(branchId));
+        let branchIdd: number | undefined;
+        if (branchId && !isNaN(Number(branchId))) {
+            branchIdd = Number(branchId);
+        } else {
+            branchIdd = req.branch;
+        }
+
+        if (!branchIdd) {
+            return errorHandler(res, "Branch ID is required", 400);
+        }
+
+        const amenities = await AmenitiesService.getBranchAmenities(profileId, branchIdd);
         successHandler(res, "Branch amenities fetched successfully", 200, amenities);
     } catch (error) {
         errorHandler(res, "Failed to fetch branch amenities", 500);

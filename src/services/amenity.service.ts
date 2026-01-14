@@ -48,7 +48,7 @@ export class AmenitiesService {
     static async addBranchAmenity(amenityId: string, profileId: number, branchId: number, userId: number): Promise<BranchAmenity> {
         try {
             // Check access
-            const canAccess = await BranchService.checkAccess(profileId, userId, undefined, branchId);
+            const canAccess = await BranchService.checkAccess({ profileId, userId, branchId });
             if (!canAccess) {
                 throw new Error("You don't have access to this branch");
             }
@@ -81,7 +81,7 @@ export class AmenitiesService {
     static async removeBranchAmenity(branch_amenityId: string, profileId: number, branchId: number, userId: number): Promise<boolean> {
         try {
             // Check access
-            const canAccess = await BranchService.checkAccess(profileId, userId, undefined, branchId);
+            const canAccess = await BranchService.checkAccess({ profileId, userId, branchId });
             if (!canAccess) {
                 throw new Error("You don't have access to this branch");
             }

@@ -6,7 +6,7 @@ import { createProfile, addMoreInfomation, addAmenities, addPhotos, updateProfil
 
 const router = express.Router();
 
-router.get("/fetch", authUser, upload.single("picture"), fetchProfile);
+router.get("/fetch", authProfile, upload.single("picture"), fetchProfile);
 
 router.post("/create", authUser, upload.single("picture"), createProfile);
 

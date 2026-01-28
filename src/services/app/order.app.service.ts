@@ -152,7 +152,6 @@ export class OrderService {
 
         } catch (error) {
             console.error("Failed to create order:--", error);
-
             await t.rollback();
             throw error;
         }
@@ -451,7 +450,7 @@ export class OrderService {
             }
 
             if (transaction.status === TransactionStatus.SUCCESS) {
-                await t.rollback();
+                await t.commit();
                 return true;
             }
 

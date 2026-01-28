@@ -8,6 +8,8 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
+import { User } from "./User";
+import { Post } from "./Post";
 
 export class Comment extends Model<
   InferAttributes<Comment>,
@@ -25,8 +27,8 @@ export class Comment extends Model<
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare user?: NonAttribute<any>;
-  declare post?: NonAttribute<any>;
+  declare user?: NonAttribute<User>;
+  declare post?: NonAttribute<Post>;
   declare replies?: NonAttribute<Comment[]>;
   declare parent?: NonAttribute<Comment>;
 
@@ -34,6 +36,14 @@ export class Comment extends Model<
     if (models.User) {
       Comment.belongsTo(models.User, { foreignKey: "userId", as: "user" });
     }
+
+    if (models.Profile) {
+      Comment.belongsTo(models.Profile, {
+        foreignKey: "profileId",
+        as: "author",
+      });
+    }
+    
     if (models.Post) {
       Comment.belongsTo(models.Post, { foreignKey: "postId", as: "post" });
     }

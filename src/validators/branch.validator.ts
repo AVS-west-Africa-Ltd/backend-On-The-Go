@@ -60,3 +60,12 @@ export const inviteStaffSchema = Joi.object({
   email: Joi.string().email().required(),
   role: Joi.string().required(),
 })
+
+export const getBranchCustomersSchema = Joi.object({
+    cursor: Joi.string().optional(),
+    limit: Joi.number().integer().optional(),
+    search: Joi.string().optional(),
+    branchId: Joi.number().integer().positive().optional(),
+    from: Joi.string().isoDate().optional(),
+    to: Joi.string().isoDate().optional(),
+});

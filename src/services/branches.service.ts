@@ -35,9 +35,13 @@ import { IGetBranchProductsResponse, IGetProductsQuery } from "../interfaces/pro
 import { ProductService } from "./product.service";
 import { AdminPermission, AdminRole } from "../models/types/admin.types";
 import { Admin } from "../models/Admin";
-import { randomCharacters, randomNumber } from "../utils/helpers";
+import { applyDateFilter, randomCharacters, randomNumber } from "../utils/helpers";
 import { Insight } from "../models/Insight";
 import { InsightService } from "./insight.service";
+import { IGetCustomersPayload } from "../interfaces/customer.interface";
+import { ProfileType } from "../models/types/profile.types";
+import { Comment } from "../models/Comment";
+import { Friend } from "../models/Friend";
 
 const { sequelize } = db;
 
@@ -985,4 +989,217 @@ export class BranchService {
             }
         };
     }
+
+    static async getBranchCustomers(filters: IGetCustomersPayload) {
+        const { branchId, cursor, limit = 10, search, from, to } = filters;
+
+        const whereClause: any = { branchId };
+
+        const dateFilter = applyDateFilter(from, to);
+        if (dateFilter) {
+            whereClause.createdAt = dateFilter;
+        }
+
+        if (cursor) {
+            const [lastCreatedAt, lastId] = cursor.split("_");
+            whereClause[Op.or] = [
+                { createdAt: { [Op.lt]: lastCreatedAt } },
+                { createdAt: lastCreatedAt, id: { [Op.lt]: lastId } }
+            ];
+        }
+
+        const userWhere: any = {};
+        if (search) {
+            userWhere[Op.or] = [
+                { firstName: { [Op.like]: `%${search}%` } },
+                { lastName: { [Op.like]: `%${search}%` } },
+                { email: { [Op.like]: `%${search}%` } },
+                { phone_number: { [Op.like]: `%${search}%` } }
+            ];
+        }
+
+        const orders = await Order.findAll({
+            where: whereClause,
+            include: [
+                {
+                    model: Profile,
+                    as: "customer",
+                    required: true,
+                    attributes: ["id", "picture", "userName", "state", "city"],
+                    include: [
+                        {
+                            model: User,
+                            as: "user",
+                            required: true,
+                            where: Object.keys(userWhere).length ? userWhere : undefined,
+                            attributes: [
+                                "id",
+                                "firstName",
+                                "lastName",
+                                "email",
+                                "phone_number",
+                                "isVerified"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            order: [
+                ["createdAt", "DESC"],
+                ["id", "DESC"]
+            ],
+            limit: Number(limit) * 2 // fetch extra to allow dedupe
+        });
+
+        const uniqueCustomersMap = new Map<number, any>();
+
+        for (const order of orders) {
+            if (!uniqueCustomersMap.has(order.customer!.id)) {
+                uniqueCustomersMap.set(order.customer!.id, {
+                    ...order.customer!.toJSON(),
+                    lastOrderAt: order.createdAt
+                });
+            }
+            if (uniqueCustomersMap.size === limit) break;
+        }
+
+        const customers = Array.from(uniqueCustomersMap.values());
+
+
+        let nextCursor: string | null = null;
+
+        if (customers.length === limit) {
+            const lastOrder = orders.find(
+                o => o.customer!.id === customers[customers.length - 1].id
+            );
+
+            if (lastOrder) {
+                nextCursor = `${lastOrder.createdAt.toISOString()}_${lastOrder.id}`;
+            }
+        }
+
+        return {
+            customers,
+            total: customers.length,
+            nextCursor,
+            hasNextPage: Boolean(nextCursor)
+        };
+    }
+
+    static async getCustomerById(customerId: number, branchId: number) {
+        const customer = await Profile.findOne({
+            where: {
+                id: customerId,
+                profileType: ProfileType.PERSONAL
+            },
+            include: [
+                {
+                    model: User,
+                    as: "user",
+                    attributes: [
+                        "id",
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "phone_number",
+                        "isVerified",
+                        "createdAt"
+                    ]
+                }
+            ]
+        });
+
+        if (!customer) {
+            throw new AppError("Customer not found", 404);
+        }
+
+        const orders = await Order.findAll({
+            where: {
+                customerId,
+                branchId
+            },
+            include: [
+                {
+                    model: OrderItem, as: "items",
+                    include: [
+                        {
+                            model: Product, as: "product",
+                            attributes: ["id", "name", "description", "price"],
+                            include: [
+                                {
+                                    model: BranchAmenity, as: "branch_amenity",
+                                    attributes: ["id"],
+                                    include: [{ model: Amenity, as: "amenity", attributes: ["id", "name"] }]
+                                }
+                            ]
+                        }
+                    ]
+                },
+            ],
+            order: [["createdAt", "DESC"]],
+            attributes: ["id", "createdAt"],
+        });
+
+        const { rows: reviews, count: reviewsCount } = await Post.findAndCountAll({
+            where: {
+                profileId: customerId,
+                targetType: PostTargetType.BUSINESS,
+                postType: PostType.REVIEW,
+                branchId
+            },
+            include: [
+                {model: Branch, as: "branch", attributes: ["id", "name", "city", "state"]},
+                {model: Comment, as: "comment", attributes: ["id", "body", "createdAt", "updatedAt", "likes"],
+                    include: [
+                        {model: User, as: "user", attributes: ["id", "firstName", "lastName"]},
+                        {model: Profile, as: "author", attributes: ["id", "userName", "picture"]}
+                    ]
+                }
+            ],
+            order: [["createdAt", "DESC"]],
+            attributes: ["id", "rating", "body", "createdAt", "media", "postType", "targetType", "likes"],
+        });
+
+        const followersCount = await Friend.count({
+            where: {
+                friendId: customerId
+            }
+        });
+
+        const followingCount = await Friend.count({
+            where: {
+                ownerId: customerId
+            }
+        });
+
+       
+        // const wifiUsage = await WifiSession.findOne({
+        //     where: {
+        //         customerId,
+        //         branchId,
+        //         status: "active"
+        //     },
+        //     order: [["connectedAt", "DESC"]]
+        // });
+
+        // const totalVisits = await WifiSession.count({
+        //     where: {
+        //         customerId,
+        //         branchId
+        //     }
+        // });  
+
+        const wifiUsage = {};
+
+        return {
+            profile: customer,
+            reviews: reviews,
+            reviewsCount: reviewsCount,
+            followersCount: followersCount,
+            followingCount: followingCount,
+            orders: orders,
+            wifiUsage: wifiUsage
+        };
+    }
+
 }

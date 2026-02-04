@@ -2,8 +2,8 @@
 import express from "express";
 import * as BranchController from "../controllers/BranchController";
 import { authProfile } from "../middlewares/authProfile";
-import { validateBody } from "../middlewares/validateMiddleware";
-import { createBranchSchema, inviteStaffSchema } from "../validators/branch.validator";
+import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
+import { createBranchSchema, getBranchCustomersSchema, inviteStaffSchema } from "../validators/branch.validator";
 import { authAdmin, authorizeAdmin } from "../middlewares/authAdmin";
 import { AdminPermission } from "../models/types/admin.types";
 
@@ -18,6 +18,8 @@ router.get("/reviews", BranchController.getBranchReviews);
 
 router.post("/create", validateBody(createBranchSchema), BranchController.create);
 router.get("/", authorizeAdmin(AdminPermission.MANAGE_ALL_BRANCHES), BranchController.getBranches);
+router.get("/customers", validateQuery(getBranchCustomersSchema), BranchController.getBranchCustomers);
+router.get("/customers/:customerId", BranchController.getBranchCustomerDetails);
 router.get("/:branchId", BranchController.getBranch);
 router.delete("/:branchId", authorizeAdmin(AdminPermission.MANAGE_ALL_BRANCHES), BranchController.deleteBranch);
 router.patch("/:branchId/status", BranchController.updateBranchStatus);

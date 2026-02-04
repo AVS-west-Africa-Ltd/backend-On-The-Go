@@ -83,7 +83,6 @@ export class ProfileService {
                     branch.isHQ = true;
                     break;
                 default:
-                    await t.rollback();
                     throw new Error("Invalid profile type selected.");
             }
 
@@ -136,7 +135,7 @@ export class ProfileService {
         } catch (error: any) {
             console.error("error creating profile---", error);
             await t.rollback();
-            throw new Error(error.message || "Failed to create profile");
+            throw error;
         }
     }
 

@@ -285,3 +285,52 @@ export const getBranchReviews = async (req: Request, res: Response) => {
         return errorHandler(res, error.message || "Failed to fetch reviews", error.statusCode || 500, error);
     }
 }
+
+export const getBranchCustomers = async (req: Request, res: Response) => {
+    try {
+        const { cursor, limit, search, from, to, branchId } = req.query as any;
+
+        let branchIdStr: number;
+
+        if (branchId || !isNaN(Number(branchId))) {
+            branchIdStr = Number(branchId);
+        } else {
+            branchIdStr = req.branch!;
+        }
+
+        if (!branchIdStr) {
+            return errorHandler(res, "Invalid branch ID", 400);
+        }
+
+        const result = await BranchService.getBranchCustomers({ cursor, limit, search, from, to, branchId: branchIdStr });
+        return successHandler(res, "Customers fetched successfully", 200, result);
+    } catch (error: any) {
+        return errorHandler(res, error.message || "Failed to fetch customers", error.statusCode || 500, error);
+    }
+}
+
+export const getBranchCustomerDetails = async (req: Request, res: Response) => {
+    try {
+        const { customerId } = req.params;
+
+        let branchId = req.branch!;
+
+        if (!customerId || isNaN(Number(customerId))) {
+            return errorHandler(res, "Customer ID is required", 400);
+        }
+
+        const customerIdNum = parseInt(customerId, 10);
+        if (isNaN(customerIdNum)) {
+            return errorHandler(res, "Invalid Customer ID", 400);
+        }
+
+        if (!branchId) {
+            return errorHandler(res, "Something went wrong!", 400);
+        }
+
+        const result = await BranchService.getCustomerById(customerIdNum, branchId);
+        return successHandler(res, "Customer details fetched successfully", 200, result);
+    } catch (error: any) {
+        return errorHandler(res, error.message || "Failed to fetch customers", error.statusCode || 500, error);
+    }
+}

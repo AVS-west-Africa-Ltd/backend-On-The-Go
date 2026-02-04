@@ -15,7 +15,6 @@ const adminRouter = express.Router();
 adminRouter.use("/analytics", analyticsRoutes);
 adminRouter.use("/branches", branchRoutes);
 adminRouter.use("/products", productRoutes);
-
 // Public Admin Routes (No prefix)
 adminRouter.post("/login", validateBody(loginAdminSchema), login);
 adminRouter.get("/permissions", getAllPermissions);
@@ -30,5 +29,6 @@ adminRouter.put("/orders/:id/items", authAdmin, validateParams(getOrderByIdSchem
 adminRouter.put("/orders/:id/status", authAdmin, validateParams(getOrderByIdSchema), validateQuery(updateOrderStatusSchema), OrderController.updateOrderStatus);
 adminRouter.delete("/orders/:id", authAdmin, validateParams(getOrderByIdSchema), OrderController.deleteOrder);
 adminRouter.get("/orders/:id", authAdmin, validateParams(getOrderByIdSchema), OrderController.getOrderDetails);
+
 
 export default adminRouter;

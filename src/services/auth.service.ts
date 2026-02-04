@@ -29,6 +29,11 @@ export class AuthService {
                 referralCode = null,
             } = data;
 
+            // Input validation
+            if (!email || !phone_number) {
+                throw new Error("Email and phone number are required");
+            }
+
             const isExist = await User.findOne({
                 where: {
                     [Op.or]: [
@@ -40,9 +45,7 @@ export class AuthService {
             });
 
             if (isExist) {
-                await t.rollback();
-                // using error message to propagate to controller
-                throw new Error("Email or phone number exist already!");
+                throw new Error("Account already exists. Proceed to login!");
             }
 
             const hashedPassword = bcrypt.hashSync(password, 10);

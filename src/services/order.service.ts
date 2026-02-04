@@ -153,7 +153,6 @@ export class OrderService {
 
         } catch (error) {
             console.error("Failed to create order:--", error);
-
             await t.rollback();
             throw error;
         }
@@ -699,64 +698,72 @@ export class OrderService {
 
 
     static async initiateCheckout(orderId: string, profileId: number, userId: number): Promise<ICheckoutResponse> {
-        const order = await Order.findOne({
-            where: { id: orderId, customerId: profileId }
-        });
+        try {
+            const order = await Order.findOne({
+                where: { id: orderId, customerId: profileId }
+            });
 
-        if (!order) {
-            throw new AppError("Order not found", 404);
-        }
-
-        if (order.paymentStatus === 'paid') {
-            throw new AppError("Order is already paid", 400);
-        }
-
-        const user = await User.findByPk(userId);
-        if (!user) {
-            throw new AppError("User not found", 404);
-        }
-
-        const reference = `TXN-${randomCharacters(25).toUpperCase()}`;
-
-        const paystackData = await PaymentService.initializeTransaction(
-            user.email,
-            order.totalAmount,
-            undefined,
-            {
-                orderId: order.id,
-                transaction_reference: reference,
-                profileId: profileId,
-                userId: userId
+            if (!order) {
+                throw new AppError("Order not found", 404);
             }
-        );
 
-        const orderTxn = await Transaction.findOne({
-            where: { orderId: order.id },
-        });
+            if (order.paymentStatus === 'paid') {
+                throw new AppError("Order is already paid", 400);
+            }
 
-        if (orderTxn) {
-            throw new AppError("Initialization already in progress", 400);
+            const user = await User.findByPk(userId);
+            if (!user) {
+                throw new AppError("User not found", 404);
+            }
+
+            const reference = `TXN-${randomCharacters(25).toUpperCase()}`;
+
+            const paystackData = await PaymentService.initializeTransaction(
+                user.email,
+                order.totalAmount,
+                undefined,
+                {
+                    orderId: order.id,
+                    transaction_reference: reference,
+                    profileId: profileId,
+                    userId: userId
+                }
+            );
+
+            const orderTxn = await Transaction.findOne({
+                where: { orderId: order.id },
+            });
+
+            if (orderTxn) {
+                throw new AppError("Initialization already in progress", 400);
+            }
+
+            await Transaction.create({
+                orderId: order.id,
+                customerId: userId,
+                businessId: order.businessId,
+                branchId: order.branchId,
+                amount: order.totalAmount,
+                currency: 'NGN',
+                // paymentMethod: PaymentMethod.CARD, // check this later!!!!! put null at first??
+                reference: reference,
+                provider_reference: paystackData.reference,
+                provider: PaymentProvider.PAYSTACK,
+                status: TransactionStatus.PENDING
+            });
+
+            return {
+                paymentUrl: paystackData.authorization_url,
+                reference: paystackData.reference,
+                accessCode: paystackData.access_code
+            };
+        } catch (error) {
+            console.error("Checkout initiation failed:", error);
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw new AppError("Failed to initiate checkout");
         }
-
-        await Transaction.create({
-            orderId: order.id,
-            customerId: userId,
-            businessId: order.businessId,
-            branchId: order.branchId,
-            amount: order.totalAmount,
-            currency: 'NGN',
-            // paymentMethod: PaymentMethod.CARD, // check this later!!!!! put null at first??
-            reference: reference,
-            provider_reference: paystackData.reference,
-            provider: PaymentProvider.PAYSTACK,
-            status: TransactionStatus.PENDING
-        });
-
-        return {
-            paymentUrl: paystackData.authorization_url,
-            reference: paystackData.reference,
-            accessCode: paystackData.access_code
-        };
     }
 
     static async verifyPayment(reference: string): Promise<boolean> {
@@ -775,7 +782,7 @@ export class OrderService {
             }
 
             if (transaction.status === TransactionStatus.SUCCESS) {
-                await t.rollback();
+                await t.commit();
                 return true;
             }
 

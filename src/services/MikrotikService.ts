@@ -1,88 +1,168 @@
-// services/routerOsService.ts
-import { RouterOSClient } from 'sy5-routeros-client';
-import { randomCharacters } from '../utils/helpers';
-import { NetworkRouter } from '../models/NetworkRouter';
-import { TicketProfile } from '../models/TicketProfile';
-import { RouterCredentials } from '../interfaces/mikrotik.interface';
+import axios from 'axios';
+import { MikrotikRouter } from "../models/MikrotikRouter";
+import { TicketProfile } from "../models/TicketProfile";
 
-export const getSystemResource = async (credentials: RouterCredentials) => {
-  let client: RouterOSClient | undefined;
-  try {
-    client = new RouterOSClient(credentials);
-    const router = await client.connect();
-    const systemInfo = await router.menu("/system/resource").getOnly();
+export class MikrotikService {
+    private static get baseUrl() {
+        return process.env.MIKROTIK_CLOUD_BASE_API;
+    }
 
-    if (!systemInfo) throw new Error("Failed to fetch system resource.");
-    return systemInfo;
-  } catch (error: any) {
-    console.error(error);
-    throw new Error("Failed to fetch system resource.");
-  } finally {
-    if (client) await client.close();
-  }
-};
+    static async checkConnection(data: any) {
+        const response = await axios.post(`${this.baseUrl}/check-connection`, data);
+        return response.data;
+    }
 
-export const fetchRouterProfile = async (credentials: RouterCredentials) => {
-  let client: RouterOSClient | undefined;
-  try {
-    client = new RouterOSClient(credentials);
-    const router = await client.connect();
-    const profiles = await router.menu("/tool/user-manager/profile").getAll();
+    static async syncTicketProfiles(data: any) {
+        const response = await axios.post(`${this.baseUrl}/profiles`, data);
+        return response.data;
+    }
 
-    if (!profiles) throw new Error("Failed to fetch profiles.");
-    return profiles;
-  } catch (error: any) {
-    console.error(error);
-    throw new Error("Failed to fetch profiles.");
-  } finally {
-    if (client) await client.close();
-  }
-};
+    static async createAndActivateTicket(data: any) {
+        const response = await axios.post(`${this.baseUrl}/users`, data);
+        return response.data;
+    }
 
-export const generateTicket = async (ticketProfile: TicketProfile) => {
-  let client: RouterOSClient | undefined;
-  try {
-    // Fetch router from DB
-    const networkRouter = await NetworkRouter.findOne({
-      where: { id: ticketProfile.routerId },
-    });
-    if (!networkRouter) throw new Error("Failed to fetch network router.");
+    static async addRouter(data: { host: any; user: any; password: any; profileId: any; }) {
+        const { host, user, password, profileId } = data;
+        const router = await MikrotikRouter.findOne({
+            where: { profileId: profileId },
+        });
 
-    const credentials: RouterCredentials = {
-      host: networkRouter.host,
-      user: networkRouter.username,
-      password: networkRouter.password,
-    };
+        if (router) {
+            throw new Error("You have added router already");
+        }
 
-    client = new RouterOSClient(credentials);
-    const router = await client.connect();
+        const systemInfo = await this.checkConnection({
+            host,
+            user,
+            password,
+        });
 
-    // Add new user in User Manager
-    const userManagerMenu = router.menu("/tool/user-manager/user");
-    const ticketInfo = { username: randomCharacters(6), password: randomCharacters(6) };
-    const ticket = await userManagerMenu.add({
-      ...ticketInfo,
-      customer: ticketProfile.owner,
-    });
+        return await MikrotikRouter.create({
+            host,
+            username: user,
+            password,
+            profileId: profileId,
+            metadata: systemInfo,
+        });
+    }
 
-    // Activate profile
-    await userManagerMenu.exec("create-and-activate-profile", {
-      customer: ticketProfile.owner,
-      profile: ticketProfile.name,
-      numbers: ticket.id,
-    });
+    static async fetchRouter(profileId: number) {
+        return await MikrotikRouter.findAll({
+            where: { profileId: profileId }
+        });
+    }
 
-    return ticketInfo;
-  } catch (error: any) {
-    console.error("Ticket generation failed:", error);
-    throw new Error("Failed to generate ticket.");
-  } finally {
-    if (client) await client.close();
-  }
-};
+    static async editRouter(data: { routerId: any; host: any; user: any; password: any; profileId: any; }) {
+        const { routerId, host, user, password, profileId } = data;
+        const networkRouter = await MikrotikRouter.findOne({ where: { id: routerId, profileId: profileId } });
+        if (!networkRouter) {
+            throw new Error("Network router not found");
+        }
+        await networkRouter.update({
+            username: user,
+            host,
+            password
+        });
+        return networkRouter;
+    }
 
-export const connector = async (credentials: { host: string; user: string; password: string }) => {
-  const client = new RouterOSClient(credentials);
-  const router = await client.connect();
-  return { router, client };
-};
+    static async checkRouterConnection(profileId: number) {
+        const router = await MikrotikRouter.findOne({
+            where: { profileId: profileId }
+        });
+        if (!router) {
+            throw new Error("Failed to check connection, router not found.");
+        }
+
+        return await this.checkConnection({ host: router.host, user: router.username, password: router.password });
+    }
+
+    static async syncProfiles(data: { profileId: any; userID: any; }) {
+        const { profileId, userID } = data;
+        const router = await MikrotikRouter.findOne({
+            where: { profileId: profileId },
+        });
+        if (!router) {
+            throw new Error("Failed to sync ticket profiles, router not found.");
+        }
+
+        const profiles = await this.syncTicketProfiles({
+            host: router.host,
+            user: router.username,
+            password: router.password,
+        });
+
+        if (!profiles) {
+            throw new Error("Failed to sync ticket profiles.");
+        }
+        const profilePromises = profiles.map(async (profile: any) => {
+            const ticketProfile = await TicketProfile.findOne({
+                where: { name: profile.name, routerId: router.id, userId: userID },
+            });
+
+            if (!ticketProfile) {
+                return TicketProfile.create({
+                    name: profile.name,
+                    price: 0,
+                    routerId: router.id,
+                    userId: userID,
+                    owner: profile.owner,
+                });
+            }
+
+            return ticketProfile;
+        });
+
+        return await Promise.all(profilePromises);
+    }
+
+    static async editTicketProfile(data: { userID: any; profileId: any; title: any; description: any; bandwidth: any; status: any; amount: any; }) {
+        const { userID, profileId, title, description, bandwidth, status, amount } = data;
+        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
+
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+
+        await profile.update({
+            title: title,
+            description: description,
+            bandwidth: bandwidth,
+            price: amount,
+            isActive: status
+        });
+        return profile;
+    }
+
+    static async addTicketPrice(data: { userID: any; profileId: any; amount: any; }) {
+        const { userID, profileId, amount } = data;
+        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        await profile.update({ price: amount });
+        return profile;
+    }
+
+    static async changeTicketStatus(data: { userID: any; profileId: any; status: any; }) {
+        const { userID, profileId, status } = data;
+        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
+        if (!profile) {
+            throw new Error("Profile not found");
+        }
+        await profile.update({ isActive: status });
+        return profile;
+    }
+
+    static async fetchTicketProfile(userID: number) {
+        return await TicketProfile.findAll({
+            where: { userId: userID }
+        });
+    }
+
+    static async routerCommand(data: { username: any; }) {
+        // Implementation pending replacement of sy5-routeros-client
+        return { username: data.username };
+    }
+}

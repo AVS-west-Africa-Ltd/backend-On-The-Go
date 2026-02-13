@@ -9,9 +9,9 @@ import {
   ModelStatic,
 } from "sequelize";
 
-export class NetworkRouter extends Model<
-  InferAttributes<NetworkRouter>,
-  InferCreationAttributes<NetworkRouter>
+export class MikrotikRouter extends Model<
+  InferAttributes<MikrotikRouter>,
+  InferCreationAttributes<MikrotikRouter>
 > {
   declare id: CreationOptional<number>;
   declare host: string;
@@ -20,26 +20,26 @@ export class NetworkRouter extends Model<
   declare port: CreationOptional<number>;
   declare ssl: CreationOptional<boolean>;
   declare metadata: CreationOptional<Record<string, any>>;
-  declare userId: number;
+  declare profileId: number;
   declare branchId: CreationOptional<number | null>;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare user?: NonAttribute<any>;
+  declare profile?: NonAttribute<any>;
   declare branch?: NonAttribute<any>;
   declare ticketProfiles?: NonAttribute<any>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.User) {
-      NetworkRouter.belongsTo(models.User, {
+      MikrotikRouter.belongsTo(models.User, {
         foreignKey: "userId",
         onDelete: "CASCADE",
       });
     }
     if (models.Branch) {
-      NetworkRouter.belongsTo(models.Branch, {
+      MikrotikRouter.belongsTo(models.Branch, {
         foreignKey: "branchId",
         as: "branch",
         onDelete: "CASCADE",
@@ -47,15 +47,15 @@ export class NetworkRouter extends Model<
     }
 
     if (models.TicketProfile) {
-      NetworkRouter.hasMany(models.TicketProfile, {
+      MikrotikRouter.hasMany(models.TicketProfile, {
         foreignKey: "routerId",
         as: "ticketProfiles",
       });
     }
   }
 
-  static initModel(sequelize: Sequelize): ModelStatic<NetworkRouter> {
-    NetworkRouter.init(
+  static initModel(sequelize: Sequelize): ModelStatic<MikrotikRouter> {
+    MikrotikRouter.init(
       {
         id: {
           type: DataTypes.INTEGER,
@@ -90,11 +90,11 @@ export class NetworkRouter extends Model<
             items: [],
           },
         },
-        userId: {
+        profileId: {
           type: DataTypes.INTEGER,
           allowNull: false,
           references: {
-            model: "users",
+            model: "profiles",
             key: "id",
           },
           onDelete: "CASCADE",
@@ -119,13 +119,13 @@ export class NetworkRouter extends Model<
       },
       {
         sequelize,
-        tableName: "networkRouters",
+        tableName: "mikrotikRouters",
         timestamps: true,
       }
     );
 
-    return NetworkRouter;
+    return MikrotikRouter;
   }
 }
 
-export default (sequelize: Sequelize) => NetworkRouter.initModel(sequelize);
+export default (sequelize: Sequelize) => MikrotikRouter.initModel(sequelize);

@@ -25,7 +25,7 @@ import { User } from "../../models/User";
 import { Media } from "../../models/Media";
 import { PostTargetType, PostType } from "../../models/types/post.types";
 import { ActivityLog } from "../../models/ActivityLog";
-import { NetworkRouter } from "../../models/NetworkRouter";
+import { MikrotikRouter } from "../../models/MikrotikRouter";
 import { TicketProfile } from "../../models/TicketProfile";
 import { IGetBranchLogsQuery, IGetBranchMediaQuery, IGetBranchOrdersQuery, IGetBranchReviewsQuery } from "../../interfaces/branches.interface";
 import { IGetBranchProductsResponse, IGetProductsQuery } from "../../interfaces/product.interface";

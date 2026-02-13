@@ -19,7 +19,7 @@ import { Status, TStatus } from "./types/amenity.types";
 import { Order } from "./Order";
 import { Post } from "./Post";
 import { Media } from "./Media";
-import { NetworkRouter } from "./NetworkRouter";
+import { MikrotikRouter } from "./MikrotikRouter";
 import { Admin } from "./Admin";
 
 
@@ -56,7 +56,7 @@ export class Branch extends Model<
   declare orders?: NonAttribute<Order[]>;
   declare posts?: NonAttribute<Post[]>;
   declare media?: NonAttribute<Media[]>;
-  declare networkRouter?: NonAttribute<NetworkRouter>;
+  declare networkRouter?: NonAttribute<MikrotikRouter>;
   declare admins?: NonAttribute<Admin[]>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
@@ -124,8 +124,8 @@ export class Branch extends Model<
       });
     }
 
-    if (models.NetworkRouter) {
-      Branch.hasOne(models.NetworkRouter, {
+    if (models.MikrotikRouter) {
+      Branch.hasOne(models.MikrotikRouter, {
         foreignKey: "branchId",
         as: "networkRouter",
         onDelete: "CASCADE",

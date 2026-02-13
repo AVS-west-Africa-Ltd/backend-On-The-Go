@@ -32,8 +32,8 @@ export class TicketProfile extends Model<
   declare user?: NonAttribute<any>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
-    if (models.NetworkRouter) {
-      TicketProfile.belongsTo(models.NetworkRouter, {
+    if (models.MikrotikRouter) {
+      TicketProfile.belongsTo(models.MikrotikRouter, {
         foreignKey: "routerId",
         onDelete: "CASCADE",
       });
@@ -46,8 +46,8 @@ export class TicketProfile extends Model<
       });
     }
 
-    if (models.NetworkRouter) {
-      TicketProfile.belongsTo(models.NetworkRouter, {
+    if (models.MikrotikRouter) {
+      TicketProfile.belongsTo(models.MikrotikRouter, {
         foreignKey: "routerId",
         onDelete: "CASCADE",
       });
@@ -89,7 +89,7 @@ export class TicketProfile extends Model<
           type: DataTypes.INTEGER,
           allowNull: false,
           references: {
-            model: "networkRouters",
+            model: "mikrotikRouters",
             key: "id",
           },
           onDelete: "CASCADE",

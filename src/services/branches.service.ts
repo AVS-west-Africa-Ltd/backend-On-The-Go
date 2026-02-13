@@ -26,7 +26,7 @@ import { User } from "../models/User";
 import { Media } from "../models/Media";
 import { PostTargetType, PostType, ReviewSortType } from "../models/types/post.types";
 import { ActivityLog } from "../models/ActivityLog";
-import { NetworkRouter } from "../models/NetworkRouter";
+import { MikrotikRouter } from "../models/MikrotikRouter";
 import { TicketProfile } from "../models/TicketProfile";
 import { IGetBranchLogsQuery, IGetBranchMediaQuery, IGetBranchOrdersQuery, IGetBranchReviewsQuery } from "../interfaces/branches.interface";
 import { appEvents } from "../utils/events";
@@ -582,6 +582,7 @@ export class BranchService {
             throw new Error(error.message || "Failed to update branch status");
         }
     }
+    
     static async inviteStaff(branchId: number, data: { firstName: string, lastName: string, email: string, role: BranchStaffRole }, userData: IBasicUser) {
         const { profileId, userId } = userData;
 
@@ -698,6 +699,7 @@ export class BranchService {
 
         return { orders, total: count, nextCursor };
     }
+
     static async getBranchStaff(branchId: number, profileId: number, userId: number, filters: IGetBranchOrdersQuery) {
         const { cursor, limit = 10, status, startDate, endDate } = filters;
         const branch = await Branch.findByPk(branchId);
@@ -774,15 +776,15 @@ export class BranchService {
         const hasAccess = await this.checkAccess({ profileId, userId, branchData: branch });
         if (!hasAccess) throw new AppError("Branch not found", 403);
 
-        const router = await NetworkRouter.findOne({
+        const router = await MikrotikRouter.findOne({
             where: { branchId },
             include: [{ model: TicketProfile, as: 'ticketProfiles' }]
         });
 
         // Fallback to business owner's router if no branch-specific router exists yet
         if (!router) {
-            return await NetworkRouter.findOne({
-                where: { userId: branch.profileId }, // assuming owner's userId matches profileId link somehow, or just return null
+            return await MikrotikRouter.findOne({
+                where: { profileId: branch.profileId }, // assuming owner's userId matches profileId link somehow, or just return null
                 include: [{ model: TicketProfile, as: 'ticketProfiles' }]
             });
         }

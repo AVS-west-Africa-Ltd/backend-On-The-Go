@@ -10,7 +10,7 @@ import {
 } from "sequelize";
 import { User } from "./User";
 import { Comment } from "./Comment";
-import { NetworkRouter } from "./NetworkRouter";
+import { MikrotikRouter } from "./MikrotikRouter";
 import { TicketProfile } from "./TicketProfile";
 import { Amenity } from "./Amenity";
 import { Post } from "./Post";
@@ -58,7 +58,7 @@ export class Profile extends Model<
   // Associations
   declare user?: NonAttribute<User>;
   declare comments?: NonAttribute<Comment[]>;
-  declare networkRouter?: NonAttribute<NetworkRouter>;
+  declare networkRouter?: NonAttribute<MikrotikRouter>;
   declare ticketProfiles?: NonAttribute<TicketProfile[]>;
   declare amenities?: NonAttribute<Amenity[]>;
   declare posts?: NonAttribute<Post[]>;
@@ -82,8 +82,8 @@ export class Profile extends Model<
         as: "comments",
       });
     }
-    if (models.NetworkRouter) {
-      Profile.hasOne(models.NetworkRouter, {
+    if (models.MikrotikRouter) {
+      Profile.hasOne(models.MikrotikRouter, {
         foreignKey: "profileId",
       });
     }

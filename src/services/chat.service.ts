@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
-import { Message } from "../models/Message";
-import { Member } from "../models/Member";
+import { Message } from "../models/message.model";
+import { Member } from "../models/member.model";
 import { Op } from "sequelize";
 
 // Extend socket type to include authenticated user info

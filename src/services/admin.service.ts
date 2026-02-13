@@ -1,8 +1,8 @@
-import { Admin } from "../models/Admin";
+import { Admin } from "../models/admin.model";
 import { AdminAttributes, AdminRole, AdminPermission } from "../models/types/admin.types";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwtUtil";
-import { Profile } from "../models/Profile";
+import { Profile } from "../models/profile.model";
 
 export class AdminService {
     static async login(payload: any) {

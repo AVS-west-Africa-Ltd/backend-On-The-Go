@@ -1,5 +1,5 @@
 import express from "express";
-import { BookmarkController } from "../controllers/BookmarkController";
+import { BookmarkController } from "../controllers/bookmark.controller";
 import { authProfile } from "../middlewares/authProfile";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
 import { toggleBookmarkSchema, getBookmarksSchema } from "../validators/bookmark.validator";

@@ -13,7 +13,7 @@ import {
     joinCommunity,
     leaveCommunity,
     fetchCommunities
-} from "../controllers/AppController";
+} from "../controllers/app.controller";
 import { upload } from "../middlewares/upload";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
 import {
@@ -28,9 +28,9 @@ import {
     fetchCommunitiesSchema
 } from "../validators/app.validator";
 import { createPostSchema } from "../validators/post.validator";
-import { BookmarkController } from "../controllers/BookmarkController";
+import { BookmarkController } from "../controllers/bookmark.controller";
 import { toggleBookmarkSchema, getBookmarksSchema } from "../validators/bookmark.validator";
-import * as ProductController from "../controllers/ProductController";
+import * as ProductController from "../controllers/product.controller";
 import { filterBranchProductsSchema } from "../validators/product.validator";
 
 

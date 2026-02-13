@@ -9,9 +9,9 @@ import {
   NonAttribute,
 } from "sequelize";
 import { BranchStaffAttributes, BranchStaffRole } from "./types/branchStaff.types";
-import { User } from "./User";
-import { Branch } from "./Branch";
-import { Profile } from "./Profile";
+import { User } from "./user.model";
+import { Branch } from "./branch.model";
+import { Profile } from "./profile.model";
 
 export class BranchStaff extends Model<
   InferAttributes<BranchStaff>,

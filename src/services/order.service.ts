@@ -4,19 +4,19 @@ import { PaymentService } from './payment.service';
 import { ICreateOrderPayload, ICheckoutResponse, IGetUserOrdersPayload, IOrderSummary, IGetBranchOrdersPayload, IOrderItemPayload, IUpdateOrderPayload } from '../interfaces/order.interface';
 import { randomCharacters, applyDateFilter } from '../utils/helpers';
 import { AppError } from '../utils/errors';
-import { OrderItem } from '../models/OrderItem';
-import { Product } from '../models/Product';
-import { Voucher } from '../models/Voucher';
-import { Order } from '../models/Order';
-import { Transaction } from '../models/Transaction';
-import { Branch } from '../models/Branch';
-import { Profile } from '../models/Profile';
-import { User } from '../models/User';
+import { OrderItem } from '../models/orderItem.model';
+import { Product } from '../models/product.model';
+import { Voucher } from '../models/voucher.model';
+import { Order } from '../models/order.model';
+import { Transaction } from '../models/transaction.model';
+import { Branch } from '../models/branch.model';
+import { Profile } from '../models/profile.model';
+import { User } from '../models/user.model';
 import { OrderPaymentStatus, OrderStatus, TOrderStatus } from '../models/types/order.types';
 import { PaymentMethod, PaymentProvider, TransactionStatus, TPaymentMethod } from '../models/types/transaction.types';
 import { PAYSTACK_EVENT, TPaystackEventData } from '../subscribers/types';
-import { BranchAmenity } from '../models/BranchAmenity';
-import { Amenity } from '../models/Amenity';
+import { BranchAmenity } from '../models/branchAmenity.model';
+import { Amenity } from '../models/amenity.model';
 import { BranchService } from './branches.service';
 
 const { sequelize } = db;
@@ -273,7 +273,6 @@ export class OrderService {
             throw error;
         }
     }
-
 
     static async getUserOrders(profileId: number, filters: IGetUserOrdersPayload) {
         const { status, cursor, from, to, branchId, businessId, limit = 10, search } = filters;
@@ -567,7 +566,6 @@ export class OrderService {
         return order;
     }
 
-
     static async updateOrderStatus(orderId: string, status: TOrderStatus, profileId: number, userId: number, branchId: number) {
 
         const order = await Order.findByPk(orderId);
@@ -630,7 +628,6 @@ export class OrderService {
             throw new AppError(error.message || "Failed to delete order", error.statusCode || 500);
         }
     }
-
 
     static async getBusinessOrders(businessId: number, branchId: number | undefined, filters: any = {}) {
         const { status, cursor, limit = 10, startDate, endDate, search } = filters;
@@ -695,7 +692,6 @@ export class OrderService {
             hasNextPage
         };
     }
-
 
     static async initiateCheckout(orderId: string, profileId: number, userId: number): Promise<ICheckoutResponse> {
         try {
@@ -853,7 +849,6 @@ export class OrderService {
             throw error;
         }
     }
-
 
     static async processWebhookEvent(event: any) {
         if (event.event !== PAYSTACK_EVENT.CHARGE_SUCCESS) {

@@ -10,7 +10,7 @@ import {
     getAllPermissions,
     getAllRoles,
     login
-} from "../controllers/AdminController";
+} from "../controllers/admin.controller";
 import { authAdmin, authorizeAdmin } from "../middlewares/authAdmin";
 import { authProfile } from "../middlewares/authProfile";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";

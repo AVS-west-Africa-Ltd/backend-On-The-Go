@@ -1,4 +1,4 @@
-import { Profile } from "../models/Profile";
+import { Profile } from "../models/profile.model";
 import { TBusinessCategory, TProfileType } from "../models/types/profile.types";
 
 export interface ICreateProfilePayload {

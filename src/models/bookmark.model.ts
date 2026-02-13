@@ -8,8 +8,8 @@ import {
     NonAttribute,
     ModelStatic,
 } from "sequelize";
-import { Profile } from "./Profile";
-import { Post } from "./Post";
+import { Profile } from "./profile.model";
+import { Post } from "./post.model";
 
 export class Bookmark extends Model<
     InferAttributes<Bookmark>,

@@ -1,6 +1,6 @@
 
 import express from "express";
-import * as BranchController from "../controllers/BranchController";
+import * as BranchController from "../controllers/branch.controller";
 import { authProfile } from "../middlewares/authProfile";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
 import { createBranchSchema, getBranchCustomersSchema, inviteStaffSchema } from "../validators/branch.validator";

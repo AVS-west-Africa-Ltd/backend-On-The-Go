@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { MikrotikRouter } from "../models/MikrotikRouter";
-import { TicketProfile } from "../models/TicketProfile";
+import { MikrotikRouter } from "../models/mikrotikRouter.model";
+import { TicketProfile } from "../models/ticketProfile.model";
 
 export class MikrotikService {
     private static get baseUrl() {

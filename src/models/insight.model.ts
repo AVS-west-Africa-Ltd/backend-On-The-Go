@@ -8,7 +8,7 @@ import {
     NonAttribute,
     ModelStatic,
 } from "sequelize";
-import { Profile } from "./Profile";
+import { Profile } from "./profile.model";
 import { TInsightType } from "./types/insight.types";
 
 export class Insight extends Model<

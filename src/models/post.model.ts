@@ -9,11 +9,11 @@ import {
   ModelStatic,
 } from "sequelize";
 import { TPostTargetType, TPostType } from "./types/post.types";
-import { User } from "./User";
-import { Profile } from "./Profile";
-import { Branch } from "./Branch";
-import { Comment } from "./Comment";
-import { Bookmark } from "./Bookmark";
+import { User } from "./user.model";
+import { Profile } from "./profile.model";
+import { Branch } from "./branch.model";
+import { Comment } from "./comment.model";
+import { Bookmark } from "./bookmark.model";
 
 export class Post extends Model<
   InferAttributes<Post>,

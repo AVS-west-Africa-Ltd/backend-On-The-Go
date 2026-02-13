@@ -10,17 +10,17 @@ import {
   ModelStatic,
 } from "sequelize";
 import { BranchAttributes } from "./types/branch.types";
-import { BranchAmenity } from "./BranchAmenity";
-import { OpeningHour } from "./OpeningHour";
-import { Profile } from "./Profile";
-import { BranchStaff } from "./BranchStaff";
-import { Product } from "./Product";
+import { BranchAmenity } from "./branchAmenity.model";
+import { OpeningHour } from "./openingHour.model";
+import { Profile } from "./profile.model";
+import { BranchStaff } from "./branchStaff.model";
+import { Product } from "./product.model";
 import { Status, TStatus } from "./types/amenity.types";
-import { Order } from "./Order";
-import { Post } from "./Post";
-import { Media } from "./Media";
-import { MikrotikRouter } from "./MikrotikRouter";
-import { Admin } from "./Admin";
+import { Order } from "./order.model";
+import { Post } from "./post.model";
+import { Media } from "./media.model";
+import { MikrotikRouter } from "./mikrotikRouter.model";
+import { Admin } from "./admin.model";
 
 
 

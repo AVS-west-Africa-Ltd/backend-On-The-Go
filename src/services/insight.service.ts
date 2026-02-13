@@ -1,10 +1,10 @@
-import { Profile } from "../models/Profile";
-import { Member } from "../models/Member";
-import { Post } from "../models/Post";
-import { Reaction } from "../models/Reaction";
-import { Order } from "../models/Order";
-import { ProfileVisit } from "../models/ProfileVisit";
-import { Insight } from "../models/Insight";
+import { Profile } from "../models/profile.model";
+import { Member } from "../models/member.model";
+import { Post } from "../models/post.model";
+import { Reaction } from "../models/reaction.model";
+import { Order } from "../models/order.model";
+import { ProfileVisit } from "../models/profileVisit.model";
+import { Insight } from "../models/insight.model";
 import { TInsightType } from "../models/types/insight.types";
 import { Op } from "sequelize";
 import db from "../models";

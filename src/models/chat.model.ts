@@ -8,10 +8,10 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { Member } from "./Member";
-import { Message } from "./Message";
-import { Profile } from "./Profile";
-import { User } from "./User";
+import { Member } from "./member.model";
+import { Message } from "./message.model";
+import { Profile } from "./profile.model";
+import { User } from "./user.model";
 
 export class Chat extends Model<
   InferAttributes<Chat>,

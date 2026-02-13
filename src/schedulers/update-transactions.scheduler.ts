@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { Op } from "sequelize";
-import { Transaction } from "../models/Transaction";
-import { Order } from "../models/Order";
+import { Transaction } from "../models/transaction.model";
+import { Order } from "../models/order.model";
 import { OrderPaymentStatus, OrderStatus } from "../models/types/order.types";
 import { PaymentProvider, TPaymentMethod, TransactionStatus } from "../models/types/transaction.types";
 import { PaymentService } from "../services/payment.service";

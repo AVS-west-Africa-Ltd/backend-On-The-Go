@@ -8,9 +8,9 @@ import {
   ModelStatic,
   NonAttribute,
 } from "sequelize";
-import { Order } from "./Order";
-import { Profile } from "./Profile";
-import { Branch } from "./Branch";
+import { Order } from "./order.model";
+import { Profile } from "./profile.model";
+import { Branch } from "./branch.model";
 import { PaymentMethod, PaymentProvider, TPaymentMethod, TPaymentProvider, TransactionStatus, TTransactionStatus } from "./types/transaction.types";
 
 export class Transaction extends Model<

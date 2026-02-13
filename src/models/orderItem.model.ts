@@ -8,8 +8,8 @@ import {
     NonAttribute,
     ModelStatic,
 } from "sequelize";
-import { Product } from "./Product";
-import { Order } from "./Order";
+import { Product } from "./product.model";
+import { Order } from "./order.model";
 
 export class OrderItem extends Model<
     InferAttributes<OrderItem>,

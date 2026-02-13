@@ -1,5 +1,5 @@
 import express from 'express';
-import { TransactionController } from '../controllers/TransactionController';
+import { TransactionController } from '../controllers/transaction.controller';
 import { authProfile } from '../middlewares/authProfile';
 import { validateQuery, validateParams } from '../middlewares/validateMiddleware';
 import { getTransactionsSchema, getTransactionByIdSchema } from '../validators/transaction.validator';

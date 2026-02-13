@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Insight } from "../models/Insight";
+import { Insight } from "../models/insight.model";
 import { TInsightType } from "../models/types/insight.types";
 import { InsightService } from "../services/insight.service";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";

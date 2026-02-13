@@ -8,8 +8,8 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { Post } from "./Post";
-import { Profile } from "./Profile";
+import { Post } from "./post.model";
+import { Profile } from "./profile.model";
 import { MediaTargetTypes, TMediaTargetType } from "./types/media.types";
 
 export type MediaTargetType =

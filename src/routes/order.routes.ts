@@ -1,5 +1,5 @@
 import express from 'express';
-import { OrderController } from '../controllers/OrderController';
+import { OrderController } from '../controllers/order.controller';
 import { authProfile } from '../middlewares/authProfile';
 import { validateBody, validateQuery, validateParams } from '../middlewares/validateMiddleware';
 import {

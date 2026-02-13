@@ -8,17 +8,17 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { User } from "./User";
-import { Comment } from "./Comment";
-import { MikrotikRouter } from "./MikrotikRouter";
-import { TicketProfile } from "./TicketProfile";
-import { Amenity } from "./Amenity";
-import { Post } from "./Post";
-import { Social } from "./Social";
-import { Media } from "./Media";
-import { Insight } from "./Insight";
-import { Admin } from "./Admin";
-import { Bookmark } from "./Bookmark";
+import { User } from "./user.model";
+import { Comment } from "./comment.model";
+import { MikrotikRouter } from "./mikrotikRouter.model";
+import { TicketProfile } from "./ticketProfile.model";
+import { Amenity } from "./amenity.model";
+import { Post } from "./post.model";
+import { Social } from "./social.model";
+import { Media } from "./media.model";
+import { Insight } from "./insight.model";
+import { Admin } from "./admin.model";
+import { Bookmark } from "./bookmark.model";
 import { TBusinessCategory, TProfileType } from "./types/profile.types";
 
 export class Profile extends Model<

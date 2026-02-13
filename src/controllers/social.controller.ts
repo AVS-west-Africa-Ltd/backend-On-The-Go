@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Friend } from "../models/Friend";
-import { Profile } from "../models/Profile";
+import { Friend } from "../models/friend.model";
+import { Profile } from "../models/profile.model";
 import { Op } from "sequelize";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";
 import { ProfileType } from "../models/types/profile.types";

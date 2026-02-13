@@ -2,14 +2,14 @@ import { appEvents } from '../utils/events';
 import { STAFF_EVENT } from '../subscribers/types';
 import { sendEmail } from '../services/email.service';
 import { staffInviteEmail } from '../templates/staffInviteEmail';
-import { Admin } from '../models/Admin';
+import { Admin } from '../models/admin.model';
 import { AdminPermission, AdminRole } from '../models/types/admin.types';
 import bcrypt from "bcryptjs"
-import { User } from '../models/User';
+import { User } from '../models/user.model';
 import { randomCharacters, randomNumber } from '../utils/helpers';
-import { Profile } from '../models/Profile';
+import { Profile } from '../models/profile.model';
 import { ProfileType } from '../models/types/profile.types';
-import { BranchStaff } from '../models/BranchStaff';
+import { BranchStaff } from '../models/branchStaff.model';
 
 export const registerStaffListeners = () => {
     appEvents.on(STAFF_EVENT.STAFF_INVITED, async (data: {

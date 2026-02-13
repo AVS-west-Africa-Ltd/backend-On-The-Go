@@ -1,13 +1,13 @@
 import db from '../models';
 import { Op } from 'sequelize';
-import { Order } from '../models/Order';
-import { Transaction } from '../models/Transaction';
-import { OrderItem } from '../models/OrderItem';
-import { Profile } from '../models/Profile';
+import { Order } from '../models/order.model';
+import { Transaction } from '../models/transaction.model';
+import { OrderItem } from '../models/orderItem.model';
+import { Profile } from '../models/profile.model';
 import { IGetTransactions } from '../interfaces/transaction.interface';
-import { Product } from '../models/Product';
-import { BranchAmenity } from '../models/BranchAmenity';
-import { Amenity } from '../models/Amenity';
+import { Product } from '../models/product.model';
+import { BranchAmenity } from '../models/branchAmenity.model';
+import { Amenity } from '../models/amenity.model';
 import { applyDateFilter } from '../utils/helpers';
 
 export class TransactionService {

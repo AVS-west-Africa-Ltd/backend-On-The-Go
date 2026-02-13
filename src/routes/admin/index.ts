@@ -3,10 +3,10 @@ import analyticsRoutes from "../analytics.routes";
 import branchRoutes from "../branch.routes";
 import adminManagementRoutes from "../admin.routes";
 import productRoutes from "../product.routes";
-import { login, getAllPermissions, getAllRoles } from "../../controllers/AdminController";
+import { login, getAllPermissions, getAllRoles } from "../../controllers/admin.controller";
 import { validateBody, validateParams, validateQuery } from "../../middlewares/validateMiddleware";
 import { loginAdminSchema } from "../../validators/admin.validator";
-import { OrderController } from "../../controllers/OrderController";
+import { OrderController } from "../../controllers/order.controller";
 import { authAdmin } from "../../middlewares/authAdmin";
 import { getBranchOrdersSchema, getOrderByIdSchema, updateOrderItemsSchema, updateOrderStatusSchema } from "../../validators/order.validator";
 

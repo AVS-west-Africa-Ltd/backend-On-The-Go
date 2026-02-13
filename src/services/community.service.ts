@@ -2,9 +2,9 @@
 import db from "../models";
 import { Op } from "sequelize";
 import { randomCharacters } from "../utils/helpers";
-import { Community } from "../models/Community";
-import { Member } from "../models/Member";
-import { Profile } from "../models/Profile";
+import { Community } from "../models/community.model";
+import { Member } from "../models/member.model";
+import { Profile } from "../models/profile.model";
 
 const { sequelize } = db;
 

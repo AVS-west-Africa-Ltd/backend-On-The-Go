@@ -9,10 +9,9 @@ import {
   ModelStatic,
 } from "sequelize";
 import { TMemberRole, TMemberType } from "./types/member.types";
-import { Chat } from "./Chat";
-import { CommunityService } from "../services/community.service";
-import { Community } from "./Community";
-import { Profile } from "./Profile";
+import { Chat } from "./chat.model";
+import { Community } from "./community.model";
+import { Profile } from "./profile.model";
 
 export class Member extends Model<
   InferAttributes<Member>,

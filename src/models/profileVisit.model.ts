@@ -8,7 +8,7 @@ import {
     NonAttribute,
     ModelStatic,
 } from "sequelize";
-import { Profile } from "./Profile";
+import { Profile } from "./profile.model";
 
 export class ProfileVisit extends Model<
     InferAttributes<ProfileVisit>,

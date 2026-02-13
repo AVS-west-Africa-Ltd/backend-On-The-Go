@@ -1,6 +1,6 @@
 
 import express from "express";
-import * as ProductController from "../controllers/ProductController";
+import * as ProductController from "../controllers/product.controller";
 import { authProfile } from "../middlewares/authProfile";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
 import { createProductSchema, filterBranchProductsSchema, updateProductSchema } from "../validators/product.validator";

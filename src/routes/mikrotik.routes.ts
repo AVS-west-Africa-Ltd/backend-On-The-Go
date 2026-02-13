@@ -1,5 +1,5 @@
 import express from "express";
-import * as MikrotikController from "../controllers/MikrotikController";
+import * as MikrotikController from "../controllers/mikrotik.controller";
 import { authProfile } from "../middlewares/authProfile";
 
 const router = express.Router();

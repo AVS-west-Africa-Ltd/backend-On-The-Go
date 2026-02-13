@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { Branch } from "../models/Branch";
-import { Amenity } from "../models/Amenity";
+import { Branch } from "../models/branch.model";
+import { Amenity } from "../models/amenity.model";
 import { Op } from "sequelize";
-import { Profile } from "../models/Profile";
+import { Profile } from "../models/profile.model";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";
 
 export const discover = async (req: Request, res: Response) => {

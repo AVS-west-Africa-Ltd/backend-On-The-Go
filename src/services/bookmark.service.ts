@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
-import { Bookmark } from "../models/Bookmark";
-import { Post } from "../models/Post";
-import { Profile } from "../models/Profile";
+import { Bookmark } from "../models/bookmark.model";
+import { Post } from "../models/post.model";
+import { Profile } from "../models/profile.model";
 import { IBaseQueryDTO } from "../dtos/base.dto";
 
 export class BookmarkService {

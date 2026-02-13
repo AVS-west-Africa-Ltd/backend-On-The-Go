@@ -8,9 +8,9 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { Profile } from "./Profile";
-import { Branch } from "./Branch";
-import { OrderItem } from "./OrderItem";
+import { Profile } from "./profile.model";
+import { Branch } from "./branch.model";
+import { OrderItem } from "./orderItem.model";
 import { OrderPaymentStatus, OrderStatus, TOrderPaymentStatus, TOrderStatus } from "./types/order.types";
 
 export class Order extends Model<

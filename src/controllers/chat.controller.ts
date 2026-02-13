@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { Chat } from "../models/Chat";
-import { Member } from "../models/Member";
-import { Friend } from "../models/Friend"; // For mutual check
+import { Chat } from "../models/chat.model";
+import { Member } from "../models/member.model";
+import { Friend } from "../models/friend.model"; // For mutual check
 import { Op } from "sequelize";
 import db from "../models";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";

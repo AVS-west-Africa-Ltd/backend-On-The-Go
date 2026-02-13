@@ -8,7 +8,7 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { Profile } from "./Profile";
+import { Profile } from "./profile.model";
 
 // If you want to separate types, put this in types/user.types.ts
 // otherwise, InferAttributes<User> handles it automatically.

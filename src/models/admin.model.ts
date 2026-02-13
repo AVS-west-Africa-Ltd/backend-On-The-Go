@@ -9,8 +9,8 @@ import {
     NonAttribute,
 } from "sequelize";
 import { AdminAttributes, AdminRole, AdminPermission } from "./types/admin.types";
-import { Profile } from "./Profile";
-import { Branch } from "./Branch";
+import { Profile } from "./profile.model";
+import { Branch } from "./branch.model";
 
 export class Admin extends Model<
     InferAttributes<Admin>,

@@ -8,8 +8,8 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { User } from "./User";
-import { Post } from "./Post";
+import { User } from "./user.model";
+import { Post } from "./post.model";
 
 export class Comment extends Model<
   InferAttributes<Comment>,

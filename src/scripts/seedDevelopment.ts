@@ -147,12 +147,12 @@ const seedDevelopment = async () => {
             }));
             await Amenity.bulkCreate(rows, ...);
             */
-            // It imports Amenity from "../models/Amenity".
+            // It imports Amenity from "../models/amenity.model".
             // It calls bulkyCreate on Amenity.
             // The object keys are userId, businessId, branchId, name.
             // Amenity model (step 29) does NOT have userId, businessId, branchId.
             // THIS SERVICE METHOD LOOKS BROKEN or I am misinterpreting "Amenity". 
-            // (Maybe it imports BranchAmenity as Amenity? No, line 12: import { Amenity } from "../models/Amenity";)
+            // (Maybe it imports BranchAmenity as Amenity? No, line 12: import { Amenity } from "../models/amenity.model";)
 
             // However, BranchService uses `BranchAmenity.bulkCreate`.
             // I should assume BranchService is correct and use that methodology for non-HQ branches.

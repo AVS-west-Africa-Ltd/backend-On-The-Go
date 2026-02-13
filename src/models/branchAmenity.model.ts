@@ -9,7 +9,7 @@ import {
     NonAttribute,
 } from "sequelize";
 import { Status, TStatus } from "./types/amenity.types";
-import { Amenity } from "./Amenity";
+import { Amenity } from "./amenity.model";
 
 
 export class BranchAmenity extends Model<

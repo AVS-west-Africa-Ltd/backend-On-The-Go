@@ -1,10 +1,10 @@
 import { Op, Transaction, WhereOptions } from "sequelize";
 import { upload } from "../middlewares/upload";
 import db from "../models"
-import { Amenity } from "../models/Amenity";
-import { BranchAmenity } from "../models/BranchAmenity";
-import { Media } from "../models/Media";
-import { Product } from "../models/Product";
+import { Amenity } from "../models/amenity.model";
+import { BranchAmenity } from "../models/branchAmenity.model";
+import { Media } from "../models/media.model";
+import { Product } from "../models/product.model";
 import { MediaTargetTypes } from "../models/types/media.types";
 import { ProductStatus } from "../models/types/product.types";
 import { IBasicUser } from "../interfaces/common.interface";
@@ -12,8 +12,8 @@ import { ICreateProductPayload, IEditProductInput, IFilterBranchProductsParams, 
 import { AppError } from "../utils/errors";
 import { Status } from "../models/types/amenity.types";
 import { BranchStaffRole } from "../models/types/branchStaff.types";
-import { Branch } from "../models/Branch";
-import { BranchStaff } from "../models/BranchStaff";
+import { Branch } from "../models/branch.model";
+import { BranchStaff } from "../models/branchStaff.model";
 
 const { sequelize } = db
 

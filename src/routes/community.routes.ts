@@ -1,5 +1,5 @@
 import express from "express";
-import { create, addMembers, fetchMembers, update, fetchCommunity, fetchCommunityById, deleteCommunity } from "../controllers/CommunityController";
+import { create, addMembers, fetchMembers, update, fetchCommunity, fetchCommunityById, deleteCommunity } from "../controllers/community.controller";
 import { authProfile } from "../middlewares/authProfile";
 import { upload } from "../middlewares/upload";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";

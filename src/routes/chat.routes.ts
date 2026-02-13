@@ -1,5 +1,5 @@
 import express from "express";
-import * as ChatController from "../controllers/ChatController";
+import * as ChatController from "../controllers/chat.controller";
 import { authProfile } from "../middlewares/authProfile";
 
 const router = express.Router();

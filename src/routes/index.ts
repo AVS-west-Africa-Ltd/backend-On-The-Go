@@ -17,7 +17,7 @@ import chatRoutes from "./chat.routes";
 import searchRoutes from "./search.routes";
 import adminRootRouter from "./admin/index";
 import mikrotikRoutes from "./mikrotik.routes";
-import { SystemController } from "../controllers/SystemController";
+import { SystemController } from "../controllers/system.controller";
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from "express";
-import * as SocialController from "../controllers/SocialController";
+import * as SocialController from "../controllers/social.controller";
 import { authProfile } from "../middlewares/authProfile";
 
 const router = express.Router();

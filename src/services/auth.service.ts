@@ -5,13 +5,13 @@ import { randomCharacters } from "../utils/helpers";
 import { sendEmail } from "../services/email.service";
 import { verificationCodeEmail } from "../templates/verificationEmail";
 import * as jwtUtil from "../utils/jwtUtil";
-import { BranchStaff } from "../models/BranchStaff";
+import { BranchStaff } from "../models/branchStaff.model";
 import { ProfileType } from "../models/types/profile.types";
-import { User } from "../models/User";
-import { Branch } from "../models/Branch";
-import { Profile } from "../models/Profile";
+import { User } from "../models/user.model";
+import { Branch } from "../models/branch.model";
+import { Profile } from "../models/profile.model";
 import { AdminPermission, AdminRole } from "../models/types/admin.types";
-import { Admin } from "../models/Admin";
+import { Admin } from "../models/admin.model";
 
 const { sequelize } = db;
 

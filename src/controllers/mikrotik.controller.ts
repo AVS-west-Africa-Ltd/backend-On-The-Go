@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { successHandler, errorHandler } from "../handlers/responseHandlers";
-import { MikrotikService } from "../services/MikrotikService";
+import { MikrotikService } from "../services/mikrotik.service";
 
 export const addRouter = async (req: Request, res: Response) => {
     try {

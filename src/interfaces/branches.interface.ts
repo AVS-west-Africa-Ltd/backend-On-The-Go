@@ -1,12 +1,12 @@
 import { IPaginatedResponse } from "./common.interface";
-import { Branch } from "../models/Branch";
+import { Branch } from "../models/branch.model";
 import { BranchStaffRole } from "../models/types/branchStaff.types";
 import { DayOfWeek } from "../models/types/openingHour.types";
-import { Order } from "../models/Order";
-import { Product } from "../models/Product";
-import { BranchStaff } from "../models/BranchStaff";
-import { Media } from "../models/Media";
-import { Post } from "../models/Post";
+import { Order } from "../models/order.model";
+import { Product } from "../models/product.model";
+import { BranchStaff } from "../models/branchStaff.model";
+import { Media } from "../models/media.model";
+import { Post } from "../models/post.model";
 import { TReviewSortType } from "../models/types/post.types";
 
 export interface ICreateBranchPayload {

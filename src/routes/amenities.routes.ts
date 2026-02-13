@@ -1,6 +1,6 @@
 
 import express from "express";
-import * as AmenitiesController from "../controllers/AmenityController";
+import * as AmenitiesController from "../controllers/amenity.controller";
 import { authProfile } from "../middlewares/authProfile";
 
 const router = express.Router();

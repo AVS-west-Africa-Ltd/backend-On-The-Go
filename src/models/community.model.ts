@@ -8,10 +8,10 @@ import {
   NonAttribute,
   ModelStatic,
 } from "sequelize";
-import { User } from "./User";
-import { Profile } from "./Profile";
-import { Member } from "./Member";
-import { Post } from "./Post";
+import { User } from "./user.model";
+import { Profile } from "./profile.model";
+import { Member } from "./member.model";
+import { Post } from "./post.model";
 
 export class Community extends Model<
   InferAttributes<Community>,

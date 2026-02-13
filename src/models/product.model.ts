@@ -9,9 +9,9 @@ import {
   NonAttribute,
 } from "sequelize";
 import { ProductStatus, TProductStatus } from "./types/product.types";
-import { BranchAmenity } from "./BranchAmenity";
-import { Media } from "./Media";
-import { Amenity } from "./Amenity";
+import { BranchAmenity } from "./branchAmenity.model";
+import { Media } from "./media.model";
+import { Amenity } from "./amenity.model";
 
 
 export class Product extends Model<

@@ -1,6 +1,6 @@
 import db from "../models"
-import { Amenity } from "../models/Amenity";
-import { BranchAmenity } from "../models/BranchAmenity";
+import { Amenity } from "../models/amenity.model";
+import { BranchAmenity } from "../models/branchAmenity.model";
 import { BranchService } from "./branches.service";
 
 const { sequelize } = db

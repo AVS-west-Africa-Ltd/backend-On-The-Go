@@ -17,7 +17,8 @@ export class TicketProfile extends Model<
   declare name: string;
   declare price: CreationOptional<number>;
   declare isActive: CreationOptional<boolean>;
-  declare userId: number;
+  declare profileId: number;
+  declare branchId: number;
   declare routerId: number;
   declare owner: CreationOptional<string>;
   declare title: CreationOptional<string>;
@@ -29,7 +30,8 @@ export class TicketProfile extends Model<
 
   // Associations
   declare networkRouter?: NonAttribute<any>;
-  declare user?: NonAttribute<any>;
+  declare profile?: NonAttribute<any>;
+  declare branch?: NonAttribute<any>;
 
   static associate(models: Record<string, ModelStatic<Model>>) {
     if (models.MikrotikRouter) {
@@ -39,9 +41,16 @@ export class TicketProfile extends Model<
       });
     }
 
-    if (models.User) {
-      TicketProfile.belongsTo(models.User, {
-        foreignKey: "userId",
+    if (models.Profile) {
+      TicketProfile.belongsTo(models.Profile, {
+        foreignKey: "profileId",
+        onDelete: "CASCADE",
+      });
+    }
+
+    if (models.Branch) {
+      TicketProfile.belongsTo(models.Branch, {
+        foreignKey: "branchId",
         onDelete: "CASCADE",
       });
     }
@@ -76,11 +85,20 @@ export class TicketProfile extends Model<
           allowNull: false,
           defaultValue: false,
         },
-        userId: {
+        profileId: {
           type: DataTypes.INTEGER,
           allowNull: false,
           references: {
-            model: "users",
+            model: "profiles",
+            key: "id",
+          },
+          onDelete: "CASCADE",
+        },
+        branchId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "branches",
             key: "id",
           },
           onDelete: "CASCADE",

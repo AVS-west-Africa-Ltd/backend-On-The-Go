@@ -21,7 +21,7 @@ export class MikrotikRouter extends Model<
   declare ssl: CreationOptional<boolean>;
   declare metadata: CreationOptional<Record<string, any>>;
   declare profileId: number;
-  declare branchId: CreationOptional<number | null>;
+  declare branchId: number;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;

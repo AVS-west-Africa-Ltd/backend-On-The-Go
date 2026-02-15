@@ -15,6 +15,6 @@ router.get("/profiles", MikrotikController.fetchTicketProfile);
 router.put("/profiles", MikrotikController.editTicketProfile);
 router.put("/profiles/price", MikrotikController.addTicketPrice);
 router.put("/profiles/status", MikrotikController.changeTicketStatus);
-router.post("/router/command", MikrotikController.routerCommand);
+router.post("/profiles/product", MikrotikController.ensureTicketProfileProduct);
 
 export default router;

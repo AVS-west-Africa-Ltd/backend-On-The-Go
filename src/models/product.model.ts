@@ -29,6 +29,7 @@ export class Product extends Model<
   declare status: CreationOptional<TProductStatus>;
   declare rating: CreationOptional<number | null>;
   declare isFeatured: CreationOptional<boolean>;
+  declare isWifiTicket: CreationOptional<boolean>;
   declare meta: CreationOptional<Record<string, unknown> | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -121,6 +122,11 @@ export class Product extends Model<
         },
         isFeatured: {
           type: DataTypes.BOOLEAN,
+          defaultValue: false,
+        },
+        isWifiTicket: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
           defaultValue: false,
         },
         meta: {

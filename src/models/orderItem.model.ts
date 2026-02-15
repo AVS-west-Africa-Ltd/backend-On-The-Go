@@ -21,6 +21,8 @@ export class OrderItem extends Model<
     declare quantity: number;
     declare amount: number;
     declare totalAmount: number;
+    declare isWifiTicket: CreationOptional<boolean>;
+    declare ticketActivated: CreationOptional<boolean>;
     declare meta: CreationOptional<Record<string, unknown> | null>;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -74,6 +76,16 @@ export class OrderItem extends Model<
                 totalAmount: {
                     type: DataTypes.FLOAT,
                     allowNull: false
+                },
+                isWifiTicket: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
+                },
+                ticketActivated: {
+                    type: DataTypes.BOOLEAN,
+                    allowNull: false,
+                    defaultValue: false,
                 },
                 meta: {
                     type: DataTypes.JSON,

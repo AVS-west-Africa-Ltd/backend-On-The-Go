@@ -1214,6 +1214,208 @@
             ]
         },
         {
+            "name": "Mikrotik",
+            "item": [
+                {
+                    "name": "Add Router",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"host\": \"192.168.88.1\",\n  \"user\": \"admin\",\n  \"password\": \"router-password\",\n  \"profileId\": 1,\n  \"branchId\": 1\n}"
+                        },
+                        "url": "{{baseUrl}}/mikrotik/router"
+                    }
+                },
+                {
+                    "name": "Fetch Router",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/mikrotik/router?profileId=1&branchId=1",
+                            "query": [
+                                {
+                                    "key": "profileId",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "branchId",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Check Router Connection",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/mikrotik/router/check-connection?profileId=1&branchId=1",
+                            "query": [
+                                {
+                                    "key": "profileId",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "branchId",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Sync Ticket Profiles",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"profileId\": 1,\n  \"branchId\": 1\n}"
+                        },
+                        "url": "{{baseUrl}}/mikrotik/router/sync-profiles"
+                    }
+                },
+                {
+                    "name": "Fetch Ticket Profiles",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/mikrotik/profiles?branchId=1",
+                            "query": [
+                                {
+                                    "key": "branchId",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Ticket Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"profileId\": 1,\n  \"branchId\": 1,\n  \"title\": \"Premium 5Mbps\",\n  \"description\": \"WiFi ticket profile\",\n  \"bandwidth\": \"5M/5M\",\n  \"status\": true,\n  \"amount\": 1000\n}"
+                        },
+                        "url": "{{baseUrl}}/mikrotik/profiles"
+                    }
+                },
+                {
+                    "name": "Update Ticket Profile Price",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"profileId\": 1,\n  \"branchId\": 1,\n  \"amount\": 1000\n}"
+                        },
+                        "url": "{{baseUrl}}/mikrotik/profiles/price"
+                    }
+                },
+                {
+                    "name": "Change Ticket Profile Status",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"profileId\": 1,\n  \"branchId\": 1,\n  \"status\": true\n}"
+                        },
+                        "url": "{{baseUrl}}/mikrotik/profiles/status"
+                    }
+                },
+                {
+                    "name": "Ensure Ticket Profile Product",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"profileId\": 1,\n  \"branchId\": 1,\n  \"branchAmenityId\": \"uuid-here\"\n}"
+                        },
+                        "url": "{{baseUrl}}/mikrotik/profiles/product"
+                    }
+                }
+            ]
+        },
+        {
             "name": "Amenities",
             "item": [
                 {

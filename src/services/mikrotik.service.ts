@@ -1,31 +1,35 @@
 import axios from 'axios';
 import { MikrotikRouter } from "../models/mikrotikRouter.model";
 import { TicketProfile } from "../models/ticketProfile.model";
+import { Product } from "../models/product.model";
+import { BranchAmenity } from "../models/branchAmenity.model";
+import { Status } from "../models/types/amenity.types";
+import { ProductStatus } from "../models/types/product.types";
 
 export class MikrotikService {
     private static get baseUrl() {
         return process.env.MIKROTIK_CLOUD_BASE_API;
     }
 
-    static async checkConnection(data: any) {
+    static async checkConnection(data: { host: string; user: string; password: string }) {
         const response = await axios.post(`${this.baseUrl}/check-connection`, data);
         return response.data;
     }
 
-    static async syncTicketProfiles(data: any) {
+    static async syncTicketProfiles(data: { host: string; user: string; password: string }) {
         const response = await axios.post(`${this.baseUrl}/profiles`, data);
         return response.data;
     }
 
-    static async createAndActivateTicket(data: any) {
+    static async createAndActivateTicket(data: Record<string, unknown>) {
         const response = await axios.post(`${this.baseUrl}/users`, data);
         return response.data;
     }
 
-    static async addRouter(data: { host: any; user: any; password: any; profileId: any; }) {
-        const { host, user, password, profileId } = data;
+    static async addRouter(data: { host: string; user: string; password: string; profileId: number; branchId: number; }) {
+        const { host, user, password, profileId, branchId } = data;
         const router = await MikrotikRouter.findOne({
-            where: { profileId: profileId },
+            where: { profileId, branchId },
         });
 
         if (router) {
@@ -42,20 +46,21 @@ export class MikrotikService {
             host,
             username: user,
             password,
-            profileId: profileId,
+            profileId,
+            branchId,
             metadata: systemInfo,
         });
     }
 
-    static async fetchRouter(profileId: number) {
+    static async fetchRouter(profileId: number, branchId: number) {
         return await MikrotikRouter.findAll({
-            where: { profileId: profileId }
+            where: { profileId, branchId }
         });
     }
 
-    static async editRouter(data: { routerId: any; host: any; user: any; password: any; profileId: any; }) {
-        const { routerId, host, user, password, profileId } = data;
-        const networkRouter = await MikrotikRouter.findOne({ where: { id: routerId, profileId: profileId } });
+    static async editRouter(data: { routerId: number; host: string; user: string; password: string; profileId: number; branchId: number; }) {
+        const { routerId, host, user, password, profileId, branchId } = data;
+        const networkRouter = await MikrotikRouter.findOne({ where: { id: routerId, profileId, branchId } });
         if (!networkRouter) {
             throw new Error("Network router not found");
         }
@@ -67,9 +72,9 @@ export class MikrotikService {
         return networkRouter;
     }
 
-    static async checkRouterConnection(profileId: number) {
+    static async checkRouterConnection(profileId: number, branchId: number) {
         const router = await MikrotikRouter.findOne({
-            where: { profileId: profileId }
+            where: { profileId, branchId }
         });
         if (!router) {
             throw new Error("Failed to check connection, router not found.");
@@ -78,10 +83,10 @@ export class MikrotikService {
         return await this.checkConnection({ host: router.host, user: router.username, password: router.password });
     }
 
-    static async syncProfiles(data: { profileId: any; userID: any; }) {
-        const { profileId, userID } = data;
+    static async syncProfiles(data: { profileId: number; branchId: number; userID: number; }) {
+        const { profileId, branchId, userID } = data;
         const router = await MikrotikRouter.findOne({
-            where: { profileId: profileId },
+            where: { profileId, branchId },
         });
         if (!router) {
             throw new Error("Failed to sync ticket profiles, router not found.");
@@ -96,9 +101,9 @@ export class MikrotikService {
         if (!profiles) {
             throw new Error("Failed to sync ticket profiles.");
         }
-        const profilePromises = profiles.map(async (profile: any) => {
+        const profilePromises = (profiles as Array<{ name: string; owner?: string }>).map(async (profile) => {
             const ticketProfile = await TicketProfile.findOne({
-                where: { name: profile.name, routerId: router.id, userId: userID },
+                where: { name: profile.name, routerId: router.id, profileId, branchId },
             });
 
             if (!ticketProfile) {
@@ -106,7 +111,8 @@ export class MikrotikService {
                     name: profile.name,
                     price: 0,
                     routerId: router.id,
-                    userId: userID,
+                    profileId,
+                    branchId,
                     owner: profile.owner,
                 });
             }
@@ -117,9 +123,9 @@ export class MikrotikService {
         return await Promise.all(profilePromises);
     }
 
-    static async editTicketProfile(data: { userID: any; profileId: any; title: any; description: any; bandwidth: any; status: any; amount: any; }) {
-        const { userID, profileId, title, description, bandwidth, status, amount } = data;
-        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
+    static async editTicketProfile(data: { ticketProfileId: number; profileId: number; branchId: number; title: string; description: string; bandwidth: string; status: boolean; amount: number; }) {
+        const { ticketProfileId, profileId, branchId, title, description, bandwidth, status, amount } = data;
+        const profile = await TicketProfile.findOne({ where: { id: ticketProfileId, profileId, branchId } });
 
         if (!profile) {
             throw new Error("Profile not found");
@@ -135,9 +141,9 @@ export class MikrotikService {
         return profile;
     }
 
-    static async addTicketPrice(data: { userID: any; profileId: any; amount: any; }) {
-        const { userID, profileId, amount } = data;
-        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
+    static async addTicketPrice(data: { ticketProfileId: number; profileId: number; branchId: number; amount: number; }) {
+        const { ticketProfileId, profileId, branchId, amount } = data;
+        const profile = await TicketProfile.findOne({ where: { id: ticketProfileId, profileId, branchId } });
         if (!profile) {
             throw new Error("Profile not found");
         }
@@ -145,9 +151,9 @@ export class MikrotikService {
         return profile;
     }
 
-    static async changeTicketStatus(data: { userID: any; profileId: any; status: any; }) {
-        const { userID, profileId, status } = data;
-        const profile = await TicketProfile.findOne({ where: { id: profileId, userId: userID } });
+    static async changeTicketStatus(data: { ticketProfileId: number; profileId: number; branchId: number; status: boolean; }) {
+        const { ticketProfileId, profileId, branchId, status } = data;
+        const profile = await TicketProfile.findOne({ where: { id: ticketProfileId, profileId, branchId } });
         if (!profile) {
             throw new Error("Profile not found");
         }
@@ -155,14 +161,60 @@ export class MikrotikService {
         return profile;
     }
 
-    static async fetchTicketProfile(userID: number) {
-        return await TicketProfile.findAll({
-            where: { userId: userID }
-        });
+    static async fetchTicketProfile(profileId: number, branchId: number) {
+        return await TicketProfile.findAll({ where: { profileId, branchId } });
     }
 
-    static async routerCommand(data: { username: any; }) {
-        // Implementation pending replacement of sy5-routeros-client
-        return { username: data.username };
+    static async ensureTicketProfileProduct(data: { ticketProfileId: number; profileId: number; branchId: number; branchAmenityId: string }) {
+        const { ticketProfileId, profileId, branchId, branchAmenityId } = data;
+
+        const ticketProfile = await TicketProfile.findOne({
+            where: { id: ticketProfileId, profileId, branchId },
+        });
+
+        if (!ticketProfile) {
+            throw new Error("Ticket profile not found");
+        }
+
+        const branchAmenity = await BranchAmenity.findOne({
+            where: { id: branchAmenityId, branchId, status: Status.ACTIVE },
+        });
+
+        if (!branchAmenity) {
+            throw new Error("Branch amenity not found");
+        }
+
+        const existingProduct = await Product.findOne({
+            where: {
+                businessId: profileId,
+                branchId,
+                branchAmenityId,
+                name: ticketProfile.title || ticketProfile.name,
+            },
+        });
+
+        if (existingProduct) {
+            return existingProduct;
+        }
+
+        const product = await Product.create({
+            businessId: profileId,
+            branchId,
+            branchAmenityId,
+            name: ticketProfile.title || ticketProfile.name,
+            description: ticketProfile.description || "",
+            price: ticketProfile.price || 0,
+            status: ProductStatus.AVAILABLE,
+            isWifiTicket: true,
+            meta: {
+                type: "ticket_profile",
+                ticketProfileId: ticketProfile.id,
+                routerId: ticketProfile.routerId,
+                bandwidth: ticketProfile.bandwidth,
+                owner: ticketProfile.owner,
+            },
+        });
+
+        return product;
     }
 }

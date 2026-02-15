@@ -16,7 +16,7 @@ import webhookRoutes from "./routes/webhook.routes";
 import { seedAmenities } from "./scripts/seedAmenities";
 import { registerWebhookListeners } from "./subscribers/webhook.subscriber";
 import { registerStaffListeners } from "./subscribers/staff.subscriber";
-import { verifyPendingTransactionsCron } from "./schedulers/update-transactions.scheduler";
+import { verifyPendingTransactionsCron, processWifiTicketOrdersCron } from "./schedulers/update-transactions.scheduler";
 
 const serviceAccount = require('../global/serviceAccountKey.json');
 
@@ -113,6 +113,7 @@ async function startServer() {
 
     // Start Schedulers
     verifyPendingTransactionsCron();
+    processWifiTicketOrdersCron();
 
     server.listen(PORT, HOST, () => {
       console.log(`Server running on http://localhost:${PORT}, PID: ${process.pid}`);

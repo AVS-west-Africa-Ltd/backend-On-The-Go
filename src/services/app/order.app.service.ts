@@ -36,7 +36,7 @@ export class OrderService {
             }
 
             let subTotal = 0;
-            const orderItemsData = [];
+            const orderItemsData: any[] = [];
             const orderAmenitiesCategorySet = new Set<string>();
 
             for (const item of items) {
@@ -73,6 +73,7 @@ export class OrderService {
                     quantity: item.quantity,
                     amount: product.price,
                     totalAmount: itemTotal,
+                    isWifiTicket: product.isWifiTicket,
                 });
 
                 if (product.branch_amenity?.amenity?.name) {

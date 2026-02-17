@@ -3,9 +3,6 @@ import { errorHandler, successHandler } from "../handlers/responseHandlers";
 import { RewardService } from "../services/reward.service";
 import { Branch } from "../models/Branch";
 
-/**
- * Create a new reward rule
- */
 export const createRule = async (req: Request, res: Response) => {
     try {
         const admin = req.admin!;
@@ -56,9 +53,7 @@ export const getRules = async (req: Request, res: Response) => {
     }
 };
 
-/**
- * Get user's vouchers
- */
+
 export const getMyVouchers = async (req: Request, res: Response) => {
     try {
         const userId = req.user!;
@@ -77,9 +72,6 @@ export const getMyVouchers = async (req: Request, res: Response) => {
     }
 };
 
-/**
- * Redeem a voucher manually
- */
 export const redeemVoucher = async (req: Request, res: Response) => {
     try {
         const userId = req.user!;
@@ -115,9 +107,7 @@ export const getBranchVouchers = async (req: Request, res: Response) => {
     }
 };
 
-/**
- * Manually issue a voucher (Admin)
- */
+
 export const manualIssueVoucher = async (req: Request, res: Response) => {
     try {
         const admin = req.admin!;

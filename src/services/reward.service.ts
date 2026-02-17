@@ -19,7 +19,7 @@ export class RewardService {
             threshold: data.threshold,
             voucherType: data.voucherType,
             value: data.value,
-            validityDays: data.validityDays ?? null,
+            validityDays: data.validityDays ? JSON.stringify(data.validityDays) : null,
             expiryHours: data.expiryHours ?? 24,
             maxPerUser: data.maxPerUser ?? 5,
         } as any, { transaction });
@@ -38,18 +38,27 @@ export class RewardService {
         return await BusinessRewardRules.findAll({ where });
     }
 
-    static async trackProgress(
-        userId: number,
-        businessId: number,
-        triggerType: RewardTriggerType
-    ) {
-        const t = await sequelize.transaction();
+    /**
+     * Tracks progress towards a reward for a user.
+     * Called when a trigger event occurs (e.g. referral, review).
+     */
+    static async trackProgress(userId: number, businessId: number, triggerType: RewardTriggerType, branchId?: number, transaction?: Transaction) {
+        const t = transaction || await sequelize.transaction();
 
         try {
+            // 1. Find active rules for this trigger and business
+            // Rules can be global (branchId is null) or specific to this branch
             const rules = await BusinessRewardRules.findAll({
-                where: { businessId, triggerType, isActive: true },
-                transaction: t,
-                lock: t.LOCK.UPDATE
+                where: {
+                    businessId,
+                    triggerType,
+                    isActive: true,
+                    [Op.or]: [
+                        { branchId: null },
+                        { branchId: branchId || null }
+                    ]
+                },
+                transaction: t
             });
 
             for (const rule of rules) {
@@ -102,9 +111,9 @@ export class RewardService {
                 await progress.save({ transaction: t });
             }
 
-            await t.commit();
+            if (!transaction) await t.commit();
         } catch (error) {
-            await t.rollback();
+            if (!transaction) await t.rollback();
             throw error;
         }
     }
@@ -126,7 +135,8 @@ export class RewardService {
             userId,
             businessId: rule.businessId,
             branchId: rule.branchId,
-            ruleId: rule.id, // ✅ IMPORTANT
+            ruleId: rule.id,
+            validityDays: rule.validityDays ? (typeof rule.validityDays === 'string' ? rule.validityDays : JSON.stringify(rule.validityDays)) : null,
             voucherType: rule.voucherType,
             value: rule.value,
             status: VoucherStatus.UNUSED,
@@ -134,7 +144,7 @@ export class RewardService {
             validUntil,
             usageLimit: 1,
             usedCount: 0
-        }, { transaction });
+        } as any, { transaction });
     }
 
 
@@ -192,14 +202,14 @@ export class RewardService {
             branchId: data.branchId ?? null,
             voucherType: data.voucherType,
             value: data.value,
-            validityDays: data.validityDays ?? null,
+            validityDays: data.validityDays ? JSON.stringify(data.validityDays) : null,
             status: VoucherStatus.UNUSED,
             validFrom,
             validUntil,
             usageLimit: 1,
             usedCount: 0,
             isStackable: false
-        });
+        } as any);
     }
 
     /**

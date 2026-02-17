@@ -30,7 +30,7 @@ import { NetworkRouter } from "../models/NetworkRouter";
 import { TicketProfile } from "../models/TicketProfile";
 import { IGetBranchLogsQuery, IGetBranchMediaQuery, IGetBranchOrdersQuery, IGetBranchReviewsQuery } from "../interfaces/branches.interface";
 import { appEvents } from "../utils/events";
-import { STAFF_EVENT } from "../subscribers/types";
+import { STAFF_EVENT, BRANCH_EVENT } from "../subscribers/types";
 import { IGetBranchProductsResponse, IGetProductsQuery } from "../interfaces/product.interface";
 import { ProductService } from "./product.service";
 import { AdminPermission, AdminRole } from "../models/types/admin.types";
@@ -200,6 +200,14 @@ export class BranchService {
 
             // Commit
             await transaction.commit();
+
+            // Emit Branch Created Event (for rewards etc)
+            appEvents.emit(BRANCH_EVENT.BRANCH_CREATED, {
+                profileId,
+                branchId: branch.id,
+                name: branch.name
+            });
+
             return branch;
 
         } catch (error: any) {

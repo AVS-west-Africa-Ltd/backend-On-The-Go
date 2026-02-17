@@ -19,6 +19,8 @@ import { ICreatePostPayload } from "../interfaces/post.interface";
 import { BranchStaff } from "../models/BranchStaff";
 import { BranchStaffRole } from "../models/types/branchStaff.types";
 import { AppError } from "../utils/errors";
+import { appEvents } from "../utils/events";
+import { REWARD_EVENT } from "../subscribers/types";
 
 const { sequelize } = db;
 
@@ -151,6 +153,16 @@ export class AppService {
             );
 
             await t.commit();
+
+            // Emit Review Reward Event (asynchronous)
+            if (postType === PostType.REVIEW) {
+                appEvents.emit(REWARD_EVENT.REVIEW_CREATED, {
+                    userId,
+                    businessId: branch.profileId,
+                    branchId: finalBranchId
+                });
+            }
+
             return post;
         } catch (error) {
             await t.rollback();

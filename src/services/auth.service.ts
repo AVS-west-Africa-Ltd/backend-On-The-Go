@@ -333,6 +333,7 @@ export class AuthService {
             await Admin.create({
                 branchId: branchId,
                 role: AdminRole.ADMIN,
+                businessId: staff.businessId,
                 userId: user.id,
                 profileId: profile.id,
                 name: `${firstName} ${lastName}`,
@@ -358,7 +359,12 @@ export class AuthService {
         }
     }
     static async checkUsername(username: string) {
-        const user = await Profile.findOne({ where: { userName: username } });
+        const user = await Profile.findOne({
+            where: sequelize.where(
+                sequelize.fn("LOWER", sequelize.col("userName")),
+                (username || "").toLowerCase()
+            )
+        });
         return !user;
     }
 

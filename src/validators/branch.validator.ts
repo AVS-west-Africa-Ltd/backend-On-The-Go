@@ -40,6 +40,8 @@ export const createBranchSchema = Joi.object({
   )
     .optional()
     .default([]),
+
+  geoLocation: Joi.array().items(Joi.number()).length(2).optional(),
 });
 
 export const addWorkingHoursSchema = Joi.object({
@@ -62,10 +64,10 @@ export const inviteStaffSchema = Joi.object({
 })
 
 export const getBranchCustomersSchema = Joi.object({
-    cursor: Joi.string().optional(),
-    limit: Joi.number().integer().optional(),
-    search: Joi.string().optional(),
-    branchId: Joi.number().integer().positive().optional(),
-    from: Joi.string().isoDate().optional(),
-    to: Joi.string().isoDate().optional(),
+  cursor: Joi.string().optional(),
+  limit: Joi.number().integer().optional(),
+  search: Joi.string().optional(),
+  branchId: Joi.number().integer().positive().optional(),
+  from: Joi.string().isoDate().optional(),
+  to: Joi.string().isoDate().optional(),
 });

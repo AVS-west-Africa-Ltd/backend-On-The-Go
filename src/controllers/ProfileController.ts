@@ -7,13 +7,12 @@ export const createProfile = async (req: Request, res: Response) => {
   try {
     const data = req.body as ICreateProfileDTO;
     const userId = req.user!;
-
     const { profile, token } = await ProfileService.createProfile(data, userId);
 
     return successHandler(res, "Profile created successfully!", 200, { profile, token });
   } catch (error: any) {
     console.error("Profile creation failed:", error);
-    return errorHandler(res, error.message || "Something went wrong!", 400);
+    return errorHandler(res, error.message || "Something went wrong!", 400, error);
   }
 };
 
@@ -30,7 +29,7 @@ export const addMoreInfomation = async (req: Request, res: Response) => {
     if (error.message === "Profile not found!") {
       return errorHandler(res, error.message, 400);
     }
-    return errorHandler(res, error.message || "Sorry adding more information failed!", 400);
+    return errorHandler(res, error.message || "Sorry adding more information failed!", 400, error);
   }
 };
 
@@ -44,7 +43,7 @@ export const addInterestsAndPlaces = async (req: Request, res: Response) => {
     return successHandler(res, "Wow profile updated successfully!", 200, { profile });
   } catch (error: any) {
     console.error("Interests update error:", error);
-    return errorHandler(res, error.message || "Sorry interest & places update failed", 400);
+    return errorHandler(res, error.message || "Sorry interest & places update failed", 400, error);
   }
 };
 
@@ -56,7 +55,7 @@ export const uploadDocument = async (req: Request, res: Response) => {
     return successHandler(res, "Document uploaded successfilly!", 200, { document });
   } catch (error: any) {
     console.log(error);
-    return errorHandler(res, error.message || "Sorry something went wrong!", 400);
+    return errorHandler(res, error.message || "Sorry something went wrong!", 400, error);
   }
 };
 
@@ -71,7 +70,7 @@ export const addOpeningHours = async (req: Request, res: Response) => {
     return successHandler(res, "Added opening hours successfilly!", 200, { openingHours });
   } catch (error: any) {
     console.log(error);
-    return errorHandler(res, error.message || "Sorry something went wrong!", 400);
+    return errorHandler(res, error.message || "Sorry something went wrong!", 400, error);
   }
 };
 
@@ -87,7 +86,7 @@ export const addAmenities = async (req: Request, res: Response) => {
     return successHandler(res, "Amenities added successfully!", 200);
   } catch (error: any) {
     console.log(error);
-    return errorHandler(res, error.message || "Sorry adding amenities failed!", 400);
+    return errorHandler(res, error.message || "Sorry adding amenities failed!", 400, error);
   }
 };
 
@@ -102,10 +101,7 @@ export const addPhotos = async (req: Request, res: Response) => {
     return successHandler(res, `Successfully uploaded ${createdMedia.length} photo(s)`, 201, { createdMedia });
   } catch (error: any) {
     console.error('Photo upload error:', error);
-    if (error.name === 'SequelizeValidationError') {
-      return errorHandler(res, 'Validation failed for uploaded files', 400);
-    }
-    return errorHandler(res, error.message || 'Sorry failed to upload photos', 500);
+    return errorHandler(res, error.message || 'Sorry failed to upload photos', 500, error);
   }
 };
 
@@ -122,7 +118,7 @@ export const addSocials = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Error adding socials:", error);
-    return errorHandler(res, error.message || "Failed to update social media links", 500);
+    return errorHandler(res, error.message || "Failed to update social media links", 500, error);
   }
 };
 
@@ -133,7 +129,7 @@ export const addWifiDetails = async (req: Request, res: Response) => {
     return successHandler(res, "WiFi details added successfully!", 200, { amenity });
   } catch (error: any) {
     console.error("addWifiDetails error:", error);
-    return errorHandler(res, error.message || "Sorry, something went wrong!", 400);
+    return errorHandler(res, error.message || "Sorry, something went wrong!", 400, error);
   }
 };
 
@@ -147,7 +143,7 @@ export const addRedeemRewardHours = async (req: Request, res: Response) => {
     return successHandler(res, "Reward redeem hours updated successfully", 200, { data: rewardRedeemHours });
   } catch (error: any) {
     console.error("Error updating reward redeem hours:", error);
-    return errorHandler(res, error.message || "Failed to update reward redeem hours", 400);
+    return errorHandler(res, error.message || "Failed to update reward redeem hours", 400, error);
   }
 };
 
@@ -162,7 +158,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     return successHandler(res, "Profile updated successfully!", 200, { profile });
   } catch (error: any) {
     console.log(error);
-    return errorHandler(res, error.message || "Sorry, something went wrong!", 400);
+    return errorHandler(res, error.message || "Sorry, something went wrong!", 400, error);
   }
 };
 
@@ -176,7 +172,7 @@ export const fetchProfile = async (req: Request, res: Response) => {
     return successHandler(res, "Profile fetched flushed!", 200, { profile });
   } catch (error: any) {
     console.log(error);
-    return errorHandler(res, error.message || "Sorry something went wrong!", 400);
+    return errorHandler(res, error.message || "Sorry something went wrong!", 400, error);
   }
 };
 

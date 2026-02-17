@@ -19,6 +19,7 @@ export interface AdminAttributes {
     id?: number;
     profileId: number;
     branchId: number;
+    businessId: number;
     role: AdminRole;
     name: string;
     email: string;

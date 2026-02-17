@@ -6,7 +6,7 @@ import { sequelize } from "../config/database";
 export interface DB {
   sequelize: Sequelize;
   Sequelize: typeof Sequelize;
-   [modelName: string]: ModelStatic<Model<any, any>> | any;
+  [modelName: string]: ModelStatic<Model<any, any>> | any;
 }
 
 const db = {} as DB;
@@ -21,8 +21,8 @@ fs.readdirSync(__dirname)
     const modelModule = require(modelPath);
     const initModel = modelModule.default || modelModule;
 
-const model = initModel(sequelize);
-db[model.name] = model;
+    const model = initModel(sequelize);
+    db[model.name] = model;
   });
 
 // Run associations

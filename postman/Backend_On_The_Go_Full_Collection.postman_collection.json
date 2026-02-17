@@ -1549,6 +1549,138 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Rewards & Vouchers",
+            "item": [
+                {
+                    "name": "Admin",
+                    "item": [
+                        {
+                            "name": "Create Reward Rule",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Referral Promo\",\n    \"triggerType\": \"REFERRAL\",\n    \"threshold\": 2,\n    \"voucherType\": \"PERCENTAGE_DISCOUNT\",\n    \"value\": 10,\n    \"validityDays\": [\"Monday\", \"Wednesday\", \"Friday\"],\n    \"expiryHours\": 24,\n    \"maxPerUser\": 5\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/admin/rewards/rules"
+                            }
+                        },
+                        {
+                            "name": "Get Reward Rules",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/admin/rewards/rules"
+                            }
+                        },
+                        {
+                            "name": "Get Branch Vouchers",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/admin/rewards/vouchers?status=UNUSED&search=",
+                                    "query": [
+                                        {
+                                            "key": "status",
+                                            "value": "UNUSED"
+                                        },
+                                        {
+                                            "key": "search",
+                                            "value": ""
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Manual Issue Voucher",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"userId\": 1,\n    \"voucherType\": \"FIXED_DISCOUNT\",\n    \"value\": 500,\n    \"validityDays\": [\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\"],\n    \"expiryHours\": 48,\n    \"branchId\": 1\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/admin/rewards/vouchers/manual"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "User",
+                    "item": [
+                        {
+                            "name": "My Vouchers",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/rewards/my-vouchers"
+                            }
+                        },
+                        {
+                            "name": "Redeem Voucher",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"voucherId\": 1\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/rewards/vouchers/redeem"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

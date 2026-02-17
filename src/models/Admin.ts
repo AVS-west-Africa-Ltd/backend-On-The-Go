@@ -19,6 +19,7 @@ export class Admin extends Model<
     declare id: CreationOptional<number>;
     declare profileId: CreationOptional<number>;
     declare userId: CreationOptional<number>;
+    declare businessId: CreationOptional<number>;
     declare branchId: number;
     declare role: AdminRole;
     declare name: string;
@@ -37,6 +38,14 @@ export class Admin extends Model<
             Admin.belongsTo(models.Profile, {
                 foreignKey: "profileId",
                 as: "profile",
+                onDelete: "CASCADE",
+            });
+        }
+
+        if (models.Profile) {
+            Admin.belongsTo(models.Profile, {
+                foreignKey: "businessId",
+                as: "business",
                 onDelete: "CASCADE",
             });
         }
@@ -73,6 +82,11 @@ export class Admin extends Model<
                     references: { model: "users", key: "id" },
                 },
                 profileId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                    references: { model: "profiles", key: "id" },
+                },
+                businessId: {
                     type: DataTypes.INTEGER,
                     allowNull: true,
                     references: { model: "profiles", key: "id" },

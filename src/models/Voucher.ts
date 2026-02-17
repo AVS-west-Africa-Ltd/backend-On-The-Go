@@ -7,6 +7,7 @@ import {
     CreationOptional,
     ModelStatic,
 } from "sequelize";
+import { VoucherType, VoucherStatus } from "./types/rewardRules.types";
 
 export class Voucher extends Model<
     InferAttributes<Voucher>,
@@ -14,22 +15,47 @@ export class Voucher extends Model<
 > {
     declare id: CreationOptional<number>;
     declare code: string;
-    declare discountType: CreationOptional<string>; // 'PERCENTAGE'
-    declare value: number;
+
     declare userId: number;
     declare businessId: number;
     declare branchId: CreationOptional<number | null>;
-    declare status: CreationOptional<string>; // 'UNUSED', 'USED', 'EXPIRED'
-    declare validFrom: CreationOptional<Date>;
-    declare validUntil: CreationOptional<Date>;
+    declare validityDays: CreationOptional<string[] | null>;
+
+    declare voucherType: VoucherType;
+    declare value: number;
+
+    declare ruleId: CreationOptional<number | null>;
+
+    declare productId: CreationOptional<number | null>;
+
     declare minOrderAmount: CreationOptional<number>;
+    declare maxDiscountAmount: CreationOptional<number | null>;
+
+    declare usageLimit: CreationOptional<number>;
+    declare usedCount: CreationOptional<number>;
+
+    declare status: CreationOptional<VoucherStatus>;
+
+    declare validFrom: CreationOptional<Date>;
+    declare validUntil: Date;
+
+    declare isStackable: CreationOptional<boolean>;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
 
     static associate(models: Record<string, ModelStatic<Model>>) {
         if (models.User) {
-            Voucher.belongsTo(models.User, { foreignKey: 'userId', as: 'owner' });
+            Voucher.belongsTo(models.User, { foreignKey: "userId" });
+        }
+        if (models.Business) {
+            Voucher.belongsTo(models.Business, { foreignKey: "businessId" });
+        }
+        if (models.Branch) {
+            Voucher.belongsTo(models.Branch, { foreignKey: "branchId" });
+        }
+        if (models.Product) {
+            Voucher.belongsTo(models.Product, { foreignKey: "productId" });
         }
     }
 
@@ -39,57 +65,100 @@ export class Voucher extends Model<
                 id: {
                     type: DataTypes.INTEGER,
                     autoIncrement: true,
-                    primaryKey: true,
+                    primaryKey: true
                 },
                 code: {
                     type: DataTypes.STRING,
                     allowNull: false,
-                    unique: true,
+                    unique: true
                 },
-                discountType: {
-                    type: DataTypes.ENUM('PERCENTAGE', 'FIXED'),
-                    defaultValue: 'PERCENTAGE',
-                },
-                value: {
-                    type: DataTypes.FLOAT,
-                    allowNull: false,
+                ruleId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true
                 },
                 userId: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: false
                 },
                 businessId: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: false
                 },
                 branchId: {
                     type: DataTypes.INTEGER,
-                    allowNull: true,
+                    allowNull: true
                 },
+                validityDays: {
+                    type: DataTypes.TEXT,
+                    allowNull: true
+                },
+
+                voucherType: {
+                    type: DataTypes.ENUM(...Object.values(VoucherType)),
+                    allowNull: false
+                },
+
+                value: {
+                    type: DataTypes.FLOAT,
+                    allowNull: false
+                },
+
+                productId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true
+                },
+
+                minOrderAmount: {
+                    type: DataTypes.FLOAT,
+                    defaultValue: 0
+                },
+                maxDiscountAmount: {
+                    type: DataTypes.FLOAT,
+                    allowNull: true
+                },
+
+                usageLimit: {
+                    type: DataTypes.INTEGER,
+                    defaultValue: 1
+                },
+                usedCount: {
+                    type: DataTypes.INTEGER,
+                    defaultValue: 0
+                },
+
                 status: {
-                    type: DataTypes.ENUM('UNUSED', 'USED', 'EXPIRED'),
-                    defaultValue: 'UNUSED',
+                    type: DataTypes.ENUM(...Object.values(VoucherStatus)),
+                    defaultValue: VoucherStatus.UNUSED
                 },
+
                 validFrom: {
                     type: DataTypes.DATE,
-                    defaultValue: DataTypes.NOW,
+                    defaultValue: DataTypes.NOW
                 },
                 validUntil: {
                     type: DataTypes.DATE,
-                    allowNull: false,
+                    allowNull: false
                 },
-                minOrderAmount: {
-                    type: DataTypes.FLOAT,
-                    defaultValue: 0,
+
+                isStackable: {
+                    type: DataTypes.BOOLEAN,
+                    defaultValue: false
                 },
-                createdAt: DataTypes.DATE,
-                updatedAt: DataTypes.DATE,
+
+                createdAt: {
+                    type: DataTypes.DATE,
+                    allowNull: false
+                },
+                updatedAt: {
+                    type: DataTypes.DATE,
+                    allowNull: false
+                },
             },
             {
                 sequelize,
                 tableName: "vouchers",
                 timestamps: true,
-            }
+            },
         );
 
         return Voucher;

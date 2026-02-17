@@ -7,7 +7,7 @@ export const login = async (req: Request, res: Response) => {
         const { admin, token } = await AdminService.login(req.body);
         return successHandler(res, "Admin logged in successfully", 200, { admin, token });
     } catch (error: any) {
-        return errorHandler(res, error.message || "Login failed", 401);
+        return errorHandler(res, error.message || "Login failed", 401, error);
     }
 };
 
@@ -17,7 +17,7 @@ export const createAdmin = async (req: Request, res: Response) => {
         const admin = await AdminService.createAdmin(req.body, profileId);
         return successHandler(res, "Admin created successfully", 201, admin);
     } catch (error: any) {
-        return errorHandler(res, error.message || "Failed to create admin", 400);
+        return errorHandler(res, error.message || "Failed to create admin", 400, error);
     }
 };
 

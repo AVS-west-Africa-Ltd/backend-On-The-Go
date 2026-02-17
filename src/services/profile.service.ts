@@ -34,6 +34,30 @@ export class ProfileService {
             const data: ProfileData = {} as ProfileData;
             const branch = {} as Branch;
 
+            const existingUserName = await Profile.findOne({
+                where: sequelize.where(
+                    sequelize.fn("LOWER", sequelize.col("userName")),
+                    (payload.userName || "").toLowerCase()
+                ),
+                transaction: t
+            });
+
+            if (existingUserName) {
+                throw new Error("Profile with this username already exists.");
+            }
+
+            const existingProfile = await Profile.findOne({
+                where: {
+                    userId: userId,
+                    profileType: payload.profileType
+                },
+                transaction: t
+            });
+
+            if (existingProfile) {
+                throw new Error(`You already have a ${payload.profileType} profile.`);
+            }
+
             switch (payload.profileType) {
                 case ProfileType.PERSONAL:
                     data.userName = payload.userName;

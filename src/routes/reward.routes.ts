@@ -1,5 +1,5 @@
 import express from "express";
-import * as RewardController from "../controllers/RewardController";
+import * as RewardController from "../controllers/reward.controller";
 import { authProfile } from "../middlewares/authProfile";
 import { validateBody, validateQuery } from "../middlewares/validateMiddleware";
 import { getMyVouchersQuerySchema, redeemVoucherSchema } from "../validators/reward.validator";

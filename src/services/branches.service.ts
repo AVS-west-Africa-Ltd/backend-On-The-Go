@@ -30,12 +30,12 @@ import { MikrotikRouter } from "../models/mikrotikRouter.model";
 import { TicketProfile } from "../models/ticketProfile.model";
 import { IGetBranchLogsQuery, IGetBranchMediaQuery, IGetBranchOrdersQuery, IGetBranchReviewsQuery } from "../interfaces/branches.interface";
 import { appEvents } from "../utils/events";
-import { STAFF_EVENT } from "../subscribers/types";
+import { STAFF_EVENT, BRANCH_EVENT } from "../subscribers/types";
 import { IGetBranchProductsResponse, IGetProductsQuery } from "../interfaces/product.interface";
 import { ProductService } from "./product.service";
 import { AdminPermission, AdminRole } from "../models/types/admin.types";
 import { Admin } from "../models/admin.model";
-import { applyDateFilter, randomCharacters, randomNumber } from "../utils/helpers";
+import { applyDateFilter, randomCharacters, randomNumber, validateGeolocation } from "../utils/helpers";
 import { Insight } from "../models/insight.model";
 import { InsightService } from "./insight.service";
 import { IGetCustomersPayload } from "../interfaces/customer.interface";
@@ -51,7 +51,7 @@ export class BranchService {
         const transaction: Transaction = await sequelize.transaction();
 
         try {
-            const { name, fullAddress, streetAddress, isHQ, state, country, city, description, working_hours, amenities, staff } = data;
+            const { name, fullAddress, streetAddress, isHQ, state, country, city, description, working_hours, amenities, staff, geoLocation } = data;
             const { profileId, userId, } = userData;
 
             // Normalize working hours
@@ -71,6 +71,17 @@ export class BranchService {
                 throw new AppError("Branch with the same name already exists", 409);
             }
 
+            let validatedGeoLocation: { type: string; coordinates: [number, number] } | null = null;
+            if (geoLocation) {
+                const parsedLocation = validateGeolocation(geoLocation);
+                if (parsedLocation) {
+                    validatedGeoLocation = {
+                        type: "Point",
+                        coordinates: parsedLocation
+                    };
+                }
+            }
+
             const branch = await Branch.create(
                 {
                     profileId,
@@ -83,6 +94,7 @@ export class BranchService {
                     city,
                     isHQ,
                     status: Status.ACTIVE,
+                    geoLocation: validatedGeoLocation,
                 },
                 { transaction }
             );
@@ -188,6 +200,14 @@ export class BranchService {
 
             // Commit
             await transaction.commit();
+
+            // Emit Branch Created Event (for rewards etc)
+            appEvents.emit(BRANCH_EVENT.BRANCH_CREATED, {
+                profileId,
+                branchId: branch.id,
+                name: branch.name
+            });
+
             return branch;
 
         } catch (error: any) {
@@ -582,7 +602,7 @@ export class BranchService {
             throw new Error(error.message || "Failed to update branch status");
         }
     }
-    
+
     static async inviteStaff(branchId: number, data: { firstName: string, lastName: string, email: string, role: BranchStaffRole }, userData: IBasicUser) {
         const { profileId, userId } = userData;
 
@@ -1150,11 +1170,12 @@ export class BranchService {
                 branchId
             },
             include: [
-                {model: Branch, as: "branch", attributes: ["id", "name", "city", "state"]},
-                {model: Comment, as: "comment", attributes: ["id", "body", "createdAt", "updatedAt", "likes"],
+                { model: Branch, as: "branch", attributes: ["id", "name", "city", "state"] },
+                {
+                    model: Comment, as: "comment", attributes: ["id", "body", "createdAt", "updatedAt", "likes"],
                     include: [
-                        {model: User, as: "user", attributes: ["id", "firstName", "lastName"]},
-                        {model: Profile, as: "author", attributes: ["id", "userName", "picture"]}
+                        { model: User, as: "user", attributes: ["id", "firstName", "lastName"] },
+                        { model: Profile, as: "author", attributes: ["id", "userName", "picture"] }
                     ]
                 }
             ],
@@ -1174,7 +1195,7 @@ export class BranchService {
             }
         });
 
-       
+
         // const wifiUsage = await WifiSession.findOne({
         //     where: {
         //         customerId,

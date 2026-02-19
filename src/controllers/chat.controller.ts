@@ -64,7 +64,7 @@ export const createChat = async (req: Request, res: Response) => {
         }
 
     } catch (error: any) {
-        return errorHandler(res, error.message, 500);
+        return errorHandler(res, error.message, 500, error);
     }
 };
 
@@ -86,6 +86,6 @@ export const getPendingRequests = async (req: Request, res: Response) => {
         return res.status(200).json({ status: "success", data: [] });
 
     } catch (error: any) {
-        return errorHandler(res, error.message, 500);
+        return errorHandler(res, error.message, 500, error);
     }
 };

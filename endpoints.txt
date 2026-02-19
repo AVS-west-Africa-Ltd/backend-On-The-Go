@@ -76,3 +76,54 @@ Endpoint to create
 56. Get business rating
 57. wifi connection-- number of wifi ticket bought in the last month, 
 58. total orders, total vouchers
+
+
+
+// Wifi infrastructure set Up
+// Next steps
+1. Set up VPN Server - tomorrow 
+2. Create endpoint on a separate codebase for router management - tomorrow
+
+// Endpoints needed
+1. Get VPN login credentials - automatically assigned to each branch
+2. Add router - router ip, username and password (gotten from step above)
+3. Sync ticket profiles with router -
+4. Covert ticket profile to products
+5. Create and activate ticket voucher
+
+// Rewards and vouchers
+// Each business should be able to create reward rules based on the reward we are offering
+// They will define what the user needs to get the reward
+// create a model for preset types of rewards
+The business will have theri own updated or refined version of the table and give configurations or set the rules 
+
+// Mark will come up with a db model on how the reward system would work, and send it to me this evening
+
+
+
+// What we have so far on the backend
+// APP
+1. Authentication and onboarding flow
+2. Chats flow
+3. Post, Feeds, Community and Review flow
+4. Insights flow
+5. Rewards and Vouchers flow
+6. Order flow
+7. Payment and Transaction flow
+8. Friends flow
+
+// DASHBOARD
+1. Products flow
+2. Orders flow
+3. Orders flow flow
+4. Rewards and Vouchers flow
+5. Wifi infrastructure flow
+6. Customers flow
+7. Profile Settings flow
+8. Branch and staff flow
+9. Authentication and password flow
+
+// What is left
+1. Dashboard page
+2. Dashboard wifi page (Some part of the UI is wrong and Mark will look at the other part to determind the technicality of the page)
+3. Report and Analytics page

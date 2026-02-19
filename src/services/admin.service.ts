@@ -3,6 +3,7 @@ import { AdminAttributes, AdminRole, AdminPermission } from "../models/types/adm
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwtUtil";
 import { Profile } from "../models/profile.model";
+import { ProfileType } from "../models/types/profile.types";
 
 export class AdminService {
     static async login(payload: any) {
@@ -23,12 +24,13 @@ export class AdminService {
                 id: admin.id,
                 profileId: admin.profileId,
                 branchId: admin.branchId,
+                businessId: admin.businessId,
                 role: admin.role,
                 permissions: admin.permissions || [],
                 name: admin.name,
                 email: admin.email
             },
-            profile: { id: admin.profileId, type: null },
+            profile: { id: admin.profileId, type: ProfileType.PERSONAL },
             branch: admin.branchId,
             user: admin.userId
         } as any);
@@ -60,6 +62,7 @@ export class AdminService {
             password: hashedPassword,
             role,
             userId: profileExists.userId,
+            businessId: profileExists.id,
             profileId,
             branchId,
             permissions: permissions || []

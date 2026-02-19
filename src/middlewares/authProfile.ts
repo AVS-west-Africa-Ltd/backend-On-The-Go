@@ -14,10 +14,10 @@ export const authProfile = (req: Request, res: Response, next: NextFunction) => 
   if (!decoded) {
     return errorHandler(res, 'Invalid token', 401);
   }
-  
+
   req.user = decoded.user;
 
-  if(!decoded.profile || decoded.profile == null){
+  if (!decoded.profile || decoded.profile == null) {
     return errorHandler(res, "Please select a profile!", 400);
   }
   req.profile = decoded.profile;

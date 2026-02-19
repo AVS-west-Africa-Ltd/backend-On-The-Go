@@ -21,6 +21,7 @@ export interface ICreateBranchPayload {
   working_hours: Record<DayOfWeek, { open: string; close: string }>;
   amenities: string[];
   staff: IBranchStaff[];
+  geoLocation?: number[];
 }
 
 export interface IBranchStaff {

@@ -64,13 +64,13 @@ export const getBranch = async (req: Request, res: Response) => {
         const userId = req.user;
 
         if (!branchId) {
-            return errorHandler(res, "branchId is required", 400);
+            return errorHandler(res, "branchId is required", 400, null);
         }
 
         const branch = await BranchService.getBranchById(parseInt(branchId, 10), profileId, userId);
 
         if (!branch) {
-            return errorHandler(res, "Branch not found", 404);
+            return errorHandler(res, "Branch not found", 404, null);
         }
 
         return successHandler(res, "Branch fetched successfully", 200, branch);
@@ -88,7 +88,7 @@ export const deleteBranch = async (req: Request, res: Response) => {
         const userId = req.user;
 
         if (!branchId) {
-            return errorHandler(res, "branchId is required", 400);
+            return errorHandler(res, "branchId is required", 400, null);
         }
 
         const deleted = await BranchService.deleteBranch(
@@ -115,7 +115,7 @@ export const updateBranchStatus = async (req: Request, res: Response) => {
         const userId = req.user;
 
         if (!branchId) {
-            return errorHandler(res, "branchId is required", 400);
+            return errorHandler(res, "branchId is required", 400, null);
         }
 
         const updated = await BranchService.updateBranchStatus(
@@ -125,7 +125,7 @@ export const updateBranchStatus = async (req: Request, res: Response) => {
         );
 
         if (!updated) {
-            return errorHandler(res, "Branch not found", 404);
+            return errorHandler(res, "Branch not found", 404, null);
         }
 
         return successHandler(res, "Branch status updated successfully", 200);
@@ -148,7 +148,7 @@ export const inviteStaff = async (req: Request, res: Response) => {
         const userId = req.user;
         const { firstName, lastName, email, role } = req.body;
 
-        if (!branchId) return errorHandler(res, "branchId is required", 400);
+        if (!branchId) return errorHandler(res, "branchId is required", 400, null);
 
         const result = await BranchService.inviteStaff(
             parseInt(branchId, 10),
@@ -226,7 +226,7 @@ export const getBranchLogs = async (req: Request, res: Response) => {
         }
 
         if (!branchIdd) {
-            return errorHandler(res, "Invalid branch ID", 400);
+            return errorHandler(res, "Invalid branch ID", 400, null);
         }
 
         const result = await BranchService.getBranchLogs(branchIdd, profileId, userId, { cursor, limit, search });
@@ -251,7 +251,7 @@ export const getBranchMedia = async (req: Request, res: Response) => {
         }
 
         if (!branchIdd) {
-            return errorHandler(res, "Invalid branch ID", 400);
+            return errorHandler(res, "Invalid branch ID", 400, null);
         }
 
         const result = await BranchService.getBranchMedia(branchIdd, profileId, userId, { cursor, limit, mimeType });
@@ -276,7 +276,7 @@ export const getBranchReviews = async (req: Request, res: Response) => {
         }
 
         if (!branchIdd) {
-            return errorHandler(res, "Invalid branch ID", 400);
+            return errorHandler(res, "Invalid branch ID", 400, null);
         }
 
         const result = await BranchService.getBranchReviews(branchIdd, profileId, userId, { cursor, limit, search });
@@ -299,7 +299,7 @@ export const getBranchCustomers = async (req: Request, res: Response) => {
         }
 
         if (!branchIdStr) {
-            return errorHandler(res, "Invalid branch ID", 400);
+            return errorHandler(res, "Invalid branch ID", 400, null);
         }
 
         const result = await BranchService.getBranchCustomers({ cursor, limit, search, from, to, branchId: branchIdStr });
@@ -316,16 +316,16 @@ export const getBranchCustomerDetails = async (req: Request, res: Response) => {
         let branchId = req.branch!;
 
         if (!customerId || isNaN(Number(customerId))) {
-            return errorHandler(res, "Customer ID is required", 400);
+            return errorHandler(res, "Customer ID is required", 400, null);
         }
 
         const customerIdNum = parseInt(customerId, 10);
         if (isNaN(customerIdNum)) {
-            return errorHandler(res, "Invalid Customer ID", 400);
+            return errorHandler(res, "Invalid Customer ID", 400, null);
         }
 
         if (!branchId) {
-            return errorHandler(res, "Something went wrong!", 400);
+            return errorHandler(res, "Something went wrong!", 400, null);
         }
 
         const result = await BranchService.getCustomerById(customerIdNum, branchId);

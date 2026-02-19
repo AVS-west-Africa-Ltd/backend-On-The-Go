@@ -12,6 +12,15 @@ export enum STAFF_EVENT {
     STAFF_AUTO_ACCEPT = 'staff.auto_accept',
 }
 
+export enum REWARD_EVENT {
+    REVIEW_CREATED = 'reward.review.created',
+    RULE_CREATED = 'reward.rule.created',
+}
+
+export enum BRANCH_EVENT {
+    BRANCH_CREATED = 'branch.created',
+}
+
 
 export type TPaystackEventData = {
     id: number,
@@ -59,4 +68,16 @@ export type TPaystackEventData = {
     subaccount: any,
     paidAt: string,
 }
+
+export type TRewardReviewEventData = {
+    userId: number;
+    businessId: number;
+    branchId: number;
+};
+
+export type TBranchCreatedEventData = {
+    profileId: number;
+    branchId: number;
+    name: string;
+};
 

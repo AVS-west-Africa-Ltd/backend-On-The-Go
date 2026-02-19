@@ -15,6 +15,7 @@ import socialRoutes from "./social.routes";
 import analyticsRoutes from "./analytics.routes";
 import chatRoutes from "./chat.routes";
 import searchRoutes from "./search.routes";
+import rewardRoutes from "./reward.routes";
 import adminRootRouter from "./admin/index";
 import mikrotikRoutes from "./mikrotik.routes";
 import { SystemController } from "../controllers/system.controller";
@@ -43,6 +44,7 @@ router.use("/social", socialRoutes);
 router.use("/chats", chatRoutes);
 router.use("/search", searchRoutes);
 router.use("/mikrotik", mikrotikRoutes);
+router.use("/rewards", rewardRoutes);
 
 // Grouped Admin Dashboard Routes
 router.use("/admin", adminRootRouter);

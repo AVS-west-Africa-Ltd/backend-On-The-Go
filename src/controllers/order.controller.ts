@@ -17,7 +17,7 @@ export class OrderController {
 
             return successHandler(res, "Order created successfully", 201, order);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -35,7 +35,7 @@ export class OrderController {
 
             return successHandler(res, "Checkout initiated", 200, data);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -44,19 +44,19 @@ export class OrderController {
             const { reference } = req.query; // Or req.params / body
 
             if (!reference) {
-                return errorHandler(res, "Transaction reference is required", 400);
+                return errorHandler(res, "Transaction reference is required", 400, null);
             }
 
             const result = await OrderService.verifyPayment(reference as string);
 
             if (!result) {
-                return errorHandler(res, "Payment unverified", 400);
+                return errorHandler(res, "Payment unverified", 400, null);
             }
 
             // res.status(200).json({ status: 'success', result });
             return successHandler(res, "Payment verified successfully", 200, result);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -71,12 +71,12 @@ export class OrderController {
             const order = await OrderService.getOrderById(profileId, id);
 
             if (!order) {
-                return errorHandler(res, "Order not found", 404);
+                return errorHandler(res, "Order not found", 404, null);
             }
 
             return successHandler(res, "Order fetched successfully", 200, order);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -87,7 +87,7 @@ export class OrderController {
             const data = await OrderService.getUserOrders(profileId, filters);
             return successHandler(res, "Orders fetched successfully", 200, data);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -106,7 +106,7 @@ export class OrderController {
             }
 
             if (!branchIdd) {
-                return errorHandler(res, "Access Denied", 403);
+                return errorHandler(res, "Access Denied", 403, null);
             }
 
             const data = await OrderService.getBranchOrders({
@@ -122,7 +122,7 @@ export class OrderController {
             });
             return successHandler(res, "Orders fetched successfully", 200, data);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -137,7 +137,7 @@ export class OrderController {
 
             return successHandler(res, "Order details fetched successfully", 200, order);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -158,7 +158,7 @@ export class OrderController {
 
             return successHandler(res, "Order items updated successfully", 200, order);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -174,7 +174,7 @@ export class OrderController {
 
             return successHandler(res, "Order status updated successfully", 200, order);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 
@@ -189,7 +189,7 @@ export class OrderController {
 
             return successHandler(res, "Order deleted successfully", 200);
         } catch (error: any) {
-            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500)
+            return errorHandler(res, error.message || "Something went wrong please try again", error.status || 500, error)
         }
     }
 }

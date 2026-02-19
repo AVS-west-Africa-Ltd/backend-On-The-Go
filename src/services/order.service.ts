@@ -18,6 +18,8 @@ import { PAYSTACK_EVENT, TPaystackEventData } from '../subscribers/types';
 import { BranchAmenity } from '../models/branchAmenity.model';
 import { Amenity } from '../models/amenity.model';
 import { BranchService } from './branches.service';
+import { VoucherType, VoucherStatus, RewardTriggerType } from '../models/types/rewardRules.types';
+import { RewardService } from './reward.service';
 
 const { sequelize } = db;
 
@@ -96,11 +98,15 @@ export class OrderService {
                     throw new AppError("Invalid voucher code", 400);
                 }
 
-                if (voucher.status !== 'UNUSED') {
+                if (voucher.status !== VoucherStatus.UNUSED) {
                     throw new AppError("Voucher has already been used or expired", 400);
                 }
 
                 if (new Date() > voucher.validUntil) {
+                    await voucher.update(
+                        { status: VoucherStatus.EXPIRED },
+                        { transaction: t }
+                    );
                     throw new AppError("Voucher has expired", 400);
                 }
 
@@ -108,10 +114,21 @@ export class OrderService {
                     throw new AppError("Voucher is not valid for this business", 400);
                 }
 
-                if (voucher.discountType === 'PERCENTAGE') {
+                if (voucher.minOrderAmount && subTotal < voucher.minOrderAmount) {
+                    throw new AppError(`Minimum order amount for this voucher is ${voucher.minOrderAmount}`, 400);
+                }
+
+                if (voucher.usageLimit && voucher.usedCount >= voucher.usageLimit) {
+                    throw new AppError("Voucher usage limit reached", 400);
+                }
+
+                if (voucher.voucherType === VoucherType.PERCENTAGE_DISCOUNT) {
                     discountAmount = (subTotal * voucher.value) / 100;
-                } else {
-                    discountAmount = 0;
+                    if (voucher.maxDiscountAmount && discountAmount > voucher.maxDiscountAmount) {
+                        discountAmount = voucher.maxDiscountAmount;
+                    }
+                } else if (voucher.voucherType === VoucherType.FIXED_DISCOUNT) {
+                    discountAmount = voucher.value;
                 }
 
                 if (discountAmount > subTotal) {
@@ -120,7 +137,13 @@ export class OrderService {
 
                 appliedVoucherCode = voucher.code;
 
-                await voucher.update({ status: 'USED' }, { transaction: t });
+                // Update usedCount and check status
+                const newUsedCount = voucher.usedCount + 1;
+
+                await voucher.update({
+                    usedCount: newUsedCount,
+                    status: VoucherStatus.USED
+                }, { transaction: t });
             }
 
             const totalAmount = subTotal - discountAmount;
@@ -239,9 +262,12 @@ export class OrderService {
                 const voucher = await Voucher.findByPk(order.voucherId, { transaction: t });
 
                 if (voucher) {
-                    if (voucher.discountType === 'PERCENTAGE') {
+                    if (voucher.voucherType === VoucherType.PERCENTAGE_DISCOUNT) {
                         discountAmount = (subTotal * voucher.value) / 100;
-                    } else {
+                        if (voucher.maxDiscountAmount && discountAmount > voucher.maxDiscountAmount) {
+                            discountAmount = voucher.maxDiscountAmount;
+                        }
+                    } else if (voucher.voucherType === VoucherType.FIXED_DISCOUNT) {
                         discountAmount = voucher.value;
                     }
                 }
@@ -450,7 +476,7 @@ export class OrderService {
 
         if (search) {
             whereClause.orderId = {
-                [Op.iLike]: `%${search}%`,
+                [Op.like]: `%${search}%`,
             };
         }
 
@@ -646,7 +672,7 @@ export class OrderService {
 
         if (search) {
             whereClause.orderId = {
-                [Op.iLike]: `%${search}%`,
+                [Op.like]: `%${search}%`,
             };
         }
 
@@ -897,6 +923,11 @@ export class OrderService {
                     status: OrderStatus.ONGOING,
                     paymentStatus: OrderPaymentStatus.PAID
                 }, { transaction: t });
+
+                // Trigger reward progress for CAMPAIGN or other relevant types
+                // This is a placeholder for where you might trigger rewards based on order completion
+                // For now, let's say we have a rule for every order if configured.
+                // await RewardService.trackProgress({ userId: order.customerId, businessId: order.businessId, triggerType: RewardTriggerType.CAMPAIGN }, t);
             }
 
             await t.commit();

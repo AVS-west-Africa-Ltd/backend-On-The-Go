@@ -3,6 +3,7 @@ import analyticsRoutes from "../analytics.routes";
 import branchRoutes from "../branch.routes";
 import adminManagementRoutes from "../admin.routes";
 import productRoutes from "../product.routes";
+import rewardAdminRoutes from "./reward.admin.routes";
 import { login, getAllPermissions, getAllRoles } from "../../controllers/admin.controller";
 import { validateBody, validateParams, validateQuery } from "../../middlewares/validateMiddleware";
 import { loginAdminSchema } from "../../validators/admin.validator";
@@ -15,6 +16,7 @@ const adminRouter = express.Router();
 adminRouter.use("/analytics", analyticsRoutes);
 adminRouter.use("/branches", branchRoutes);
 adminRouter.use("/products", productRoutes);
+adminRouter.use("/rewards", rewardAdminRoutes);
 // Public Admin Routes (No prefix)
 adminRouter.post("/login", validateBody(loginAdminSchema), login);
 adminRouter.get("/permissions", getAllPermissions);

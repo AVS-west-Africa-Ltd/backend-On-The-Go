@@ -48,7 +48,7 @@ export const getBranchProducts = async (req: Request, res: Response) => {
         }
 
         if (!branchIdd) {
-            return errorHandler(res, "Invalid branch ID", 400);
+            return errorHandler(res, "Invalid branch ID", 400, null);
         }
 
         const { products, total, nextCursor } = await ProductService.getBranchProducts(
@@ -84,7 +84,7 @@ export const update = async (req: Request, res: Response) => {
         const branchId = req.branch!;
 
         if (!productId || isNaN(productId)) {
-            return errorHandler(res, "Invalid product ID", 400);
+            return errorHandler(res, "Invalid product ID", 400, null);
         }
 
         const updateData: IUpdateProductDTO = {
@@ -110,7 +110,7 @@ export const update = async (req: Request, res: Response) => {
 
     } catch (error: any) {
         console.error(error);
-        return errorHandler(res, error.message || "Failed to update product", 500);
+        return errorHandler(res, error.message || "Failed to update product", 500, error);
     }
 };
 
@@ -122,13 +122,13 @@ export const getProduct = async (req: Request, res: Response) => {
         const branchId = req.branch!;
 
         if (!productId || isNaN(productId)) {
-            return errorHandler(res, "Invalid product ID", 400);
+            return errorHandler(res, "Invalid product ID", 400, null);
         }
 
         const product = await ProductService.getProductById(productId, profileId, branchId);
 
         if (!product) {
-            return errorHandler(res, "Product not found", 404);
+            return errorHandler(res, "Product not found", 404, null);
         }
 
         return successHandler(res, "Product fetched successfully", 200, product);
@@ -146,13 +146,13 @@ export const deleteProduct = async (req: Request, res: Response) => {
         const branchId = req.branch!;
 
         if (!productId || isNaN(productId)) {
-            return errorHandler(res, "Invalid product ID", 400);
+            return errorHandler(res, "Invalid product ID", 400, null);
         }
 
         const deleted = await ProductService.deleteProduct(productId, profileId, branchId);
 
         if (!deleted) {
-            return errorHandler(res, "Product could not be deleted", 404);
+            return errorHandler(res, "Product could not be deleted", 404, null);
         }
 
         return successHandler(res, "Product deleted successfully", 200);
@@ -169,7 +169,7 @@ export const filterBranchProducts = async (req: Request, res: Response) => {
         const userId = req.user!;
 
         if (!branchId) {
-            return errorHandler(res, "Invalid branch ID", 400);
+            return errorHandler(res, "Invalid branch ID", 400, null);
         }
 
         const products = await ProductService.filterBranchProducts({

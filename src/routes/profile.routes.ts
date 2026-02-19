@@ -2,7 +2,7 @@ import express from "express";
 import { upload } from "../middlewares/upload";
 import { authProfile } from "../middlewares/authProfile";
 import { authUser } from "../middlewares/authUser";
-import { createProfile, addMoreInfomation, addAmenities, addPhotos, updateProfile, addInterestsAndPlaces, uploadDocument, addOpeningHours, addSocials, addWifiDetails, addRedeemRewardHours, fetchProfile } from "../controllers/profile.controller";
+import { createProfile, addMoreInfomation, addAmenities, addPhotos, updateProfile, addInterestsAndPlaces, uploadDocument, addOpeningHours, addSocials, addWifiDetails, fetchProfile } from "../controllers/profile.controller";
 
 const router = express.Router();
 
@@ -27,7 +27,5 @@ router.post("/opening-hours", authProfile, addOpeningHours);
 router.post("/socials", authProfile, addSocials);
 
 router.post("/wifi", authProfile, addWifiDetails);
-
-router.post("/reward-redeem-hours", authProfile, addRedeemRewardHours);
 
 export default router;

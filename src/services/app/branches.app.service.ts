@@ -36,7 +36,7 @@ const { sequelize } = db;
 
 export class AppBranchService {
 
-    static async getBranchById(branchId: number): Promise<Branch | null> {
+    static async getBranchById(branchId: number): Promise<any> {
         try {
             const branch = await Branch.findOne({
                 where: {
@@ -55,6 +55,12 @@ export class AppBranchService {
                                 attributes: ["id", "name"],
                             }
                         ]
+                    },
+                    {
+                        model: Profile,
+                        as: "profile",
+                        required: false,
+                        attributes: ["id", "picture", "profileType", "businessCategory"],
                     },
                     {
                         model: OpeningHour,
@@ -85,7 +91,11 @@ export class AppBranchService {
             if (!branch) return null;
 
             // 2. Format Response
-            return branch
+            const branchData = branch.get({ plain: true });
+            (branchData as any).reviews = (branchData as any).posts || [];
+            delete (branchData as any).posts;
+
+            return branchData;
         } catch (error: any) {
             console.error("Failed to fetch branch:", error);
             throw new AppError(error.message || "Failed to fetch branch", error.statusCode || 500);

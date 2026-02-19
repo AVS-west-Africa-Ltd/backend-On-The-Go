@@ -1751,6 +1751,209 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Rewards & Vouchers",
+            "item": [
+                {
+                    "name": "Admin",
+                    "item": [
+                        {
+                            "name": "Create Reward Rule",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Referral Promo\",\n    \"description\": \"Get a reward for every 2 successful referrals!\",\n    \"triggerType\": \"REFERRAL\",\n    \"threshold\": 2,\n    \"voucherType\": \"PERCENTAGE_DISCOUNT\",\n    \"value\": 10,\n    \"validityDays\": [\"Monday\", \"Wednesday\", \"Friday\"],\n    \"expiryHours\": 24,\n    \"maxPerUser\": 5,\n    \"productId\": null,\n    \"minOrderAmount\": 1000,\n    \"maxDiscountAmount\": null,\n    \"isStackable\": false\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/admin/rewards/rules"
+                            }
+                        },
+                        {
+                            "name": "Get Reward Rules",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/admin/rewards/rules?cursor=&limit=10&branchId=",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "admin",
+                                        "rewards",
+                                        "rules"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "cursor",
+                                            "value": "",
+                                            "description": "Pagination cursor"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "10",
+                                            "description": "Number of results to return"
+                                        },
+                                        {
+                                            "key": "branchId",
+                                            "value": "",
+                                            "description": "(Optional) Filter by branch"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Branch Vouchers",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/admin/rewards/vouchers?status=UNUSED&search=&cursor=&limit=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "admin",
+                                        "rewards",
+                                        "vouchers"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "status",
+                                            "value": "UNUSED"
+                                        },
+                                        {
+                                            "key": "search",
+                                            "value": ""
+                                        },
+                                        {
+                                            "key": "cursor",
+                                            "value": "",
+                                            "description": "Pagination cursor"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "10",
+                                            "description": "Number of results to return"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Manual Issue Voucher",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"userId\": 1,\n    \"voucherType\": \"FIXED_DISCOUNT\",\n    \"value\": 500,\n    \"description\": \"Manually issued customer loyalty discount\",\n    \"validityDays\": [\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\"],\n    \"expiryHours\": 48,\n    \"branchId\": 1,\n    \"productId\": null,\n    \"minOrderAmount\": 2000,\n    \"maxDiscountAmount\": null,\n    \"isStackable\": true\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/admin/rewards/vouchers/manual"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "User",
+                    "item": [
+                        {
+                            "name": "My Vouchers",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/rewards/my-vouchers?branchId=&cursor=&limit=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "rewards",
+                                        "my-vouchers"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "branchId",
+                                            "value": "",
+                                            "description": "(Optional) Filter vouchers by a specific branch ID"
+                                        },
+                                        {
+                                            "key": "cursor",
+                                            "value": "",
+                                            "description": "Pagination cursor"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "10",
+                                            "description": "Number of results to return"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Redeem Voucher",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"voucherId\": 1,\n    \"orderSubtotal\": 3000,\n    \"items\": [\n        {\n            \"productId\": 1,\n            \"quantity\": 1\n        }\n    ],\n    \"appliedVoucherIds\": []\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/rewards/vouchers/redeem"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

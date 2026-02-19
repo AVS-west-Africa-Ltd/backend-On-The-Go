@@ -13,7 +13,6 @@ import { Amenity } from "../models/amenity.model";
 import { BranchAmenity } from "../models/branchAmenity.model";
 import { Media } from "../models/media.model";
 import { Social } from "../models/social.model";
-import { RewardRedeemHour } from "../models/rewardRedeemHour.model";
 import { Status } from "../models/types/amenity.types";
 import { MediaTargetTypes } from "../models/types/media.types";
 import { TAllowedSocialPlatforms } from "../models/types/socials.types";
@@ -33,6 +32,30 @@ export class ProfileService {
         try {
             const data: ProfileData = {} as ProfileData;
             const branch = {} as Branch;
+
+            const existingUserName = await Profile.findOne({
+                where: sequelize.where(
+                    sequelize.fn("LOWER", sequelize.col("userName")),
+                    (payload.userName || "").toLowerCase()
+                ),
+                transaction: t
+            });
+
+            if (existingUserName) {
+                throw new Error("Profile with this username already exists.");
+            }
+
+            const existingProfile = await Profile.findOne({
+                where: {
+                    userId: userId,
+                    profileType: payload.profileType
+                },
+                transaction: t
+            });
+
+            if (existingProfile) {
+                throw new Error(`You already have a ${payload.profileType} profile.`);
+            }
 
             switch (payload.profileType) {
                 case ProfileType.PERSONAL:
@@ -387,64 +410,6 @@ export class ProfileService {
             return amenity;
         } catch (error) {
             await t.rollback();
-            throw error;
-        }
-    }
-
-    static async addRedeemRewardHours(hours: any[], profileId: number) {
-        const transaction = await sequelize.transaction();
-        try {
-            if (!Array.isArray(hours)) {
-                throw new Error("Hours data must be provided as an array");
-            }
-            if (hours.length === 0) {
-                throw new Error("At least one operating hour entry is required");
-            }
-            if (hours.length > 7) {
-                throw new Error("Maximum 7 operating days allowed per business");
-            }
-
-            const validationErrors = [];
-            const seenDays = new Set();
-
-            hours.forEach((hour, index) => {
-                if (!hour.dayOfWeek || hour.dayOfWeek < 0 || hour.dayOfWeek > 6) {
-                    validationErrors.push(`Entry ${index + 1}: dayOfWeek must be between 0-6`);
-                }
-
-                if (seenDays.has(hour.dayOfWeek)) {
-                    validationErrors.push(`Entry ${index + 1}: duplicate dayOfWeek ${hour.dayOfWeek}`);
-                }
-                seenDays.add(hour.dayOfWeek);
-
-                if (!hour.openTime || !hour.closeTime) {
-                    validationErrors.push(`Entry ${index + 1}: openTime and closeTime are required`);
-                }
-            });
-
-            if (validationErrors.length > 0) {
-                throw new Error("Sorry invalid hours data provided");
-            }
-
-            await RewardRedeemHour.destroy({
-                where: { businessId: profileId },
-                transaction
-            });
-
-            const rewardRedeemHours = await RewardRedeemHour.bulkCreate(
-                hours.map(hour => ({
-                    businessId: profileId,
-                    dayOfWeek: hour.dayOfWeek,
-                    openTime: hour.openTime,
-                    closeTime: hour.closeTime,
-                })),
-                { transaction }
-            );
-
-            await transaction.commit();
-            return rewardRedeemHours;
-        } catch (error) {
-            await transaction.rollback();
             throw error;
         }
     }

@@ -930,7 +930,7 @@ export class OrderService {
                 // Trigger reward progress for CAMPAIGN or other relevant types
                 // This is a placeholder for where you might trigger rewards based on order completion
                 // For now, let's say we have a rule for every order if configured.
-                // await RewardService.trackProgress(order.customerId, order.businessId, RewardTriggerType.CAMPAIGN, t);
+                // await RewardService.trackProgress({ userId: order.customerId, businessId: order.businessId, triggerType: RewardTriggerType.CAMPAIGN }, t);
             }
 
             await t.commit();

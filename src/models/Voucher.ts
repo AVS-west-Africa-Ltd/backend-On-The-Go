@@ -19,6 +19,7 @@ export class Voucher extends Model<
     declare userId: number;
     declare businessId: number;
     declare branchId: CreationOptional<number | null>;
+    declare description: CreationOptional<string | null>;
     declare validityDays: CreationOptional<string[] | null>;
 
     declare voucherType: VoucherType;
@@ -46,16 +47,19 @@ export class Voucher extends Model<
 
     static associate(models: Record<string, ModelStatic<Model>>) {
         if (models.User) {
-            Voucher.belongsTo(models.User, { foreignKey: "userId" });
+            Voucher.belongsTo(models.User, { foreignKey: "userId", as: "user" });
         }
         if (models.Business) {
-            Voucher.belongsTo(models.Business, { foreignKey: "businessId" });
+            Voucher.belongsTo(models.Business, { foreignKey: "businessId", as: "business" });
         }
         if (models.Branch) {
-            Voucher.belongsTo(models.Branch, { foreignKey: "branchId" });
+            Voucher.belongsTo(models.Branch, { foreignKey: "branchId", as: "branch" });
         }
         if (models.Product) {
-            Voucher.belongsTo(models.Product, { foreignKey: "productId" });
+            Voucher.belongsTo(models.Product, { foreignKey: "productId", as: "product" });
+        }
+        if (models.BusinessRewardRules) {
+            Voucher.belongsTo(models.BusinessRewardRules, { foreignKey: "ruleId", as: "rule" });
         }
     }
 
@@ -88,8 +92,12 @@ export class Voucher extends Model<
                     type: DataTypes.INTEGER,
                     allowNull: true
                 },
-                validityDays: {
+                description: {
                     type: DataTypes.TEXT,
+                    allowNull: true,
+                },
+                validityDays: {
+                    type: DataTypes.JSON,
                     allowNull: true
                 },
 

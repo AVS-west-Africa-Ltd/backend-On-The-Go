@@ -27,9 +27,7 @@ export const createRule = async (req: Request, res: Response) => {
     }
 };
 
-/**
- * Get active rules for a business or branch
- */
+
 export const getRules = async (req: Request, res: Response) => {
     try {
         const admin = req.admin!;
@@ -45,8 +43,14 @@ export const getRules = async (req: Request, res: Response) => {
         }
         const businessId = branch.profileId;
 
-        const rules = await RewardService.getRules(businessId, branchId);
-        return successHandler(res, "Reward rules fetched successfully!", 200, rules);
+        const { cursor, limit } = req.query;
+        const response = await RewardService.getRules({
+            businessId,
+            branchId,
+            cursor: cursor as string,
+            limit: limit ? Number(limit) : undefined
+        });
+        return successHandler(res, "Reward rules fetched successfully!", 200, response);
     } catch (error: any) {
         console.error("Fetch reward rules failed:", error);
         return errorHandler(res, error.message || "Failed to fetch reward rules", 400, error);
@@ -57,15 +61,16 @@ export const getRules = async (req: Request, res: Response) => {
 export const getMyVouchers = async (req: Request, res: Response) => {
     try {
         const userId = req.user!;
-        let businessId = req.admin!.businessId;
+        const { branchId, cursor, limit } = req.query;
 
-        if (!businessId) {
-            const branch = await Branch.findByPk(req.admin!.branchId);
-            if (branch) businessId = branch.profileId;
-        }
+        const response = await RewardService.getUserVouchers({
+            userId,
+            branchId: branchId ? Number(branchId) : undefined,
+            cursor: cursor as string,
+            limit: limit ? Number(limit) : undefined
+        });
 
-        const vouchers = await RewardService.getUserVouchers(userId, businessId);
-        return successHandler(res, "Your vouchers fetched successfully!", 200, { vouchers });
+        return successHandler(res, "Your vouchers fetched successfully!", 200, response);
     } catch (error: any) {
         console.error("Fetch user vouchers failed:", error);
         return errorHandler(res, error.message || "Failed to fetch vouchers", 400, error);
@@ -75,17 +80,24 @@ export const getMyVouchers = async (req: Request, res: Response) => {
 export const redeemVoucher = async (req: Request, res: Response) => {
     try {
         const userId = req.user!;
-        const { voucherId } = req.body;
-        const voucher = await RewardService.redeemVoucher(voucherId, userId);
+        const { voucherId, orderSubtotal, items, appliedVoucherIds } = req.body;
+        const voucher = await RewardService.redeemVoucher({
+            voucherId,
+            userId,
+            context: {
+                orderSubtotal,
+                items,
+                appliedVoucherIds
+            }
+        });
         return successHandler(res, "Voucher redeemed successfully!", 200, voucher);
     } catch (error: any) {
         console.error("Redeem voucher failed:", error);
         return errorHandler(res, error.message || "Failed to redeem voucher", 400, error);
     }
 };
-/**
- * Get vouchers for a branch (Admin)
- */
+
+
 export const getBranchVouchers = async (req: Request, res: Response) => {
     try {
         const admin = req.admin!;
@@ -95,12 +107,15 @@ export const getBranchVouchers = async (req: Request, res: Response) => {
             return errorHandler(res, "Branch ID is required", 400);
         }
 
-        const { status, search } = req.query;
-        const vouchers = await RewardService.getBranchVouchers(branchId, {
+        const { status, search, cursor, limit } = req.query;
+        const response = await RewardService.getBranchVouchers({
+            branchId,
             status: status as any,
-            search: search as string
+            search: search as string,
+            cursor: cursor as string,
+            limit: limit ? Number(limit) : undefined
         });
-        return successHandler(res, "Branch vouchers fetched successfully!", 200, vouchers);
+        return successHandler(res, "Branch vouchers fetched successfully!", 200, response);
     } catch (error: any) {
         console.error("Fetch branch vouchers failed:", error);
         return errorHandler(res, error.message || "Failed to fetch branch vouchers", 400, error);

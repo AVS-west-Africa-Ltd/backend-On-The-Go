@@ -1,4 +1,5 @@
 import { Model, InferAttributes, InferCreationAttributes, CreationOptional, Sequelize, ModelStatic, DataTypes } from "sequelize";
+import { BusinessRewardRules } from "./RewardRules";
 
 export class UserRewardProgress extends Model<
     InferAttributes<UserRewardProgress>,
@@ -14,6 +15,27 @@ export class UserRewardProgress extends Model<
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
+
+    static associate(models: Record<string, ModelStatic<Model>>) {
+        if (models.User) {
+            UserRewardProgress.belongsTo(models.User, {
+                foreignKey: "userId",
+                as: "user",
+            });
+        }
+        if (models.Profile) {
+            UserRewardProgress.belongsTo(models.Profile, {
+                foreignKey: "businessId",
+                as: "business",
+            });
+        }
+        if (models.BusinessRewardRules) {
+            UserRewardProgress.belongsTo(models.BusinessRewardRules, {
+                foreignKey: "ruleId",
+                as: "rule",
+            });
+        }
+    }
 
     static initModel(sequelize: Sequelize): ModelStatic<UserRewardProgress> {
         UserRewardProgress.init(

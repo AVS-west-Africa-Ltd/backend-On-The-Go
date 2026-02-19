@@ -62,7 +62,7 @@ export const discover = async (req: Request, res: Response) => {
                 const sequelize = Branch.sequelize!;
                 const distanceField = sequelize.fn(
                     "ST_Distance_Sphere",
-                    sequelize.col("geoLocation"),
+                    sequelize.col("Branch.geoLocation"),
                     sequelize.fn("ST_GeomFromText", `POINT(${longitude} ${latitude})`)
                 );
 

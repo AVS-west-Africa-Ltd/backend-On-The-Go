@@ -30,25 +30,3 @@ export enum CampaignType {
     PARTNERSHIP = "PARTNERSHIP", // CocaCola etc
 }
 
-export interface ICreateRewardRule {
-    businessId: number;
-    branchId?: number | null;
-    name?: string;
-    triggerType: RewardTriggerType;
-    threshold: number;
-    voucherType: VoucherType;
-    value: number;
-    validityDays?: string[];
-    expiryHours?: number;
-    maxPerUser?: number;
-}
-
-export interface IManualIssueVoucher {
-    userId: number;
-    businessId: number;
-    branchId?: number;
-    voucherType: VoucherType;
-    value: number;
-    validityDays?: string[];
-    expiryHours: number;
-}

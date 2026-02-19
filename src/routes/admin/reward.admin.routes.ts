@@ -11,7 +11,7 @@ router.use(authAdmin); // Admin must have an active profile
 
 router.post("/rules", validateBody(createRewardRuleSchema), RewardController.createRule);
 router.get("/rules", validateQuery(getRewardRulesQuerySchema), RewardController.getRules);
-router.get("/vouchers/:branchId?", validateParams(getBranchVouchersSchema), validateQuery(getBranchVouchersQuerySchema), RewardController.getBranchVouchers);
+router.get("/vouchers", validateQuery(getBranchVouchersQuerySchema), RewardController.getBranchVouchers);
 router.post("/vouchers/manual", validateBody(manualIssueVoucherSchema), RewardController.manualIssueVoucher);
 
 export default router;

@@ -16,12 +16,12 @@ const onReviewCreated = async (data: TRewardReviewEventData) => {
         const { userId, businessId, branchId } = data;
         console.log(`[RewardSubscriber] Processing review reward for user ${userId} at branch ${branchId}`);
 
-        await RewardService.trackProgress(
+        await RewardService.trackProgress({
             userId,
             businessId,
-            RewardTriggerType.REVIEW,
+            triggerType: RewardTriggerType.REVIEW,
             branchId
-        );
+        });
     } catch (error) {
         console.error("[RewardSubscriber] Error processing review reward:", error);
     }

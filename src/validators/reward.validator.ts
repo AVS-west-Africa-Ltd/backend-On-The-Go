@@ -11,6 +11,10 @@ export const createRewardRuleSchema = Joi.object({
     validityDays: Joi.array().items(Joi.string()).optional(),
     expiryHours: Joi.number().integer().min(1).optional(),
     maxPerUser: Joi.number().integer().min(1).optional(),
+    productId: Joi.number().integer().optional(),
+    minOrderAmount: Joi.number().min(0).optional(),
+    maxDiscountAmount: Joi.number().min(0).optional(),
+    isStackable: Joi.boolean().optional(),
     isActive: Joi.boolean().optional(),
 });
 
@@ -18,14 +22,24 @@ export const createRewardRuleSchema = Joi.object({
 
 export const getRewardRulesQuerySchema = Joi.object({
     branchId: Joi.number().integer().optional(),
+    cursor: Joi.string().optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
 });
 
 export const getMyVouchersQuerySchema = Joi.object({
-    businessId: Joi.number().integer().optional(),
+    branchId: Joi.number().integer().optional(),
+    cursor: Joi.string().optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
 });
 
 export const redeemVoucherSchema = Joi.object({
     voucherId: Joi.number().integer().required(),
+    orderSubtotal: Joi.number().min(0).optional(),
+    items: Joi.array().items(Joi.object({
+        productId: Joi.number().integer().required(),
+        quantity: Joi.number().integer().min(1).required()
+    })).optional(),
+    appliedVoucherIds: Joi.array().items(Joi.number().integer()).optional(),
 });
 
 export const getBranchVouchersSchema = Joi.object({
@@ -35,6 +49,8 @@ export const getBranchVouchersSchema = Joi.object({
 export const getBranchVouchersQuerySchema = Joi.object({
     status: Joi.string().valid(...Object.values(VoucherStatus)).optional(),
     search: Joi.string().optional(),
+    cursor: Joi.string().optional(),
+    limit: Joi.number().integer().min(1).max(100).optional(),
 });
 
 export const manualIssueVoucherSchema = Joi.object({
@@ -43,5 +59,9 @@ export const manualIssueVoucherSchema = Joi.object({
     value: Joi.number().min(0).required(),
     validityDays: Joi.array().items(Joi.string()).optional(),
     expiryHours: Joi.number().integer().min(1).required(),
+    productId: Joi.number().integer().optional(),
+    minOrderAmount: Joi.number().min(0).optional(),
+    maxDiscountAmount: Joi.number().min(0).optional(),
+    isStackable: Joi.boolean().optional(),
     branchId: Joi.number().integer().optional(),
 });

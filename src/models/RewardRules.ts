@@ -17,6 +17,7 @@ export class BusinessRewardRules extends Model<
     declare businessId: number;
     declare branchId: CreationOptional<number | null>;
     declare name: CreationOptional<string | null>;
+    declare description: CreationOptional<string | null>;
     declare validityDays: CreationOptional<string[] | null>;
 
     declare triggerType: RewardTriggerType;
@@ -27,6 +28,12 @@ export class BusinessRewardRules extends Model<
 
     declare expiryHours: number;
     declare maxPerUser: number;
+
+    declare productId: CreationOptional<number | null>;
+    declare minOrderAmount: CreationOptional<number>;
+    declare maxDiscountAmount: CreationOptional<number | null>;
+    declare isStackable: CreationOptional<boolean>;
+
     declare isActive: CreationOptional<boolean>;
 
     declare createdAt: CreationOptional<Date>;
@@ -67,6 +74,10 @@ export class BusinessRewardRules extends Model<
                     type: DataTypes.STRING,
                     allowNull: true,
                 },
+                description: {
+                    type: DataTypes.TEXT,
+                    allowNull: true,
+                },
                 validityDays: {
                     type: DataTypes.JSON,
                     allowNull: true,
@@ -97,6 +108,22 @@ export class BusinessRewardRules extends Model<
                     type: DataTypes.INTEGER,
                     allowNull: false,
                     defaultValue: 5,
+                },
+                productId: {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                },
+                minOrderAmount: {
+                    type: DataTypes.FLOAT,
+                    defaultValue: 0,
+                },
+                maxDiscountAmount: {
+                    type: DataTypes.FLOAT,
+                    allowNull: true,
+                },
+                isStackable: {
+                    type: DataTypes.BOOLEAN,
+                    defaultValue: false,
                 },
                 isActive: {
                     type: DataTypes.BOOLEAN,

@@ -79,12 +79,18 @@ export class AppBranchService {
                         as: "posts",
                         where: {
                             branchId,
-                            postType: PostType.REVIEW,
-                            targetType: PostTargetType.BUSINESS,
                         },
                         required: false,
+                        include: [
+                            {
+                                model: Profile,
+                                as: "author",
+                                attributes: ["id", "userName", "picture"]
+                            }
+                        ],
                         attributes: { exclude: ["businessId", "branchId"] },
                     },
+
                 ],
             });
 
@@ -92,7 +98,14 @@ export class AppBranchService {
 
             // 2. Format Response
             const branchData = branch.get({ plain: true });
-            (branchData as any).reviews = (branchData as any).posts || [];
+            const allPosts = (branchData as any).posts || [];
+
+            // Separate reviews and business posts
+            (branchData as any).reviews = allPosts.filter((p: any) => p.postType === PostType.REVIEW);
+            (branchData as any).businessPosts = allPosts.filter((p: any) =>
+                p.postType === PostType.NORMAL && p.profileId === branchData.profileId
+            );
+
             delete (branchData as any).posts;
 
             return branchData;

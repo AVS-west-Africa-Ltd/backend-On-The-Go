@@ -127,3 +127,34 @@ The business will have theri own updated or refined version of the table and giv
 1. Dashboard page
 2. Dashboard wifi page (Some part of the UI is wrong and Mark will look at the other part to determind the technicality of the page)
 3. Report and Analytics page
+
+// PLTAFORM ADMIN Endpoints
+// Get endpoints should filter by business
+1. Get all users
+2. Get all businesses
+3. Get all branches
+4. Get all products
+5. Get all orders
+6. Get all reviews
+7. Get all posts
+8. Get all communities
+9. Get all settings
+10. Get all insights
+11. Get all rewards
+12. Get all vouchers
+13. Get all wifi profiles
+14. Get all wifi tickets
+15. Get all wifi voucher
+16. Platform Admin Authentication
+17. Create admin
+18. Update admin
+19. Delete admin
+20. Get all admins
+21. Assign roles to admin
+22. Get all roles
+23. Create role
+24. Update role
+25. Delete roles
+26. Assign permissions to role
+27. Get all permissions
+

@@ -93,6 +93,7 @@ export class Admin extends Model<
                 },
                 branchId: {
                     type: DataTypes.INTEGER,
+                    // Change to false if separate model is used for platform admins
                     allowNull: true,
                     references: { model: "branches", key: "id" },
                 },

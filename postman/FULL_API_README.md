@@ -16,6 +16,7 @@ The collection is divided into modules corresponding to the application's archit
 8.  **Bookmarks**: User bookmarking features.
 9.  **Amenities**: Amenity listing and management.
 10. **Admin**: Administrative management (requires Admin privileges).
+11. **Platform Admin**: Global platform-wide management endpoints (requires Super Admin).
 
 ## Getting Started
 

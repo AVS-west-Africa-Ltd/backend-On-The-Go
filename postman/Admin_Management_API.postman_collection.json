@@ -726,6 +726,380 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Platform Admin",
+            "item": [
+                {
+                    "name": "Platform Admin Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"platform-admin@example.com\",\n  \"password\": \"adminPass\"\n}"
+                        },
+                        "url": "{{baseUrl}}/platform-admin/auth/login"
+                    }
+                },
+                {
+                    "name": "Change Platform Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"adminPass\",\n  \"newPassword\": \"newAdminPass123\"\n}"
+                        },
+                        "url": "{{baseUrl}}/platform-admin/auth/change-password"
+                    }
+                },
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/users?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "isVerified", "value": "true", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Businesses",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/businesses?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "businessCategory", "value": "sme", "disabled": true },
+                                { "key": "state", "value": "", "disabled": true },
+                                { "key": "city", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Branches",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/branches?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "state", "value": "", "disabled": true },
+                                { "key": "city", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Products",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/products?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "status", "value": "available", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/orders?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "status", "value": "pending", "disabled": true },
+                                { "key": "from", "value": "", "disabled": true },
+                                { "key": "to", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Reviews",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/reviews?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "profileId", "value": "", "disabled": true },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "rating", "value": "5", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Posts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/posts?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "profileId", "value": "", "disabled": true },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Communities",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/communities?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "search", "value": "", "disabled": true },
+                                { "key": "profileId", "value": "", "disabled": true },
+                                { "key": "type", "value": "public", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Insights",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/insights?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "metric", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Rewards",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/rewards?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Vouchers",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/vouchers?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "status", "value": "active", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Wifi Profiles",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/wifi-profiles?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Wifi Tickets",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/wifi-tickets?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Wifi Vouchers",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/wifi-vouchers?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "businessId", "value": "", "disabled": true },
+                                { "key": "branchId", "value": "", "disabled": true },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Settings",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/platform-admin/settings?limit=10",
+                            "query": [
+                                { "key": "limit", "value": "10" },
+                                { "key": "cursor", "value": "", "disabled": true }
+                            ]
+                        }
+                    }
+                }
+            ]
         }
     ],
     "auth": {

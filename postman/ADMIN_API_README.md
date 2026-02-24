@@ -27,6 +27,24 @@ The Admin Management API allows Super Admins to manage administrative users with
 - **PATCH /admins/:id/role** - Update an admin's role
 - **PATCH /admins/:id/permissions** - Update an admin's permissions
 
+### 4. Platform Admin Operations (Requires SUPER_ADMIN Role)
+These endpoints allow global data retrieval across the platform and are mounted under `/platform-admin`.
+- **GET /platform-admin/users** - Global user list
+- **GET /platform-admin/businesses** - Global business list
+- **GET /platform-admin/branches** - Global branch list
+- **GET /platform-admin/products** - Global product list
+- **GET /platform-admin/orders** - Global order list
+- **GET /platform-admin/reviews** - Global review list
+- **GET /platform-admin/posts** - Global post list
+- **GET /platform-admin/communities** - Global community list
+- **GET /platform-admin/insights** - Global insights list
+- **GET /platform-admin/rewards** - Global rewards list
+- **GET /platform-admin/vouchers** - Global vouchers list
+- **GET /platform-admin/wifi-profiles** - Global wifi profiles
+- **GET /platform-admin/wifi-tickets** - Global wifi tickets
+- **GET /platform-admin/wifi-vouchers** - Global wifi vouchers
+- **GET /platform-admin/settings** - Platform settings
+
 ## Setup Instructions
 
 ### 1. Import the Collection

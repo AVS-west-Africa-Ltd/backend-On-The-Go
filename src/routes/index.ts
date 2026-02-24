@@ -18,6 +18,7 @@ import searchRoutes from "./search.routes";
 import rewardRoutes from "./reward.routes";
 import adminRootRouter from "./admin/index";
 import mikrotikRoutes from "./mikrotik.routes";
+import platformAdminRoutes from "./platformAdmin.routes";
 import { SystemController } from "../controllers/system.controller";
 
 const router = express.Router();
@@ -45,6 +46,7 @@ router.use("/chats", chatRoutes);
 router.use("/search", searchRoutes);
 router.use("/mikrotik", mikrotikRoutes);
 router.use("/rewards", rewardRoutes);
+router.use("/platform-admin", platformAdminRoutes);
 
 // Grouped Admin Dashboard Routes
 router.use("/admin", adminRootRouter);

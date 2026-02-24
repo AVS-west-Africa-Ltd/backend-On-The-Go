@@ -1,6 +1,8 @@
 export enum AdminRole {
     SUPER_ADMIN = "super_admin",
     ADMIN = "admin",
+    SYSTEM_OWNER = "system_owner",
+    SYSTEM_ADMIN = "system_admin",
 }
 
 export enum AdminPermission {

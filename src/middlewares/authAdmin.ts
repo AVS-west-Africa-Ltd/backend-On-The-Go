@@ -48,3 +48,25 @@ export const authorizeAdmin = (requiredPermission: AdminPermission) => {
         next();
     };
 };
+
+export const authorizeSystemAdmin = (req: Request, res: Response, next: NextFunction) => {
+    const admin = req.admin;
+
+    if (!admin) {
+        return errorHandler(res, 'Access denied. Admin info missing.', 403);
+    }
+
+    // Must be either SYSTEM_OWNER or SYSTEM_ADMIN
+    const allowedRoles: AdminRole[] = [AdminRole.SYSTEM_OWNER, AdminRole.SYSTEM_ADMIN];
+
+    if (!allowedRoles.includes(admin.role)) {
+        return errorHandler(res, 'Access denied!', 403);
+    }
+
+    // Platform admins should not be bound to a specific business or branch in the system context
+    if (admin.businessId || admin.branchId) {
+        return errorHandler(res, 'Access denied!', 403);
+    }
+
+    next();
+};

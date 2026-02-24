@@ -93,7 +93,7 @@ export class Admin extends Model<
                 },
                 branchId: {
                     type: DataTypes.INTEGER,
-                    allowNull: false,
+                    allowNull: true,
                     references: { model: "branches", key: "id" },
                 },
                 branchStaffId: {
